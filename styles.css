@@ -1,4 +1,4 @@
-/* ===== editor.css ===== */
+/* ===== styles.css ===== */
 
 body {
   font-family: monospace;
@@ -8,12 +8,42 @@ body {
   transition: background 0.2s, color 0.2s;
 }
 
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 header h2 {
   font-size: 1.8rem;
   background: linear-gradient(to right, #ff8a00, #e52e71);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.playground-wrapper {
+  display: flex;
+  gap: 20px; /* Adds space between the editor and output sections */
+  width: 100%;
+}
+
+.editor-section {
+  flex: 6; /* Takes up 60% of the space */
+  display: flex;
+  flex-direction: column;
+}
+
+.output-section {
+  flex: 4; /* Takes up 40% of the space */
+  background: var(--output-bg);
+  padding: 10px;
+  border: 1px solid #333;
+  min-height: 60px;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow: auto;
 }
 
 .editor-wrapper {
@@ -28,7 +58,7 @@ header h2 {
 .editor-container {
   position: relative;
   width: 100%;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--editor-bg);
@@ -49,7 +79,7 @@ header h2 {
 .editor-layer {
   font-family: monospace;
   padding: 10px;
-  min-height: 150px;
+  min-height: 400px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   line-height: 1.5;
@@ -97,15 +127,9 @@ header h2 {
   line-height: 1.5;
 }
 
+/* Kept the original #output styles for background, padding, etc., and moved flex properties to .output-section */
 #output {
-  background: var(--output-bg);
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #333;
-  min-height: 60px;
-  white-space: pre-wrap;
-  max-height: 300px;
-  overflow: auto;
+  margin-top: 0; /* Removed the top margin as the gap is handled by flexbox */
 }
 
 .controls {
@@ -137,20 +161,6 @@ header h2 {
 .log-message {
   color: var(--text);
 }
-
-
-/* button {
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  opacity: 0.8;
-} */
 
 button {
   background: var(--btn-bg);
@@ -200,7 +210,12 @@ button.disabled-btn {
 
 /* ===== Responsive ===== */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+  /* Adjusted breakpoint for better responsiveness */
+  .playground-wrapper {
+    flex-direction: column;
+  }
+
   .editor-wrapper {
     flex-direction: column;
   }

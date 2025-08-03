@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="./syntax.css" />
 
     <script defer type="module" src="index.js"></script>
-    <!-- <script src="https://unpkg.com/prettier@3.0.0/standalone.js"></script>
-    <script src="https://unpkg.com/prettier@3.0.0/parser-babel.js"></script> -->
   </head>
   <body class="dark-theme">
     <header>
@@ -21,22 +19,23 @@
       </div>
     </header>
 
-    <div class="editor-wrapper">
-      <div id="line-numbers"></div>
-
-      <div class="editor-container">
-        <!-- <pre id="highlighted-code"></pre> -->
-        <div id="highlighted-code" class="editor-layer"></div>
-        <div
-          id="code-text"
-          class="editor-layer"
-          contenteditable="true"
-          spellcheck="false"
-          autofocus
-        ></div>
+    <div class="playground-wrapper">
+      <div class="editor-section">
+        <div class="editor-wrapper">
+          <div id="line-numbers"></div>
+          <div class="editor-container">
+            <div id="highlighted-code" class="editor-layer"></div>
+            <div
+              id="code-text"
+              class="editor-layer"
+              contenteditable="true"
+              spellcheck="false"
+              autofocus
+            ></div>
+          </div>
+        </div>
       </div>
+      <div class="output-section" id="output"></div>
     </div>
-
-    <div id="output"></div>
   </body>
 </html>
