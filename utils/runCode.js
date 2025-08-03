@@ -1,4 +1,4 @@
-// 👇 Global session tracking
+// Global session tracking
 window.__sessionStats = {
   totalAsyncTime: 0,
   asyncCallCount: 0,
@@ -9,6 +9,7 @@ let lastLogTime = null;
 window.__asyncSteps = [];
 
 export async function runCode(editor, output) {
+  clearOutput(output);
   const code = editor.innerText;
   output.innerHTML = "";
   lastLogTime = performance.now();
@@ -88,46 +89,123 @@ export async function runCode(editor, output) {
   }
 }
 
-export function logOutput(args, outputEl, delta = 0, type = "log") {
-  const logDiv = document.createElement("div");
-  logDiv.className = `log-entry ${type}`;
-  logDiv.style.margin = "4px 0";
-  logDiv.style.whiteSpace = "pre-wrap";
+let cumulativeTime = 0;
 
-  let color;
-  switch (type) {
-    case "warn":
-      color = "#e5c07b";
-      break;
-    case "error":
-      color = "#e06c75";
-      break;
-    default:
-      color = "#98c379";
+export function clearOutput(outputEl) {
+  outputEl.innerHTML = "";
+  cumulativeTime = 0;
+}
+
+export function logOutput(message, outputEl, delta = 0, type = "log") {
+  cumulativeTime += delta;
+
+  const logLine = document.createElement("div");
+  logLine.className = "console-log";
+  logLine.style.display = "flex";
+  logLine.style.flexDirection = "column";
+  logLine.style.marginBottom = "4px";
+  logLine.style.padding = "6px 10px";
+  logLine.style.fontFamily = "monospace";
+
+  // Style based on log type
+  if (type === "error") {
+    logLine.style.borderLeft = "4px solid red";
+    logLine.style.background = "#2d0000";
+    logLine.style.color = "#ff6b6b";
+  } else if (type === "warn") {
+    logLine.style.borderLeft = "4px solid orange";
+    logLine.style.background = "#332100";
+    logLine.style.color = "#ffd166";
+  } else {
+    logLine.style.borderLeft = "4px solid lightgreen";
+    logLine.style.background = "#111";
+    logLine.style.color = "white";
   }
 
-  // Ensure args is always an array
-  const formatted = (Array.isArray(args) ? args : [args])
-    .map((arg) => {
-      if (Array.isArray(arg)) {
-        return `<pre style="display:inline;color:#61afef">[Array(${arg.length})]\n${JSON.stringify(
-          arg.slice(0, 3),
-          null,
-          2
-        )}...</pre>`;
-      } else if (typeof arg === "object" && arg !== null) {
-        return `<pre style="display:inline;color:#61afef">${JSON.stringify(arg, null, 2)}</pre>`;
-      } else {
-        return `<span>${arg}</span>`;
-      }
-    })
-    .join(" ");
+  // Meta timestamp
+  const timeMeta = document.createElement("div");
+  timeMeta.style.fontSize = "0.8em";
+  timeMeta.style.color = "#888";
+  const nowStr = new Date().toLocaleTimeString();
+  const deltaStr = `+${delta.toFixed(2)}ms`;
+  const totalStr = `${cumulativeTime.toFixed(2)}ms total`;
+  timeMeta.textContent = `[${nowStr}] ${deltaStr} | ${totalStr}`;
 
-  logDiv.innerHTML = `<span style="color:#555">[${new Date().toLocaleTimeString()}]</span> <span style="color:${color}">+${delta.toFixed(
-    2
-  )}ms</span> | ${formatted}`;
+  // Render message
+  const messageSpan = document.createElement("div");
+  messageSpan.className = "log-message";
+  messageSpan.style.marginTop = "2px";
 
-  outputEl.appendChild(logDiv);
+  if (Array.isArray(message)) {
+    message.forEach((item, i) => {
+      messageSpan.appendChild(renderValue(item));
+      messageSpan.appendChild(document.createTextNode(" "));
+    });
+  } else {
+    messageSpan.appendChild(renderValue(message));
+  }
+
+  logLine.appendChild(timeMeta);
+  logLine.appendChild(messageSpan);
+  outputEl.appendChild(logLine);
+  outputEl.scrollTop = outputEl.scrollHeight;
+}
+
+function renderValue(val) {
+  const type = typeof val;
+
+  if (val && type === "object") {
+    const details = document.createElement("details");
+    details.style.marginTop = "4px";
+    const summary = document.createElement("summary");
+    summary.textContent = Array.isArray(val) ? `Array(${val.length})` : "Object";
+    summary.style.cursor = "pointer";
+    summary.style.color = "#0ff";
+
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(val, null, 2);
+    pre.style.whiteSpace = "pre-wrap";
+    pre.style.marginTop = "4px";
+    pre.style.color = "#ccc";
+
+    details.appendChild(summary);
+    details.appendChild(pre);
+    return details;
+  }
+
+  // Primitives
+  const span = document.createElement("span");
+  span.textContent = formatValue(val);
+  span.style.color = getTypeColor(type);
+  return span;
+}
+
+function formatValue(val) {
+  if (typeof val === "string") return `"${val}"`;
+  try {
+    return JSON.stringify(val);
+  } catch {
+    return String(val);
+  }
+}
+
+function getTypeColor(type) {
+  switch (type) {
+    case "number":
+      return "#f9c74f";
+    case "string":
+      return "#90be6d";
+    case "boolean":
+      return "#f94144";
+    case "undefined":
+      return "#ccc";
+    case "function":
+      return "#577590";
+    case "object":
+      return "#00b4d8";
+    default:
+      return "#fff";
+  }
 }
 
 function logSummary({ total, syncTime, asyncTime }, outputEl) {
