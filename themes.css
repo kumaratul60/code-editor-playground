@@ -1,0 +1,19 @@
+/* Default Dark Theme */
+:root {
+  --bg: #121212;
+  --text: #e0e0e0;
+  --editor-bg: #1e1e1e;
+  --output-bg: #202020;
+  --btn-bg: #444;
+  --btn-text: #fff;
+}
+
+/* Light Theme */
+.light-theme {
+  --bg: #ffffff;
+  --text: #333;
+  --editor-bg: #f0f0f0;
+  --output-bg: #f5f5f5;
+  --btn-bg: #ddd;
+  --btn-text: #000;
+}

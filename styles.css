@@ -1,0 +1,129 @@
+/* ===== editor.css ===== */
+
+body {
+  font-family: monospace;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.editor-wrapper {
+  display: flex;
+  border: 1px solid #444;
+  background: var(--editor-bg);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.editor-container {
+  position: relative;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--editor-bg);
+  border-right: 1px solid #333;
+}
+
+.editor-layer {
+  font-family: monospace;
+  padding: 10px;
+  min-height: 150px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+}
+
+#highlighted-code {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 0;
+  color: inherit;
+}
+
+#code-text {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  outline: none;
+  color: transparent;
+  caret-color: rgb(236, 229, 224);
+}
+
+#code-text::selection {
+  background: rgba(100, 100, 255, 0.3);
+}
+
+#line-numbers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 10px;
+  color: #888;
+  font-family: monospace;
+  user-select: none;
+}
+
+#line-numbers span {
+  line-height: 1.5;
+}
+
+#output {
+  background: var(--output-bg);
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #333;
+  min-height: 60px;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:disabled,
+button.disabled-btn {
+  background-color: #888;
+  color: #eee;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 600px) {
+  .editor-wrapper {
+    flex-direction: column;
+  }
+
+  #line-numbers {
+    align-items: flex-start;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+}

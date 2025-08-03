@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>JS Playground</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="themes.css" />
+    <link rel="stylesheet" href="./syntax.css" />
+
+    <script defer type="module" src="index.js"></script>
+  </head>
+  <body class="dark-theme">
+    <header>
+      <h2>JavaScript Playground</h2>
+      <div class="controls">
+        <button id="theme-toggle">🌗 Toggle Theme</button>
+        <button id="run-btn">▶ Run</button>
+      </div>
+    </header>
+
+    <div class="editor-wrapper">
+      <div id="line-numbers"></div>
+
+      <div class="editor-container">
+        <!-- <pre id="highlighted-code"></pre> -->
+        <div id="highlighted-code" class="editor-layer"></div>
+        <div
+          id="code-text"
+          class="editor-layer"
+          contenteditable="true"
+          spellcheck="false"
+          autofocus
+        ></div>
+      </div>
+    </div>
+
+    <div id="output"></div>
+  </body>
+</html>
