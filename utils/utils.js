@@ -9,6 +9,34 @@ export function markdownToHTML(text) {
     .replace(/\n$/gim, "<br />");
 }
 
+export function spawnFloatingEmoji(targetBtn, emojiChar = "☀️") {
+  const emoji = document.createElement("div");
+  const rect = targetBtn.getBoundingClientRect();
+
+  emoji.textContent = emojiChar;
+  emoji.style.position = "absolute";
+  emoji.style.left = `${rect.left + rect.width / 2}px`;
+  emoji.style.top = `${rect.top - 10}px`;
+  emoji.style.transform = "translate(-50%, 0)";
+  emoji.style.fontSize = "22px";
+  emoji.style.opacity = "1";
+  emoji.style.transition = "transform 1s ease-out, opacity 1s ease-out";
+  emoji.style.zIndex = "9999";
+  emoji.style.pointerEvents = "none";
+
+  document.body.appendChild(emoji);
+
+  // Trigger animation
+  setTimeout(() => {
+    emoji.style.transform += " translateY(-40px)";
+    emoji.style.opacity = "0";
+  }, 10);
+
+  // Cleanup
+  setTimeout(() => emoji.remove(), 1100);
+}
+
+
 export function runCode(editor, output) {
   const code = editor.innerText;
   output.innerHTML = "";

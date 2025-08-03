@@ -6,6 +6,7 @@
   --output-bg: #202020;
   --btn-bg: #444;
   --btn-text: #fff;
+    --caret: rgb(236, 229, 224);
 }
 
 /* Light Theme */
@@ -16,4 +17,14 @@
   --output-bg: #f5f5f5;
   --btn-bg: #ddd;
   --btn-text: #000;
+    --caret: #222;
+}
+
+#theme-toggle {
+  transition: transform 0.5s ease, background 0.3s, color 0.3s;
+  font-size: 1.1rem;
+}
+
+#theme-toggle.rotating {
+  transform: rotate(360deg);
 }

@@ -4,6 +4,7 @@ import {
   highlightCurrentLine,
   logOutput,
   runCode,
+  spawnFloatingEmoji,
   toggleRunButton,
   updateLineNumbers,
 } from "./utils/utils.js";
@@ -99,7 +100,22 @@ document.addEventListener("DOMContentLoaded", () => {
   editor.addEventListener("click", () => highlightCurrentLine(editor, lineNumbers));
 
   themeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("light-theme");
+    //  document.body.classList.toggle("light-theme");
+
+    themeToggle.classList.add("rotating");
+
+    const isLight = document.body.classList.contains("light-theme");
+
+    document.body.classList.toggle("light-theme", !isLight);
+    document.body.classList.toggle("dark-theme", isLight);
+
+    themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Toggle Theme";
+
+    spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
+
+    setTimeout(() => {
+      themeToggle.classList.remove("rotating");
+    }, 500);
   });
 
   runBtn.addEventListener("click", () => runCode(editor, output));
