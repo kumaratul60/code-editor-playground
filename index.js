@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const themeToggle = document.getElementById("theme-toggle");
   const runBtn = document.getElementById("run-btn");
   const highlighted = document.getElementById("highlighted-code");
+  const copyBtn = document.getElementById("copy-btn");
 
   // editor.focus();
   requestAnimationFrame(() => editor.focus());
@@ -29,6 +30,19 @@ document.addEventListener("DOMContentLoaded", () => {
     highlightEditorSyntax(editor, highlighted);
   });
   observer.observe(editor, { childList: true, subtree: true, characterData: true });
+
+  copyBtn.addEventListener("click", () => {
+    const code = editor.innerText;
+
+    try {
+      navigator.clipboard.writeText(code).then(() => {
+        copyBtn.textContent = "✅";
+        setTimeout(() => (copyBtn.textContent = "📋"), 1000);
+      });
+    } catch (err) {
+      alert("Failed to copy code to clipboard.");
+    }
+  });
 
   editor.addEventListener("scroll", () => {
     lineNumbers.scrollTop = editor.scrollTop;
