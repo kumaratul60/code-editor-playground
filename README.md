@@ -1,21 +1,25 @@
 # 🧠 JavaScript Code Editor — Built from Scratch
 
-A powerful in-browser JavaScript code editor that runs and analyzes code in real-time — **built completely from scratch** using **vanilla JS, HTML & CSS**. No frameworks. No dependencies. 100% handcrafted logic.
+[![wakatime](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778.svg)](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778)
+
+> A blazing-fast, zero-dependency, in-browser code editor — built from scratch using **pure HTML, CSS, and JavaScript**.
+> Beyond editing: this editor **analyzes**, **profiles**, and **visualizes** your JavaScript in real time.
+> A code editor with notepad code, no AI, no auto-complete.
 
 ---
 
+## 🚀 Why I Built This
 
-## 🛠️ Built With
+Most online editors (CodePen, JSFiddle, etc.) are great for prototyping, but they don't show **what's really happening** behind the scenes and take time to load and run + aid.
+I wanted to build an editor that’s not just about **writing code**, but about **understanding code** — with **execution timing**, **loop tracking**, **async/sync analysis**, and more.
 
-| Tech         | Used?       |
-| ------------ | ----------- |
-| JavaScript   | ✅ Vanilla   |
-| HTML/CSS     | ✅ Custom UI |
-| Libraries    | ❌ None      |
-| Frameworks   | ❌ None      |
-| Bundlers     | ❌ None      |
-| Prettier     | ❌ Not used  |
-| Webpack/Vite | ❌ Not used  |
+So I built this:
+
+- ✅ No frameworks
+- ✅ No build tools
+- ✅ No dependencies
+- ✅ Full control over console + output rendering
+- ✅ Deep stats per run
 
 ## ✨ Features
 
@@ -52,13 +56,16 @@ A powerful in-browser JavaScript code editor that runs and analyzes code in real
 ## 📊 Real-Time Summary Bar
 
 A sticky UI bar shows you:
+
 - in dev
+
 ```txt
 ⏱️ Total Time: 18.2ms
 🧩 3 func | 🔁 2 loops | ⏳ 1 async | 🐌 slow: 7.1ms
+```
 
+## Future Features (Planned)
 
- Future Features (Planned)
 🔜 Code formatting (Prettier-lite formatting)
 
 ✅ Matching bracket highlighting
@@ -71,3 +78,50 @@ A sticky UI bar shows you:
 
 🔜 Plugin support
 
+## 🧪 Example Code You Can Run
+
+```js
+function heavySyncTask() {
+  for (let i = 0; i < 1e6; i++) {}
+}
+async function fetchData() {
+  await new Promise((r) => setTimeout(r, 150));
+  console.log("Data received!");
+}
+console.log("Start");
+heavySyncTask();
+fetchData();
+console.log("End");
+```
+
+```js
+async function sequentialCalls() {
+  console.time("Sequential");
+  const todo1 = await fetch("https://jsonplaceholder.typicode.com/todos/1").then((r) => r.json());
+  const todo2 = await fetch("https://jsonplaceholder.typicode.com/todos/2").then((r) => r.json());
+  console.log("Todo 1:", todo1);
+  console.log("Todo 2:", todo2);
+  console.timeEnd("Sequential");
+}
+
+async function parallelCalls() {
+  console.time("Parallel");
+  const [todo1, todo2] = await Promise.all([
+    fetch("https://jsonplaceholder.typicode.com/todos/1").then((r) => r.json()),
+    fetch("https://jsonplaceholder.typicode.com/todos/2").then((r) => r.json()),
+  ]);
+  console.log("Todo 1:", todo1);
+  console.log("Todo 2:", todo2);
+  console.timeEnd("Parallel");
+}
+
+// Run one at a time to compare:
+sequentialCalls();
+// parallelCalls();
+```
+
+## TL;DR
+
+This editor is not just about writing code. It’s about understanding code, still it is in building phase.
+
+Unlike most editors focused on writing & sharing, this one gives you deep visibility into how your code performs, all in pure JavaScript with no frameworks, plugins, or abstractions.
