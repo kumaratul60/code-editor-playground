@@ -115,6 +115,30 @@ header h2 {
   flex-wrap: wrap;
 }
 
+.execution-time {
+  font-size: 0.85rem;
+  margin-top: 8px;
+  color: var(--text-dim, #aaa);
+}
+
+.execution-time.error {
+  color: red;
+}
+
+.console-log {
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin: 2px 0;
+}
+.log-time {
+  color: #888;
+  margin-right: 4px;
+}
+.log-message {
+  color: var(--text);
+}
+
+
 /* button {
   background: var(--btn-bg);
   color: var(--btn-text);

@@ -1,13 +1,12 @@
-import { formatCode } from "./utils/formatCode.js";
-import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
 import {
   highlightCurrentLine,
-  logOutput,
-  runCode,
   spawnFloatingEmoji,
   toggleRunButton,
   updateLineNumbers,
-} from "./utils/utils.js";
+} from "./utils/commonUtils.js";
+import { formatCode } from "./utils/formatCode.js";
+import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
+import { logOutput, runCode } from "./utils/runCode.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const editor = document.getElementById("code-text");

@@ -38,3 +38,5 @@ export function formatCode(input) {
   formatted = normalizeSpacing(formatted);
   return formatted.trim();
 }
+
+

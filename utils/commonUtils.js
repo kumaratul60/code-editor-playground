@@ -36,26 +36,12 @@ export function spawnFloatingEmoji(targetBtn, emojiChar = "☀️") {
   setTimeout(() => emoji.remove(), 1100);
 }
 
-
-export function runCode(editor, output) {
-  const code = editor.innerText;
-  output.innerHTML = "";
-  try {
-    const result = eval(code);
-    if (result !== undefined) {
-      logOutput(result, output);
-    }
-  } catch (err) {
-    logOutput(err.message, output, true);
-  }
-}
-
-export function logOutput(msg, output, isError = false) {
-  const div = document.createElement("div");
-  div.innerText = typeof msg === "object" ? JSON.stringify(msg, null, 2) : msg;
-  div.style.color = isError ? "red" : "lightgreen";
-  output.appendChild(div);
-}
+// export function logOutput(msg, output, isError = false) {
+//   const div = document.createElement("div");
+//   div.innerText = typeof msg === "object" ? JSON.stringify(msg, null, 2) : msg;
+//   div.style.color = isError ? "red" : "lightgreen";
+//   output.appendChild(div);
+// }
 
 export function updateLineNumbers(editor, lineNumbers) {
   const content = editor.textContent.replace(/\u200B/g, "");
