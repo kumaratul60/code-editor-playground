@@ -3,6 +3,11 @@ window.__sessionStats = {
   totalAsyncTime: 0,
   asyncCallCount: 0,
   longestAsync: 0,
+  shortestAsync: 0,
+  totalSyncTime: 0,
+  syncCallCount: 0,
+  longestSync: 0,
+  shortestSync: 0,
 };
 
 let lastLogTime = null;
@@ -10,6 +15,20 @@ window.__asyncSteps = [];
 
 export async function runCode(editor, output) {
   clearOutput(output);
+
+  // Add this block to fully reset session stats before each run:
+  window.__asyncSteps = [];
+  window.__sessionStats = {
+    totalAsyncTime: 0,
+    asyncCallCount: 0,
+    longestAsync: 0,
+    shortestAsync: 0,
+    totalSyncTime: 0,
+    syncCallCount: 0,
+    longestSync: 0,
+    shortestSync: 0,
+  };
+
   const code = editor.innerText;
   output.innerHTML = "";
   lastLogTime = performance.now();
@@ -75,15 +94,12 @@ export async function runCode(editor, output) {
     console.warn = originalWarn;
 
     const endTime = performance.now();
-    const total = (endTime - startTime).toFixed(2);
+    const lastExecTime = endTime - startTime;
+    window.__sessionStats.lastExecTime = lastExecTime;
+    window.__sessionStats.totalExecTime += lastExecTime;
 
-    const firstAsyncStart =
-      window.__asyncSteps.length > 0 ? parseFloat(window.__asyncSteps[0].start) : endTime;
-
-    const syncTime = (firstAsyncStart - startTime).toFixed(2);
-    const asyncTime = (endTime - firstAsyncStart).toFixed(2);
-
-    logSummary({ total, syncTime, asyncTime }, output);
+    // logSummary({ total, syncTime, asyncTime }, output);
+    logSummary({ total: lastExecTime }, output);
     logAsyncSteps(output);
     logSessionStats(output);
   }
@@ -214,10 +230,24 @@ function logSummary({ total, syncTime, asyncTime }, outputEl) {
   summaryDiv.style.padding = "8px";
   summaryDiv.style.borderTop = "1px solid #ccc";
   summaryDiv.style.color = "#ccc";
+
+  //   summaryDiv.innerHTML = `
+  //     <div><strong>⏱ Total Execution:</strong> ${total} ms</div>
+  //     <div><strong>⚡ Sync:</strong> ${syncTime} ms</div>
+  //     <div><strong>🌀 Async:</strong> ${asyncTime} ms</div>
+  //   `;
+  const color =
+    total < 100
+      ? "#a6e22e" // green for fast
+      : total < 300
+      ? "#f6c343" // orange for moderate
+      : "#ff6b6b"; // red for slow
+
   summaryDiv.innerHTML = `
-    <div><strong>⏱ Total Execution:</strong> ${total} ms</div>
-    <div><strong>⚡ Sync:</strong> ${syncTime} ms</div>
-    <div><strong>🌀 Async:</strong> ${asyncTime} ms</div>
+    <div>
+      <strong>⏱ Total Execution Time:</strong>
+      <span style="color:${color}; font-weight:bold">${total.toFixed(2)} ms</span>
+    </div>
   `;
   outputEl.appendChild(summaryDiv);
 }
@@ -233,7 +263,7 @@ function logAsyncSteps(outputEl) {
   container.style.color = "#ccc";
 
   const heading = document.createElement("div");
-  heading.innerHTML = "<strong>🔍 Async Steps:</strong>";
+  heading.innerHTML = "<strong>🦀 Async Steps:</strong>";
   heading.style.marginBottom = "6px";
   container.appendChild(heading);
 
@@ -261,24 +291,85 @@ function logAsyncSteps(outputEl) {
 }
 
 function logSessionStats(outputEl) {
-  const { totalAsyncTime, asyncCallCount, longestAsync } = window.__sessionStats;
-  if (asyncCallCount === 0) return;
+  const {
+    totalAsyncTime = 0,
+    asyncCallCount = 0,
+    longestAsync = 0,
+    shortestAsync = 0,
+    totalSyncTime = 0,
+    syncCallCount = 0,
+    longestSync = 0,
+    shortestSync = 0,
+  } = window.__sessionStats || {};
 
-  const avgAsync = (totalAsyncTime / asyncCallCount).toFixed(2);
+  const avgAsync = asyncCallCount ? (totalAsyncTime / asyncCallCount).toFixed(2) : "0.00";
+  const avgSync = syncCallCount ? (totalSyncTime / syncCallCount).toFixed(2) : "0.00";
 
-  const container = document.createElement("div");
-  container.style.marginTop = "1em";
-  container.style.borderTop = "1px solid #ccc";
-  container.style.padding = "8px";
-  container.style.color = "#ccc";
+  const totalExecutionTime = totalAsyncTime + totalSyncTime;
+  const asyncPercent = totalExecutionTime
+    ? ((totalAsyncTime / totalExecutionTime) * 100).toFixed(1)
+    : "0.0";
+  const syncPercent = totalExecutionTime
+    ? ((totalSyncTime / totalExecutionTime) * 100).toFixed(1)
+    : "0.0";
 
-  container.innerHTML = `
-    <div><strong>📊 Session Stats:</strong></div>
-    <div>• Avg Async Duration: ${avgAsync} ms</div>
-    <div>• Longest Async Step: ${longestAsync.toFixed(2)} ms</div>
-    <div>• Total Async Time: ${totalAsyncTime.toFixed(2)} ms</div>
-    <div>• Async Calls Count: ${asyncCallCount}</div>
+  const colorize = (value) => {
+    const val = parseFloat(value);
+    if (val < 100) return "#a6e22e"; // fast - green
+    if (val < 300) return "#f6c343"; // medium - orange
+    return "#ff6b6b"; // slow - red
+  };
+
+  const createRow = (label, value, unit = "ms") => {
+    const color = colorize(value);
+    return `<tr>
+      <td style="padding-right:12px;">${label}</td>
+      <td><span style="color:${color}; font-weight:bold">${parseFloat(value).toFixed(
+      2
+    )} ${unit}</span></td>
+    </tr>`;
+  };
+
+  const percentageBar = `
+    <div style="margin-top:10px;">
+      <strong>⚖️ Execution Breakdown</strong>
+      <div style="margin-top:4px; background:#222; border:1px solid #444; border-radius:4px; overflow:hidden; height:20px; width:100%;">
+        <div style="float:left; background:#61dafb; width:${asyncPercent}%; height:100%; text-align:center; font-size:12px; line-height:20px; color:#000;">
+          ${asyncPercent}% Async
+        </div>
+        <div style="float:left; background:#dcdcdc; width:${syncPercent}%; height:100%; text-align:center; font-size:12px; line-height:20px; color:#000;">
+          ${syncPercent}% Sync
+        </div>
+      </div>
+    </div>
   `;
 
+  const tableHTML = `
+    <div style="margin-top: 1em; border-top: 1px solid #ccc; padding: 8px; color: #ccc;">
+      <div><strong>📊 Session Stats:</strong></div>
+      <table style="margin-top: 6px; font-size: 14px; color: #ccc;">
+        <tbody>
+          <tr><td colspan="2"><strong>🔁 Async</strong></td></tr>
+          ${createRow("Avg Async Duration", avgAsync)}
+          ${createRow("Longest Async", longestAsync)}
+          ${createRow("Fastest Async", shortestAsync || 0)}
+          ${createRow("Total Async Time", totalAsyncTime)}
+          ${createRow("Async Calls Count", asyncCallCount, "")}
+
+          <tr><td colspan="2" style="padding-top:8px;"><strong>⚡ Sync</strong></td></tr>
+          ${createRow("Avg Sync Duration", avgSync)}
+          ${createRow("Longest Sync", longestSync)}
+          ${createRow("Fastest Sync", shortestSync || 0)}
+          ${createRow("Total Sync Time", totalSyncTime)}
+          ${createRow("Sync Calls Count", syncCallCount, "")}
+        </tbody>
+      </table>
+
+      ${percentageBar}
+    </div>
+  `;
+
+  const container = document.createElement("div");
+  container.innerHTML = tableHTML;
   outputEl.appendChild(container);
 }
