@@ -3,6 +3,7 @@ import {
   spawnFloatingEmoji,
   toggleRunButton,
   updateLineNumbers,
+  debounceUtils
 } from "./utils/commonUtils.js";
 import { formatCode } from "./utils/formatCode.js";
 import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
@@ -175,14 +176,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // === Editor Input Handler for UI Sync ===
-  editor.addEventListener("input", () => {
-    requestAnimationFrame(() => {
-      updateLineNumbers(editor, lineNumbers);
-      toggleRunButton(editor, runBtn);
-      highlightEditorSyntax(editor, highlighted);
-    });
-  });
+  const debouncedEditorUpdate = debounceUtils(() => {
+    updateLineNumbers(editor, lineNumbers);
+    toggleRunButton(editor, runBtn);
+    highlightEditorSyntax(editor, highlighted);
+  }, 100);
+// === Editor Input Handler for UI Sync ===
+  editor.addEventListener("input", debouncedEditorUpdate);
+
+
+  // editor.addEventListener("input", () => {
+  //   requestAnimationFrame(() => {
+  //     updateLineNumbers(editor, lineNumbers);
+  //     toggleRunButton(editor, runBtn);
+  //     highlightEditorSyntax(editor, highlighted);
+  //   });
+  // });
 
   // === Highlight Current Line on Click ===
   editor.addEventListener("click", () => highlightCurrentLine(editor, lineNumbers));

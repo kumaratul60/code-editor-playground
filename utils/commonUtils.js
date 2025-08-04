@@ -78,4 +78,13 @@ export function highlightCurrentLine(editor, lineNumbers) {
 }
 
 
+export function debounceUtils(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+
 
