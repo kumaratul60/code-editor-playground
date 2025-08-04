@@ -1,44 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>JavaScript Playground</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="/favicon.png" type="image/png" />
-  <link rel="stylesheet" href="styles/styles.css" />
-  <link rel="stylesheet" href="styles/themes.css" />
-  <link rel="stylesheet" href="styles/syntax.css" />
-  <link rel="stylesheet" href="styles/dev-insights-panel.css" />
-  <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
-  <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
-  <script defer type="module" src="index.js"></script>
-</head>
-<body class="dark-theme">
-<header>
-  <h1>JavaScript Playground</h1>
-  <nav class="controls" aria-label="Editor Controls">
-    <button id="theme-toggle" aria-label="Toggle Theme">🌗 Toggle Theme</button>
-    <button id="run-btn" aria-label="Run Code">▶ Run</button>
-    <button id="copy-btn" aria-label="Copy Code">📋</button>
-  </nav>
-</header>
-<main class="playground-wrapper">
-  <section class="editor-section">
-    <div class="editor-wrapper">
-      <div id="line-numbers"></div>
-      <div class="editor-container">
-        <pre id="highlighted-code"></pre>
-        <div id="code-text" contenteditable="true" tabindex="0" aria-label="JavaScript code editor"></div>      </div>
-    </div>
-  </section>
-<!--  <div class="vertical-divider"></div>-->
-  <section class="output-section" id="output" aria-label="Output"></section>
-</main>
-<footer>
-  <div id="summary-bar">
-    <div id="exec-time">⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span></div>
-    <div id="summary-icons">🧩 0 func | 🔁 0 loops | ⏳ 0 async</div>
-  </div>
-</footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JavaScript Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="styles/themes.css" />
+    <link rel="stylesheet" href="styles/syntax.css" />
+    <link rel="stylesheet" href="styles/dev-insights-panel.css" />
+    <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
+    <script defer type="module" src="index.js"></script>
+  </head>
+  <body class="dark-theme">
+    <header>
+      <h1>JavaScript Playground</h1>
+      <nav class="controls" aria-label="Editor Controls">
+        <button id="theme-toggle" aria-label="Toggle Theme">🌗 Toggle Theme</button>
+        <button id="run-btn" aria-label="Run Code">▶ Run</button>
+        <button id="copy-btn" aria-label="Copy Code">📋</button>
+      </nav>
+    </header>
+    <main class="playground-wrapper">
+      <section class="editor-section">
+        <div class="editor-wrapper">
+          <div id="line-numbers"></div>
+          <div class="editor-container">
+            <pre id="highlighted-code"></pre>
+            <div
+              id="code-text"
+              contenteditable="true"
+              tabindex="0"
+              role="textbox"
+              aria-label="JavaScript code editor"
+              aria-multiline="true"
+            ></div>
+          </div>
+        </div>
+      </section>
+      <!--  <div class="vertical-divider"></div>-->
+      <section class="output-section" id="output" aria-label="Output"></section>
+    </main>
+    <footer>
+      <div id="summary-bar">
+        <div id="exec-time">⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span></div>
+        <div id="summary-icons">🧩 0 func | 🔁 0 loops | ⏳ 0 async</div>
+      </div>
+    </footer>
+  </body>
 </html>
