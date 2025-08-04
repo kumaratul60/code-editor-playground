@@ -124,6 +124,42 @@ sequentialCalls();
 // parallelCalls();
 ```
 
+```js
+console.time("Total Execution");
+
+function nestedLoopsProfiler() {
+  const loopStats = [];
+
+  const startOuter = performance.now();
+  for (let i = 0; i < 3; i++) {
+    const startInner = performance.now();
+    for (let j = 0; j < 5; j++) {
+      // Simulate some work
+      const temp = i * j;
+    }
+    const endInner = performance.now();
+    loopStats.push({
+      type: "Inner Loop",
+      iteration: i,
+      time: (endInner - startInner).toFixed(2) + " ms",
+    });
+  }
+  const endOuter = performance.now();
+  loopStats.unshift({
+    type: "Outer Loop",
+    iterations: 3,
+    time: (endOuter - startOuter).toFixed(2) + " ms",
+  });
+
+  console.table(loopStats);
+}
+
+nestedLoopsProfiler();
+
+console.timeEnd("Total Execution");
+
+```
+
 ## TL;DR
 - Built with vanilla JS, CSS, and HTML.
 - Uses Prettier for code formatting.

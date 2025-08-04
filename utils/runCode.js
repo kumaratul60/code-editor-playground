@@ -31,10 +31,72 @@ export async function runCode(editor, output) {
   const originalLog = console.log;
   const originalError = console.error;
   const originalWarn = console.warn;
+  const originalTable = console.table;
+  const originalTime = console.time;
+  const originalTimeEnd = console.timeEnd;
+
+  const timeLabels = {};
+
 
   console.log = (...args) => logWithTimestamp(args, output, "log");
   console.error = (...args) => logWithTimestamp(args, output, "error");
   console.warn = (...args) => logWithTimestamp(args, output, "warn");
+
+  console.time = (label = 'default') => {
+    timeLabels[label] = performance.now();
+  };
+  console.timeEnd = (label = 'default') => {
+    const end = performance.now();
+    const start = timeLabels[label];
+    if (start) {
+      const duration = (end - start).toFixed(3);
+      logWithTimestamp([`${label}: ${duration} ms`], output, "log");
+      delete timeLabels[label];
+    } else {
+      logWithTimestamp([`${label}: no such label`], output, "log");
+    }
+  };
+
+  console.table = (data, columns) => {
+    let html = '<table style="border-collapse:collapse;margin:6px 0 12px 0;font-size:13px;">';
+    let keys = [];
+
+    // Determine columns
+    if (Array.isArray(data)) {
+      if (data.length === 0) {
+        logWithTimestamp(['[empty table]'], output, "log");
+        return;
+      }
+      keys = columns || Object.keys(data[0]);
+    } else if (typeof data === "object" && data !== null) {
+      keys = columns || Object.keys(data);
+      data = [data];
+    } else {
+      logWithTimestamp([String(data)], output, "log");
+      return;
+    }
+
+    // Header
+    html += '<tr>';
+    html += '<th style="border:1px solid #444;padding:2px 8px;background:#222;color:#f6c343;">(index)</th>';
+    keys.forEach(k => {
+      html += `<th style="border:1px solid #444;padding:2px 8px;background:#222;color:#f6c343;">${k}</th>`;
+    });
+    html += '</tr>';
+
+    // Rows
+    data.forEach((row, i) => {
+      html += '<tr>';
+      html += `<td style="border:1px solid #444;padding:2px 8px;color:#888;">${i}</td>`;
+      keys.forEach(k => {
+        html += `<td style="border:1px solid #444;padding:2px 8px;color:#ccc;">${row[k] !== undefined ? row[k] : ''}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += '</table>';
+    logWithTimestamp([html], output, "log");
+  };
 
   const code = editor.innerText;
 
@@ -60,8 +122,6 @@ export async function runCode(editor, output) {
 `;
 
   try {
-
-
 
     //  Execute Instrumented Code with startTime and code as arguments
     const wrappedCode = `(function(startTime, code) { 
@@ -91,6 +151,9 @@ export async function runCode(editor, output) {
     console.log = originalLog;
     console.error = originalError;
     console.warn = originalWarn;
+    console.table = originalTable;
+    console.time = originalTime;
+    console.timeEnd = originalTimeEnd;
   }
 }
 
@@ -169,8 +232,17 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
 
   const items = Array.isArray(message) ? message : [message];
   items.forEach((item) => {
-    messageSpan.appendChild(renderValue(item));
-    messageSpan.appendChild(document.createTextNode(" "));
+    // messageSpan.appendChild(renderValue(item));
+    // messageSpan.appendChild(document.createTextNode(" "));
+    if (typeof item === "string" && item.trim().startsWith("<table")) {
+      // Render as HTML table
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = item;
+      messageSpan.appendChild(wrapper.firstChild);
+    } else {
+      messageSpan.appendChild(renderValue(item));
+      messageSpan.appendChild(document.createTextNode(" "));
+    }
   });
 
   logLine.appendChild(timeMeta);
