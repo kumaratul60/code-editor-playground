@@ -2,9 +2,8 @@
 
 [![wakatime](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778.svg)](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778)
 
-> A blazing-fast, zero-dependency, in-browser code editor — built from scratch using **pure HTML, CSS, and JavaScript**.
-> Beyond editing: this editor **analyzes**, **profiles**, and **visualizes** your JavaScript in real time.
-> A code editor with notepad code, no AI, no auto-complete.
+> A modern JavaScript code editor playground with real-time code analysis, developer insights, and a non-intrusive floating insights sidebar.
+
 
 ---
 
@@ -47,30 +46,41 @@ So I built this:
 
 ---
 
-## 🚀 Live Preview
+## Features
 
-> [👉 Click here to try it out (Live Demo)](https://codepi.vercel.app/)
+- **Live JavaScript Editing & Execution**: Write and run JS code instantly in the browser.
+- **Syntax Highlighting**: Colorful, readable code with real-time highlighting.
+- **Code Analysis & Metrics**:
+  - Function, loop, and async operation counts
+  - Complexity, maintainability, and efficiency scores
+  - Performance profiling and execution time
+- **Visual Developer Insights**:
+  - Floating sidebar ( icon, lower-right) shows:
+    - Code structure visualization (functions, loops, async)
+    - Execution hotspot visualization
+    - Key metrics and recommendations
+- **Minimal, Responsive UI**: Sidebar overlays the app, does not shift layout.
 
 ---
 
-## 📊 Real-Time Summary Bar
-
-A sticky UI bar shows you:
-
-- in dev
+## File Structure
 
 ```txt
 ⏱️ Total Time: 18.2ms
 🧩 3 func | 🔁 2 loops | ⏳ 1 async | 🐌 slow: 7.1ms
 ```
 
-## Future Features (Planned)
+---
 
-🔜 Code formatting (Prettier-lite formatting)
+## How the Developer Insights Sidebar Works
 
-✅ Matching bracket highlighting
-
-🔜 Real-time AST parsing (optional)
+- ** Button**: Click the floating icon in the lower-right to open/close the sidebar.
+- **Sidebar Panel**: Overlays the app, showing:
+  - Code metrics (functions, loops, async, complexity, etc.)
+  - Visualizations for code structure and execution hotspots
+  - Performance and maintainability scores
+  - Optimization tips
+- **Non-Intrusive**: Sidebar does not take up space or shift your editor/output.
 
 🔜 Save/load local files
 
@@ -121,7 +131,7 @@ sequentialCalls();
 ```
 
 ## TL;DR
-
+- Built with vanilla JS, CSS, and HTML.
+- Uses Prettier for code formatting.
 This editor is not just about writing code. It’s about understanding code, still it is in building phase.
-
 Unlike most editors focused on writing & sharing, this one gives you deep visibility into how your code performs, all in pure JavaScript with no frameworks, plugins, or abstractions.
