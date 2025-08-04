@@ -1,11 +1,4 @@
-/**
- * =============================================================================
- * SECTION 1: GLOBAL STATE AND INITIALIZATION
- *
- * Manages the global state for tracking asynchronous operations and session
- * statistics across multiple code executions.
- * =============================================================================
- */
+
 
 // Global object to track performance statistics across a session.
 window.__sessionStats = {
@@ -25,24 +18,14 @@ window.__asyncSteps = [];
 // Timestamp of the last log operation to calculate deltas.
 let lastLogTime = null;
 
-/**
- * =============================================================================
- * SECTION 2: CORE EXECUTION LOGIC
- *
- * The main `runCode` function that takes code from an editor, instruments it
- * for performance tracking, executes it, and logs the output.
- * =============================================================================
- */
-
 export async function runCode(editor, output) {
-  // 1. --- Execution Setup ---
+  // 1. --- Initialization ---
   clearOutput(output);
   resetSessionStats();
   lastLogTime = performance.now();
   const startTime = performance.now();
 
-  // 2. --- Console Overriding ---
-  // Hijack console methods to provide custom logging with timestamps.
+  // 2. --- Console Override Setup ---
   const originalLog = console.log;
   const originalError = console.error;
   const originalWarn = console.warn;
@@ -51,74 +34,177 @@ export async function runCode(editor, output) {
   console.error = (...args) => logWithTimestamp(args, output, "error");
   console.warn = (...args) => logWithTimestamp(args, output, "warn");
 
-  // 3. --- Code Instrumentation ---
-  // Wrap the user's code to intercept and time `await` calls.
   const code = editor.innerText;
+
+  // 3. --- Instrumentation Template ---
   const instrumentedCode = `
-  (async () => {
-    window.__trackAsync = async function(label, fn) {
-      const start = performance.now();
-      const startStr = (start - ${startTime}).toFixed(2);
-      let result;
+    // ===== 1. INITIALIZATION =====
+    window.__sessionStats = window.__sessionStats || {
+      functionTimings: {},
+      totalAsyncTime: 0,
+      totalSyncTime: 0,
+      asyncCallCount: 0,
+      syncCallCount: 0,
+      longestAsync: 0,
+      shortestAsync: Infinity,
+      longestSync: 0,
+      shortestSync: Infinity
+    };
 
-      try {
-        result = await fn();
-        return result;
-      } finally {
-        const duration = performance.now() - start;
+    // ===== 2. CORE TRACKING FUNCTIONS =====
+    const trackFunction = (fn, name, isAsync = false) => {
+      return function(...args) {
+        const start = performance.now();
+        if (isAsync) {
+          return Promise.resolve(fn.apply(this, args))
+            .then(res => {
+              const end = performance.now();
+              recordFunctionTiming(name, start, end, true);
+              return res;
+            })
+            .catch(err => {
+              const end = performance.now();
+              recordFunctionTiming(name, start, end, true);
+              throw err;
+            });
+        }
+        try {
+          const result = fn.apply(this, args);
+          const end = performance.now();
+          recordFunctionTiming(name, start, end, false);
+          return result;
+        } catch (err) {
+          const end = performance.now();
+          recordFunctionTiming(name, start, end, false);
+          throw err;
+        }
+      };
+    };
 
-        window.__asyncSteps = window.__asyncSteps || [];
-        window.__asyncSteps.push({
-          label,
-          start: startStr,
-          duration: duration.toFixed(2),
-        });
+    const recordFunctionTiming = (name, start, end, isAsync) => {
+      const duration = end - start;
+      const stats = window.__sessionStats;
+      const timingData = { start, end, duration, async: isAsync, timestamp: performance.now() };
+      if (!stats.functionTimings[name]) {
+        stats.functionTimings[name] = [];
+      }
+      stats.functionTimings[name].push(timingData);
 
-        window.__sessionStats = window.__sessionStats || {};
-        const s = window.__sessionStats;
-
-        s.totalAsyncTime = (s.totalAsyncTime || 0) + duration;
-        s.asyncCallCount = (s.asyncCallCount || 0) + 1;
-        s.longestAsync = Math.max(s.longestAsync || 0, duration);
-        s.shortestAsync =
-          s.shortestAsync === undefined
-            ? duration
-            : Math.min(s.shortestAsync, duration);
+      if (isAsync) {
+        stats.totalAsyncTime += duration;
+        stats.asyncCallCount += 1;
+        stats.longestAsync = Math.max(stats.longestAsync, duration);
+        stats.shortestAsync = Math.min(stats.shortestAsync, duration);
+      } else {
+        stats.totalSyncTime += duration;
+        stats.syncCallCount += 1;
+        stats.longestSync = Math.max(stats.longestSync, duration);
+        stats.shortestSync = Math.min(stats.shortestSync, duration);
       }
     };
 
-    const await_ = async (p) => window.__trackAsync("anonymous", () => p);
+    // ===== 3. ASYNC OPERATION TRACKING =====
+    window.__trackAsync = async function(label, fn) {
+      const start = performance.now();
+      try {
+        return await fn();
+      } finally {
+        const duration = performance.now() - start;
+        window.__asyncSteps = window.__asyncSteps || [];
+        window.__asyncSteps.push({
+          label,
+          start: (start - startTime).toFixed(2),
+          duration: duration.toFixed(2),
+        });
+      }
+    };
 
-    ${code}
+    // ===== 4. FUNCTION INSTRUMENTATION =====
+    // Execute user code to define functions in the global scope
+    eval(code);
 
-  })()
-`;
+    // Find and wrap all function declarations
+    const functionRegex = /(?:function\\s+(\\w+)|const\\s+(\\w+)\\s*=\\s*(?:async\\s*)?\\([^)]*\\)\\s*=>|(\\w+)\\s*=\\s*(?:async\\s*)?function\\s*\\([^)]*\\))/g;
+    const context = typeof window !== 'undefined' ? window : globalThis;
+    const functionNameSet = new Set();
+    let match;
+    while ((match = functionRegex.exec(code)) !== null) {
+      const name = match[1] || match[2] || match[3];
+      if (name) functionNameSet.add(name);
+    }
+    functionNameSet.forEach(name => {
+      try {
+        if (context[name] && typeof context[name] === 'function' && !name.startsWith('__')) {
+          const original = context[name];
+          const isAsync = original.constructor.name === 'AsyncFunction' || /^\\s*async/.test(original.toString().trim());
+          context[name] = trackFunction(original, name, isAsync);
+        }
+      } catch (e) {
+        console.warn(\`Could not instrument function \${name}:\`, e);
+      }
+    });
 
-  // 4. --- Execution and Finalization ---
+    // ===== 5. FETCH API INSTRUMENTATION =====
+    const originalFetch = window.fetch;
+    window.fetch = async function(resource, init) {
+      const start = performance.now();
+      let url = 'unknown';
+      try {
+        if (typeof resource === 'string') {
+          url = resource.split('?')[0];
+        } else if (resource?.url) {
+          url = resource.url.split('?')[0];
+        }
+        const response = await originalFetch.call(this, resource, init);
+        const end = performance.now();
+        recordFunctionTiming(\`fetch:\${url}\`, start, end, true);
+        return response;
+      } catch (error) {
+        const end = performance.now();
+        recordFunctionTiming(\`fetch:\${url}\`, start, end, true);
+        throw error;
+      }
+    };
+  `;
+
   try {
-    await eval(instrumentedCode);
+    // 4. --- Execute Instrumented Code with startTime and code as arguments ---
+    const wrappedCode = `(function(startTime, code) { 
+  ${instrumentedCode} 
+})(${startTime}, \`${code.replace(/`/g, '\\`')}\`);`;
+
+    await eval(wrappedCode);
+
+    // 5. --- Log Execution Statistics ---
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    console.log('Code executed in', executionTime.toFixed(2), 'ms');
+
+    // 6. --- Display Detailed Statistics ---
+    if (window.__sessionStats) {
+      console.log('Function execution statistics:', window.__sessionStats);
+    }
+    if (window.__asyncSteps) {
+      console.log('Async operation steps:', window.__asyncSteps);
+    }
+
+    // 7. --- Update UI with Analysis ---
+    const analysis = analyzeCode(code);
+    updateSummaryBarWithAnalysis(analysis, executionTime);
+    logStatsTable(output, executionTime);
+
   } catch (err) {
+    // 8. --- Error Handling ---
+    console.error('Error executing code:', err);
+    const errorTime = performance.now() - startTime;
+    const analysis = analyzeCode(code);
+    updateSummaryBarWithAnalysis(analysis, errorTime);
     logOutput([`❌ ${err.message}`], output, 0, "error");
   } finally {
-    // Restore original console functions
+    // 9. --- Cleanup ---
     console.log = originalLog;
     console.error = originalError;
     console.warn = originalWarn;
-
-    // Calculate final execution time
-    const endTime = performance.now();
-    const lastExecTime = endTime - startTime;
-
-    // Log the consolidated statistics table at the very end
-    // logStatsTable(output, lastExecTime);
-
-    updateSummaryBar(lastExecTime, {
-      functionCount: Object.keys(window.__callStats || {}).length,
-      asyncCallCount: window.__sessionStats?.asyncCallCount || 0,
-      warningCount: window.__sessionStats?.warningCount || 0,
-      loopCount: window.__loopProfile?.length || 0,
-      // slowestFunction: getSlowestFunction(window.__callStats || {}),
-    });
   }
 }
 
@@ -149,14 +235,7 @@ function logWithTimestamp(args, output, type) {
   logOutput(args, output, delta, type);
 }
 
-/**
- * =============================================================================
- * SECTION 3: OUTPUT AND LOGGING UTILITIES
- *
- * Functions responsible for clearing and rendering formatted output to the DOM.
- * This includes handling different data types and styling log messages.
- * =============================================================================
- */
+
 
 let cumulativeTime = 0;
 
@@ -280,20 +359,15 @@ function getTypeColor(type) {
   return colors[type] || colors.default;
 }
 
-/**
- * =============================================================================
- * SECTION 4: CONSOLIDATED STATISTICS REPORTING
- *
- * A single function to display the final, consolidated statistics table
- * after the code execution has finished.
- * =============================================================================
- */
+
 
 /**
  * Displays a single, consolidated table of all execution statistics.
+ * @param {HTMLElement} outputEl - The output element to append the table to
+ * @param {number} totalExecTime - Total execution time in milliseconds
  */
 function logStatsTable(outputEl, totalExecTime) {
-  // 1. --- Gather Stats ---
+  // 1. --- Extract session stats with defaults ---
   const {
     totalAsyncTime = 0,
     asyncCallCount = 0,
@@ -303,22 +377,16 @@ function logStatsTable(outputEl, totalExecTime) {
     syncCallCount = 0,
     longestSync = 0,
     shortestSync = 0,
+    functionTimings = {}
   } = window.__sessionStats || {};
+
   const steps = window.__asyncSteps || [];
+  const functionCalls = Object.entries(functionTimings);
 
   // 2. --- Helper function to create table rows ---
   const createStatRow = (label, value, unit = "ms") => {
     const numericValue = parseFloat(value);
-    // Colorize only if the value is a time in milliseconds
-    const color =
-      unit !== "ms" || isNaN(numericValue)
-        ? "#ccc"
-        : numericValue < 100
-        ? "#a6e22e"
-        : numericValue < 300
-        ? "#f6c343"
-        : "#ff6b6b";
-
+    const color = getTimeColor(numericValue, unit);
     return `
       <tr>
         <td style="padding: 2px 16px;">${label}</td>
@@ -328,126 +396,193 @@ function logStatsTable(outputEl, totalExecTime) {
       </tr>`;
   };
 
-  // 3. --- Build the HTML for the table ---
+  // Helper to get color based on time value
+  const getTimeColor = (value, unit) => {
+    if (unit !== "ms" || isNaN(value)) return "#ccc";
+    return value < 100 ? "#a6e22e" : value < 300 ? "#f6c343" : "#ff6b6b";
+  };
+
+  // 3. --- Performance Insights Section ---
+  let performanceInsights = '';
+
+  // Find slowest and fastest functions
+  if (functionCalls.length > 0) {
+    const syncCalls = functionCalls.filter(([_, times]) => times.every(t => !t.async));
+    const asyncCalls = functionCalls.filter(([_, times]) => times.some(t => t.async));
+
+    const slowestCall = functionCalls.flatMap(([name, times]) =>
+        times.map(t => ({
+          name,
+          duration: t.end - t.start,
+          async: t.async
+        }))
+    ).sort((a, b) => b.duration - a.duration)[0];
+
+    const fastestSync = syncCalls.flatMap(([name, times]) =>
+        times.filter(t => !t.async).map(t => ({
+          name,
+          duration: t.end - t.start
+        })))
+        .sort((a, b) => a.duration - b.duration)[0];
+
+    const fastestAsync = asyncCalls.flatMap(([name, times]) =>
+        times.filter(t => t.async).map(t => ({
+          name,
+          duration: t.end - t.start
+        })))
+        .sort((a, b) => a.duration - b.duration)[0];
+
+    performanceInsights = `
+      <div style="margin: 12px 0; padding: 12px; background: #2a2a2a; border-radius: 4px;">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #61dafb;">📉 Performance Insights:</div>
+        ${slowestCall ? `<div>🐢 <b>Slowest Call</b>: ${slowestCall.name} → ${slowestCall.duration.toFixed(2)}ms</div>` : ''}
+        ${fastestSync ? `<div>⚡ <b>Fastest Sync</b>: ${fastestSync.name} → ${fastestSync.duration.toFixed(2)}ms</div>` : ''}
+        ${fastestAsync ? `<div>⚡ <b>Fastest Async</b>: ${fastestAsync.name} → ${fastestAsync.duration.toFixed(2)}ms</div>` : ''}
+      </div>`;
+  }
+
+  // 4. --- Build the HTML for the table ---
   let tableHTML = `
     <div style="margin-top: 1.5em; border-top: 2px solid #555; padding: 8px 0; color: #ccc;">
+      ${performanceInsights}
       <table style="width: 100%; font-size: 14px; color: #ccc; border-collapse: collapse;">
         <tbody>`;
 
   // --- Total Execution Time ---
-  const totalTimeColor =
-    totalExecTime < 100 ? "#a6e22e" : totalExecTime < 300 ? "#f6c343" : "#ff6b6b";
   tableHTML += `
       <tr>
         <td style="padding: 8px; font-weight: bold; font-size: 1.1em; border-bottom: 1px solid #444;">⏱️ Total Execution Time</td>
-        <td style="padding: 8px; font-weight: bold; font-size: 1.1em; color: ${totalTimeColor}; border-bottom: 1px solid #444; text-align: right;">
+        <td style="padding: 8px; font-weight: bold; font-size: 1.1em; color: ${getTimeColor(totalExecTime, 'ms')}; border-bottom: 1px solid #444; text-align: right;">
           ${totalExecTime.toFixed(2)} ms
         </td>
       </tr>`;
 
   // --- Async Steps Section ---
   if (steps.length > 0) {
-    tableHTML += `<tr><td colspan="2" style="padding: 12px 8px 4px; font-weight: bold;">🦀 Async Steps Breakdown</td></tr>`;
+    tableHTML += `
+      <tr>
+        <td colspan="2" style="padding: 12px 8px 4px; font-weight: bold;">
+          🦀 Async Steps Breakdown
+        </td>
+      </tr>`;
+
     const maxDuration = Math.max(...steps.map((s) => parseFloat(s.duration))) || 1;
     steps.forEach((step, i) => {
       const duration = parseFloat(step.duration);
       const isSlow = duration > 100;
       const barWidth = Math.min((duration / maxDuration) * 100, 100);
+
       tableHTML += `
         <tr>
           <td style="padding: 2px 16px;">
-      <span style="color: ${isSlow ? "#ff6b6b" : "#ccc"};">#${i + 1} @ ${step.start}ms → <b>${
-        step.label
-      }</b> (${step.duration}ms) ${isSlow ? "⚠️" : ""}</span>
-
+            <span style="color: ${isSlow ? "#ff6b6b" : "#ccc"};">
+              #${i + 1} @ ${step.start}ms → <b>${step.label}</b> (${step.duration}ms) ${isSlow ? "⚠️" : ""}
+            </span>
           </td>
           <td style="padding: 2px 16px; text-align: right;">
-             <div style="background: #555; width: 100px; height: 10px; display: inline-block; border-radius: 3px; overflow: hidden;">
-                <div style="background: #61dafb; width: ${barWidth}%; height: 100%;"></div>
-             </div>
+            <div style="background: #555; width: 100px; height: 10px; display: inline-block; border-radius: 3px; overflow: hidden;">
+              <div style="background: #61dafb; width: ${barWidth}%; height: 100%;"></div>
+            </div>
           </td>
         </tr>`;
     });
   }
 
   // --- Session Stats Section ---
-  tableHTML += `<tr><td colspan="2" style="padding: 12px 8px 4px; font-weight: bold;">📊 Session Statistics</td></tr>`;
   const avgAsync = asyncCallCount ? totalAsyncTime / asyncCallCount : 0;
   const avgSync = syncCallCount ? totalSyncTime / syncCallCount : 0;
 
-  tableHTML += `<tr><td colspan="2" style="padding: 4px 16px; font-weight: bold; color: #61dafb;">Async</td></tr>`;
-  tableHTML += createStatRow("Total Async Time", totalAsyncTime, "ms");
-  tableHTML += createStatRow("Average Async", avgAsync, "ms");
-  tableHTML += createStatRow("Longest Async", longestAsync, "ms");
-  tableHTML += createStatRow("Async Calls", asyncCallCount, "");
-  tableHTML += createStatRow("Shortest Async", shortestAsync, "ms");
+  tableHTML += `
+    <tr>
+      <td colspan="2" style="padding: 12px 8px 4px; font-weight: bold;">
+        📊 Execution Statistics
+      </td>
+    </tr>`;
 
-  tableHTML += `<tr><td colspan="2" style="padding: 8px 16px 4px; font-weight: bold; color: #97e630ff;">Sync</td></tr>`;
-  tableHTML += createStatRow("Total Sync Time", totalSyncTime, "ms");
-  tableHTML += createStatRow("Average Sync", avgSync, "ms");
-  tableHTML += createStatRow("Longest Sync", longestSync, "ms");
-  tableHTML += createStatRow("Sync Calls", syncCallCount, "");
-  tableHTML += createStatRow("Shortest Sync", shortestSync, "ms");
+  // Async Stats
+  tableHTML += `
+    <tr>
+      <td colspan="2" style="padding: 4px 16px; font-weight: bold; color: #61dafb;">
+        Asynchronous Operations
+      </td>
+    </tr>`;
 
-  // --- Close table and container ---
+  tableHTML += createStatRow("Total Time", totalAsyncTime, "ms");
+  tableHTML += createStatRow("Average Time", avgAsync, "ms");
+  tableHTML += createStatRow("Longest Operation", longestAsync, "ms");
+  tableHTML += createStatRow("Shortest Operation", shortestAsync, "ms");
+  tableHTML += createStatRow("Total Calls", asyncCallCount, "");
+
+  // Sync Stats
+  tableHTML += `
+    <tr>
+      <td colspan="2" style="padding: 12px 16px 4px; font-weight: bold; color: #97e630;">
+        Synchronous Operations
+      </td>
+    </tr>`;
+
+  tableHTML += createStatRow("Total Time", totalSyncTime, "ms");
+  tableHTML += createStatRow("Average Time", avgSync, "ms");
+  tableHTML += createStatRow("Longest Operation", longestSync, "ms");
+  tableHTML += createStatRow("Shortest Operation", shortestSync, "ms");
+  tableHTML += createStatRow("Total Calls", syncCallCount, "");
+
+  // Close table and container
   tableHTML += `
         </tbody>
       </table>
     </div>`;
 
-  // 4. --- Append to DOM ---
-  const container = document.createElement("div");
-  container.innerHTML = tableHTML;
-  outputEl.appendChild(container);
-  outputEl.scrollTop = outputEl.scrollHeight; // Auto-scroll
+  // 5. --- Create and append the stats element ---
+  const statsElement = document.createElement("div");
+  statsElement.className = "execution-stats";
+  statsElement.style.marginTop = "1em";
+  statsElement.style.padding = "12px";
+  statsElement.style.borderRadius = "4px";
+  statsElement.style.backgroundColor = "#1e1e1e";
+  statsElement.innerHTML = tableHTML;
+
+  outputEl.appendChild(statsElement);
+  outputEl.scrollTop = outputEl.scrollHeight;
 }
 
-function updateSummaryBar(totalTime = 0, stats = {}) {
-  const execTimeDiv = document.getElementById("exec-time");
-  const summaryIconsDiv = document.getElementById("summary-icons");
+/**
+ * Analyzes the code to count functions, loops, and async operations
+ * @param {string} code - The source code to analyze
+ * @returns {Object} An object containing the analysis results
+ */
+function analyzeCode(code) {
+  // Count functions (including arrow functions, function declarations, and methods)
+  const functionCount = (code.match(/\bfunction\s+\w+\s*\(|\bconst\s+\w+\s*=\s*[^=]*=>|\b\w+\s*\([^)]*\)\s*=>/g) || []).length;
 
-  if (!execTimeDiv || !summaryIconsDiv) {
-    console.warn("Summary bar elements missing");
-    return;
-  }
+  // Count loops (for, while, do-while, for...in, for...of)
+  const loopCount = (code.match(/\b(for|while|do\s*\{)/g) || []).length;
 
-  const timeColor = totalTime < 100 ? "#a6e22e" : totalTime < 300 ? "#f6c343" : "#ff6b6b";
+  // Count async operations (await, Promise, fetch, setTimeout, setInterval)
+  const asyncCount = (code.match(/\b(await|Promise\.|fetch\s*\(|setTimeout\s*\(|setInterval\s*\()/g) || []).length;
 
-  execTimeDiv.innerHTML = `⏱️ Total Time: <span style="color: ${timeColor}">${totalTime.toFixed(
-    2
-  )} ms</span>`;
-
-  const {
-    functionCount = 0,
-    loopCount = 0,
-    warningCount = 0,
-    slowestFunction = null,
-    asyncCallCount = 0,
-  } = stats;
-
-  const summaryItems = [];
-
-  if (functionCount > 0) summaryItems.push(`🧩 ${functionCount} func`);
-  if (loopCount > 0) summaryItems.push(`🔁 ${loopCount} loops`);
-  if (asyncCallCount > 0) summaryItems.push(`⏳ ${asyncCallCount} async`);
-  if (slowestFunction) summaryItems.push(`🐌 slow: ${slowestFunction.duration.toFixed(1)}ms`);
-  if (warningCount > 0) summaryItems.push(`⚠️ ${warningCount} warn`);
-
-  // summaryIconsDiv.innerText =
-  //   summaryItems.length > 0 ? summaryItems.join(" | ") : "🧩 0 func | 🔁 0 loops | ⏳ 0 async";
+  return {
+    functions: functionCount,
+    loops: loopCount,
+    asyncOps: asyncCount
+  };
 }
 
+/**
+ * Updates the summary bar with code analysis results and execution time
+ * @param {Object} analysis - The analysis results from analyzeCode
+ * @param {number} [executionTime=0] - Total execution time in milliseconds
+ */
+function updateSummaryBarWithAnalysis(analysis, executionTime = 0) {
+  const summaryElement = document.getElementById('summary-icons');
+  const execTimeElement = document.getElementById('exec-time');
 
-function getSlowestFunction(callStats = {}) {
-  let slowest = null;
-
-  for (const [fn, times] of Object.entries(callStats)) {
-    for (const t of times) {
-      if (!slowest || t.duration > slowest.duration) {
-        slowest = { name: fn, duration: t.duration };
-      }
-    }
+  if (summaryElement) {
+    summaryElement.innerHTML = `🧩 ${analysis.functions} func | 🔁 ${analysis.loops} loops | ⏳ ${analysis.asyncOps} async`;
   }
 
-  return slowest;
+  if (execTimeElement) {
+    const timeColor = executionTime < 100 ? "#a6e22e" : executionTime < 300 ? "#f6c343" : "#ff6b6b";
+    execTimeElement.innerHTML = `⏱️ Total Time: <span style="color: ${timeColor}">${executionTime.toFixed(2)} ms</span>`;
+  }
 }
