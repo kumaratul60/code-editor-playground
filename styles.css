@@ -111,11 +111,11 @@ header h1 {
 }
 
 /* Editor container (layers code and highlight) */
-#editor-container, .editor-container {
+.editor-container {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
+  min-height: 300px;
   display: flex;
   background: transparent;
   overflow: hidden;
@@ -166,7 +166,7 @@ header h1 {
 }
 #output {
   width: 100%;
-  min-height: 60px;
+  min-height: 300px;
   font-family: inherit;
   background: transparent;
   margin: 0;

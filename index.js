@@ -7,6 +7,7 @@ import {
 import { formatCode } from "./utils/formatCode.js";
 import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
 import { logOutput, runCode } from "./utils/runCode.js";
+import {handleEditorHelpers} from "./utils/editorAutoCompleteHelper.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // === DOM Element References ===
@@ -112,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Keyboard Handling for Editor ===
   editor.addEventListener("keydown", (e) => {
+    if (handleEditorHelpers(e, editor, lineNumbers, highlighted)) return;
     if (e.key === "Enter" && !e.ctrlKey) {
       e.preventDefault();
 
@@ -152,14 +154,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Ctrl+Enter: Format and run code
     if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
-      const formatted = formatCode(editor.innerText);
+      const formatted = formatCode(editor.textContent);
       editor.innerText = formatted;
+      focusEditorAtEnd()
       requestAnimationFrame(() => {
         highlightEditorSyntax(editor, highlighted);
         updateLineNumbers(editor, lineNumbers);
         toggleRunButton(editor, runBtn);
         runCode(editor, output);
-        focusEditorAtEnd();
+        focusEditorAtEnd(); // ensure caret is at end after formatting
       });
       return;
     }
