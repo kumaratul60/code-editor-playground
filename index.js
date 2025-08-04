@@ -18,7 +18,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const copyBtn = document.getElementById("copy-btn");
 
   // editor.focus();
-  requestAnimationFrame(() => editor.focus());
+  // requestAnimationFrame(() => editor.focus());
+  requestAnimationFrame(() => {
+    editor.focus();
+    // Move caret to end
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
 
   updateLineNumbers(editor, lineNumbers);
   toggleRunButton(editor, runBtn);
@@ -30,6 +40,20 @@ document.addEventListener("DOMContentLoaded", () => {
     highlightEditorSyntax(editor, highlighted);
   });
   observer.observe(editor, { childList: true, subtree: true, characterData: true });
+
+  function focusEditorAtEnd() {
+    editor.focus();
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  document.querySelector('.editor-section').addEventListener('click', () => {
+    if (document.activeElement !== editor) editor.focus();
+  });
 
   copyBtn.addEventListener("click", () => {
     const code = editor.innerText;
@@ -153,22 +177,12 @@ function insertAtCursor(code) {
   editor.addEventListener("click", () => highlightCurrentLine(editor, lineNumbers));
 
   themeToggle.addEventListener("click", () => {
-    //  document.body.classList.toggle("light-theme");
-
     themeToggle.classList.add("rotating");
-
     const isLight = document.body.classList.contains("light-theme");
-
     document.body.classList.toggle("light-theme", !isLight);
-    document.body.classList.toggle("dark-theme", isLight);
-
     themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Toggle Theme";
-
     spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
 
-    setTimeout(() => {
-      themeToggle.classList.remove("rotating");
-    }, 500);
   });
 
   runBtn.addEventListener("click", () => runCode(editor, output));

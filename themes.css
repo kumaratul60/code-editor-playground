@@ -11,6 +11,9 @@
   --header-text: #fff;
   --footer-bg: #1c1c1c;
   --footer-text: #fff;
+  --line-number-bg: #222;
+  --line-number-color: #888;
+  --line-number-border: #333;
 }
 
 /* Light Theme */
@@ -26,6 +29,9 @@
   --header-text: #222;
   --footer-bg: #f0f0f0;
   --footer-text: #222;
+  --line-number-bg: #f4f4f4;
+  --line-number-color: #aaa;
+  --line-number-border: #ddd;
 }
 
 #theme-toggle {
@@ -33,6 +39,3 @@
   font-size: 1.1rem;
 }
 
-/* #theme-toggle.rotating {
-  transform: rotate(360deg);
-} */

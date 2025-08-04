@@ -94,7 +94,7 @@ export async function runCode(editor, output) {
 
   } catch (err) {
     // Error Handling
-    console.error('Error executing code:', err);
+    // console.error('Error executing code:', err);
     const errorTime = performance.now() - startTime;
     const analysis = analyzeCode(code);
     updateSummaryBarWithAnalysis(analysis, errorTime);
