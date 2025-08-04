@@ -1,251 +1,266 @@
-/* ===== styles.css ===== */
-
 body {
-  font-family: monospace;
+  font-family: 'Fira Mono', 'Consolas', monospace;
   background: var(--bg);
   color: var(--text);
-  padding: 20px;
-  transition: background 0.2s, color 0.2s;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
+/* Editor and Output backgrounds */
+.editor-wrapper, .editor-container {
+  background: var(--editor-bg);
+}
+.output-section {
+  background: var(--output-bg);
+}
+
+/* Button styling */
+button {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+
+/* Editor caret color */
+#code-text {
+  caret-color: var(--caret);
+}
+
+/* Theme text color for all main areas */
+body,
+.editor-section,
+.output-section,
+.editor-container,
+#code-text,
+#highlighted-code,
+#output {
+  color: var(--text);
+}
+
+/* Header */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 24px 32px 12px 32px;
+  background: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 1px solid #222;
 }
-
-header h2 {
-  font-size: 1.8rem;
+header h1 {
+  font-size: 2rem;
+  margin: 0;
   background: linear-gradient(to right, #ff8a00, #e52e71);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
+/* Controls bar */
+.controls {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+/* Playground layout */
 .playground-wrapper {
   display: flex;
-  gap: 20px; /* Adds space between the editor and output sections */
-  width: 100%;
-  padding-bottom: 30px;
+  flex-direction: row;
+  gap: 24px;
+  padding: 24px 32px 80px 32px;
+  box-sizing: border-box;
 }
 
-.editor-section {
-  flex: 6; /* Takes up 60% of the space */
+/* Editor & Output sections */
+.editor-section, .output-section {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.output-section {
-  flex: 4; /* Takes up 40% of the space */
-  background: var(--output-bg);
-  padding: 10px;
-  border: 1px solid #333;
-  min-height: 60px;
-  white-space: pre-wrap;
-  max-height: 410px;
-  overflow: auto;
-   padding-bottom: 48px;
-}
-
+/* Editor wrapper (main code area) */
 .editor-wrapper {
   display: flex;
-  border: 1px solid #444;
-  background: var(--editor-bg);
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-.editor-container {
-  position: relative;
-  width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 300px;
   max-height: 500px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--editor-bg);
-  border-right: 1px solid #333;
+  overflow: auto;
+  border: 1px solid #444;
+  background: var(--editor-bg, #232323);
+  border-radius: 8px 8px 0 0;
 }
 
-.editor-container::-webkit-scrollbar,
-#output::-webkit-scrollbar {
-  width: 6px;
-}
-
-.editor-container::-webkit-scrollbar-thumb,
-#output::-webkit-scrollbar-thumb {
-  background: #666;
-  border-radius: 10px;
-}
-
-.editor-layer {
-  font-family: monospace;
-  padding: 10px;
-  min-height: 400px;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  line-height: 1.5;
-}
-
-#highlighted-code {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-  z-index: 0;
-  color: inherit;
-}
-
-#code-text {
-  position: relative;
-  z-index: 1;
-  background: transparent;
-  outline: none;
-  color: transparent;
-  caret-color: var(--caret);
-}
-
-#code-text::selection {
-  background: rgba(100, 100, 255, 0.3);
-}
-
-#code-text:focus {
-  box-shadow: inset 0 0 12px rgba(100, 150, 255, 0.2);
-  transition: box-shadow 0.3s ease;
-}
-
+/* Line numbers */
 #line-numbers {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  padding: 10px;
+  background: #222;
   color: #888;
-  font-family: monospace;
+  padding: 12px 8px 12px 0;
   user-select: none;
-}
-
-#line-numbers span {
+  min-width: 36px;
+  border-right: 1px solid #333;
+  font-size: 15px;
   line-height: 1.5;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  height: 100%;
 }
 
-/* Kept the original #output styles for background, padding, etc., and moved flex properties to .output-section */
-#output {
-  margin-top: 0; /* Removed the top margin as the gap is handled by flexbox */
-}
-
-.controls {
-  margin-top: 10px;
+/* Editor container (layers code and highlight) */
+#editor-container, .editor-container {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  background: transparent;
+  overflow: hidden;
 }
 
-.execution-time {
-  font-size: 0.85rem;
-  margin-top: 8px;
-  color: var(--text-dim, #aaa);
-}
-
-.execution-time.error {
-  color: red;
-}
-
-.console-log {
-  font-family: monospace;
+/* Code text and highlight */
+#code-text, #highlighted-code {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px;
+  background: transparent;
+  outline: none;
   white-space: pre-wrap;
-  margin: 2px 0;
+  word-break: break-word;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0;
+  box-sizing: border-box;
 }
-.log-time {
-  color: #888;
-  margin-right: 4px;
-}
-.log-message {
+#highlighted-code {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
   color: var(--text);
 }
-
-button {
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 6px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+#code-text {
   position: relative;
-  overflow: hidden;
-  margin: 4px;
+  z-index: 1;
+  color: transparent;
+  caret-color: var(--caret);
 }
 
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+/* Output section */
+.output-section {
+  background: var(--output-bg, #1a1a1a);
+  border: 1px solid #333;
+  border-radius: 8px 8px 0 0;
+  padding: 16px;
+  max-height: 410px;
+  overflow: auto;
+  font-size: 15px;
+  margin-left: 0;
+}
+#output {
+  width: 100%;
+  min-height: 60px;
+  font-family: inherit;
+  background: transparent;
+  margin: 0;
+  padding: 0;
 }
 
-button::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -75%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transform: skewX(-45deg);
-  transition: left 0.5s;
-  z-index: 0;
-  opacity: 0.3;
-}
-
-button:hover::after {
-  left: 100%;
-}
-
-button:disabled,
-button.disabled-btn {
-  background-color: #888;
-  color: #eee;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-#summary-bar{
+/* Footer */
+footer {
+  width: 100%;
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #1c1c1c;
-  color: white;
+  bottom: 0; left: 0;
+  z-index: 1000;
+}
+#summary-bar {
+  width: auto;
+  background: var(--footer-bg);
+  color: var(--footer-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 8px 32px;
+  font-size: 15px;
   border-top: 1px solid #444;
-  z-index: 1000;
-  font-family: monospace;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-  height: 30px;
+  font-family: inherit;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
+  min-height: 32px;
+}
+#memory-usage {
+  padding: 6px 32px;
+  font-size: 14px;
+  color: #7c3aed;
+  background: transparent;
 }
 
-/* ===== Responsive ===== */
+/* Button states */
+button {
+  background: var(--btn-bg, #222);
+  color: var(--btn-text, #fff);
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: all 0.2s;
+}
+button:hover, button:focus {
+  background: #333;
+  outline: none;
+}
+button:disabled {
+  background: #444;
+  color: #bbb;
+  cursor: not-allowed;
+}
 
-@media (max-width: 768px) {
-  /* Adjusted breakpoint for better responsiveness */
+/* Responsive */
+@media (max-width: 900px) {
   .playground-wrapper {
     flex-direction: column;
+    gap: 16px;
+    padding: 16px 8px 80px 8px;
   }
-
+  .editor-section, .output-section {
+    min-width: 0;
+  }
+  #summary-bar, #memory-usage {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
   .editor-wrapper {
-    flex-direction: column;
+    height: 220px;
   }
-
-  #line-numbers {
-    align-items: flex-start;
+  #code-text, #highlighted-code {
+    font-size: 13px;
+    padding: 6px;
   }
-
-  .controls {
-    flex-direction: column;
+}
+@media (max-width: 600px) {
+  header, #summary-bar, #memory-usage {
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 13px;
+  }
+  .editor-section, .output-section {
+    padding: 0;
+  }
+  .editor-wrapper {
+    height: 140px;
+  }
+  #code-text, #highlighted-code {
+    min-height: 140px;
+    font-size: 12px;
+    padding: 4px;
   }
 }

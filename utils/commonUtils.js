@@ -36,30 +36,22 @@ export function spawnFloatingEmoji(targetBtn, emojiChar = "☀️") {
   setTimeout(() => emoji.remove(), 1100);
 }
 
-// export function logOutput(msg, output, isError = false) {
-//   const div = document.createElement("div");
-//   div.innerText = typeof msg === "object" ? JSON.stringify(msg, null, 2) : msg;
-//   div.style.color = isError ? "red" : "lightgreen";
-//   output.appendChild(div);
-// }
 
 export function updateLineNumbers(editor, lineNumbers) {
-  const content = editor.textContent.replace(/\u200B/g, "");
-  const logicalLines = content.split(/\n|\r|\r\n/).length;
+  // Use innerText to get what the user actually sees (handles <div>, <br>, etc.)
+  let content = editor.innerText.replace(/\u200B/g, "");
+  let lines = content.split(/\r\n|\r|\n/);
 
-  let lineCount = logicalLines;
-
-  if (logicalLines === 1) {
-    const range = document.createRange();
-    range.selectNodeContents(editor);
-    const rects = range.getClientRects();
-    const visualLines = rects.length || 1;
-    lineCount = visualLines;
+  // Remove trailing empty lines (including those with just whitespace)
+  while (lines.length > 1 && lines[lines.length - 1].trim() === "") {
+    lines.pop();
   }
 
-  lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join(
-    ""
-  );
+  // Always show at least one line number
+  const lineCount = Math.max(1, lines.length);
+
+  // Render one <span> per line, vertical by CSS
+  lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join("");
 }
 
 export function toggleRunButton(editor, runBtn) {

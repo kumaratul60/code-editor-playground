@@ -1,49 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>JS Playground</title>
-   <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="themes.css" />
-    <link rel="stylesheet" href="./syntax.css" />
-
-    <script defer type="module" src="index.js"></script>
-  </head>
-  <body class="dark-theme">
-    <header>
-      <h2>JavaScript Playground</h2>
-
-      <div class="controls">
-        <button id="theme-toggle">🌗 Toggle Theme</button>
-        <button id="run-btn">▶ Run</button>
-        <button id="copy-btn" title="Copy code">📋</button>
+<head>
+  <meta charset="UTF-8" />
+  <title>JavaScript Playground</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="themes.css" />
+  <link rel="stylesheet" href="./syntax.css" />
+  <script defer type="module" src="index.js"></script>
+</head>
+<body class="dark-theme">
+<header>
+  <h1>JavaScript Playground</h1>
+  <nav class="controls" aria-label="Editor Controls">
+    <button id="theme-toggle" aria-label="Toggle Theme">🌗 Toggle Theme</button>
+    <button id="run-btn" aria-label="Run Code">▶ Run</button>
+    <button id="copy-btn" aria-label="Copy Code">📋</button>
+  </nav>
+</header>
+<main class="playground-wrapper">
+  <section class="editor-section">
+    <div class="editor-wrapper">
+      <div id="line-numbers"></div>
+      <div class="editor-container">
+        <pre id="highlighted-code"></pre>
+        <div id="code-text" contenteditable="true"></div>
       </div>
-    </header>
-
-    <div class="playground-wrapper">
-      <div class="editor-section">
-        <div class="editor-wrapper">
-          <div id="line-numbers"></div>
-          <div class="editor-container">
-            <div id="highlighted-code" class="editor-layer"></div>
-            <div
-              id="code-text"
-              class="editor-layer"
-              contenteditable="true"
-              spellcheck="false"
-              autofocus
-            ></div>
-          </div>
-        </div>
-      </div>
-      <div class="output-section" id="output"></div>
     </div>
-    <div id="summary-bar">
-      <div id="exec-time">⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span></div>
-      <!-- 🧩 0 func | 🔁 0 loops | ⏳ 0 async -->
-      <div id="summary-icons">🧩 0 func | 🔁 0 loops | ⏳ 0 async</div>
-    </div>
-    <div id="memory-usage" style="margin-top:8px;font-size:14px;color:#7c3aed;"></div>
-  </body>
+  </section>
+<!--  <div class="vertical-divider"></div>-->
+  <section class="output-section" id="output" aria-label="Output"></section>
+</main>
+<footer>
+  <div id="summary-bar">
+    <div id="exec-time">⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span></div>
+    <div id="summary-icons">🧩 0 func | 🔁 0 loops | ⏳ 0 async</div>
+  </div>
+  <div id="memory-usage" style="margin-top:8px;font-size:14px;color:#7c3aed;"></div>
+</footer>
+</body>
 </html>
