@@ -162,154 +162,88 @@ function getOptimizationTips(analysis, executionTime) {
  * @param {Object} analysis - The code analysis results
  * @param {number} executionTime - Execution time in milliseconds
  */
-function addDeveloperInsightsPanel(analysis, executionTime,code="") {
-    // Check if we already have an insights panel
-    let insightsPanel = document.getElementById('dev-insights-panel');
+function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
+    // Sidebar container
+    let sidebar = document.getElementById('dev-insights-sidebar');
+    if (!sidebar) {
+        sidebar = document.createElement('div');
+        sidebar.id = 'dev-insights-sidebar';
+        document.body.appendChild(sidebar);
 
-    if (!insightsPanel) {
-        // Create the panel if it doesn't exist
-        insightsPanel = document.createElement('div');
-        insightsPanel.id = 'dev-insights-panel';
-        insightsPanel.style.cssText = `
-      position: fixed;
-      bottom: 50px;
-      right: 20px;
-      background: linear-gradient(to bottom, #2d2d2d, #1e1e1e);
-      border: 1px solid #555;
-      border-radius: 8px;
-      padding: 15px;
-      font-size: 14px;
-      color: #eee;
-      z-index: 1000;
-      max-width: 350px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      transform: translateY(${document.getElementById('dev-insights-toggle')?.checked ? '0' : '95%'});
-    `;
+        // Toggle button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'dev-insights-toggle-btn';
+        toggleBtn.innerHTML = '💡';
+        sidebar.appendChild(toggleBtn);
 
-        document.body.appendChild(insightsPanel);
-
-        // Add toggle button
-        const toggleBtn = document.createElement('div');
-        toggleBtn.innerHTML = '💡 Developer Insights';
-        toggleBtn.style.cssText = `
-      padding: 8px 15px;
-      background: linear-gradient(to bottom, #444, #333);
-      border-radius: 8px 8px 0 0;
-      cursor: pointer;
-      font-weight: bold;
-      position: absolute;
-      top: -36px;
-      left: 20px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-      border: 1px solid #555;
-      border-bottom: none;
-      color: #61dafb;
-    `;
-
-        toggleBtn.onclick = function() {
-            const isVisible = insightsPanel.style.transform === 'translateY(0%)';
-            insightsPanel.style.transform = isVisible ? 'translateY(95%)' : 'translateY(0%)';
-            this.style.opacity = isVisible ? '0.9' : '1';
+        toggleBtn.onclick = function () {
+            sidebar.classList.toggle('open');
         };
-
-        insightsPanel.appendChild(toggleBtn);
     }
 
-    // Calculate additional metrics
-    const complexityScore = calculateComplexityScore(analysis);
-    const performanceRating = getPerformanceRating(executionTime);
-    const codeEfficiency = calculateCodeEfficiency(analysis);
-    const maintainabilityScore = calculateMaintainabilityScore(analysis);
-    const tips = generateOptimizationTips(analysis, executionTime);
-
-    // Get memory usage if available
-    let memoryUsage = "Not available";
-    if (performance && performance.memory && performance.memory.usedJSHeapSize) {
-        const usedMemory = performance.memory.usedJSHeapSize / (1024 * 1024);
-        const totalMemory = performance.memory.jsHeapSizeLimit / (1024 * 1024);
-        memoryUsage = `${usedMemory.toFixed(2)} MB / ${totalMemory.toFixed(0)} MB`;
+    // Panel content
+    let panel = document.getElementById('dev-insights-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'dev-insights-panel';
+        sidebar.appendChild(panel);
     }
 
-    // Update panel content with developer insights
-    insightsPanel.innerHTML = `
-    <div style="padding: 8px 15px; background: linear-gradient(to bottom, #444, #333); border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; position: absolute; top: -36px; left: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); border: 1px solid #555; border-bottom: none; color: #61dafb;">
-      💡 Developer Insights
-    </div>
-    
-    <!-- Header Section -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #444; padding-bottom: 8px;">
-      <div style="font-weight: bold; font-size: 16px; color: #61dafb;">Code Analysis Dashboard</div>
-      <div style="font-size: 12px; color: #888;">${new Date().toLocaleTimeString()}</div>
-    </div>
-    
-    <!-- Main Metrics Grid -->
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-bottom: 15px;">
-      <div style="color: #aaa;">Functions:</div>
-      <div style="font-weight: bold;">${analysis.functions}</div>
-      
-      <div style="color: #aaa;">Loops:</div>
-      <div style="font-weight: bold;">${analysis.loops}</div>
-      
-      <div style="color: #aaa;">Async Ops:</div>
-      <div style="font-weight: bold;">${analysis.asyncOps}</div>
-      
-      <div style="color: #aaa;">Complexity:</div>
-      <div style="font-weight: bold; display: flex; align-items: center;">
-        <div style="width: 60px; height: 8px; background: #333; border-radius: 4px; margin-right: 8px; overflow: hidden;">
-          <div style="height: 100%; width: ${complexityScore.score * 10}%; background: ${getGradientColor(complexityScore.score/10)}"></div>
-        </div>
-        ${complexityScore.score}/10 ${complexityScore.icon}
-      </div>
-      
-      <div style="color: #aaa;">Performance:</div>
-      <div style="font-weight: bold;">${performanceRating.label} ${performanceRating.icon}</div>
-      
-      <div style="color: #aaa;">Execution:</div>
-      <div style="font-weight: bold; color: ${executionTime < 100 ? "#a6e22e" : executionTime < 300 ? "#f6c343" : "#ff6b6b"}">
-        ${executionTime.toFixed(2)} ms
-      </div>
-      
-      <div style="color: #aaa;">Memory:</div>
-      <div style="font-weight: bold;">${memoryUsage}</div>
-      
-      <div style="color: #aaa;">Efficiency:</div>
-      <div style="font-weight: bold; display: flex; align-items: center;">
-        <div style="width: 60px; height: 8px; background: #333; border-radius: 4px; margin-right: 8px; overflow: hidden;">
-          <div style="height: 100%; width: ${codeEfficiency.percentage}%; background: ${getGradientColor(codeEfficiency.score/100)}"></div>
-        </div>
-        ${codeEfficiency.label}
-      </div>
-      
-      <div style="color: #aaa;">Maintainability:</div>
-      <div style="font-weight: bold; display: flex; align-items: center;">
-        <div style="width: 60px; height: 8px; background: #333; border-radius: 4px; margin-right: 8px; overflow: hidden;">
-          <div style="height: 100%; width: ${maintainabilityScore.score * 10}%; background: ${getGradientColor(maintainabilityScore.score/10)}"></div>
-        </div>
-        ${maintainabilityScore.label} (${maintainabilityScore.score}/10)
-      </div>
-    </div>
-    
-    <!-- Code Structure Visualization -->
-    ${createCodeStructureVisualization(analysis, analyzeFunctionRelationships(code))}
-    
-     <!-- Execution Hotspots Visualization -->
-    ${createExecutionTimeVisualization(analyzeExecutionHotspots(analysis, executionTime))}
-    
-    
-    
-    <!-- Footer -->
-    <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right; border-top: 1px solid #444; padding-top: 8px;">
-      Click header to collapse
-    </div>
-  `;
 
-    // Add click handler to toggle visibility
-    insightsPanel.querySelector('div').onclick = function() {
-        const isVisible = insightsPanel.style.transform === 'translateY(0%)';
-        insightsPanel.style.transform = isVisible ? 'translateY(95%)' : 'translateY(0%)';
-        this.style.opacity = isVisible ? '0.9' : '1';
-    };
+    panel.innerHTML = `
+      <div style="font-weight:bold; font-size:16px; color:#61dafb; margin-bottom:10px;">
+        Developer Insights
+      </div>
+      
+  <div style="margin-bottom: 12px; border-bottom: 1px solid #444; padding-bottom: 8px;">
+    <span style="font-weight: bold; font-size: 15px;">Code Analysis Dashboard</span>
+    <span style="float: right; font-size: 12px; color: #888;">${new Date().toLocaleTimeString()}</span>
+  </div>
+  <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-bottom: 15px;">
+    <div style="color: #aaa;">Functions:</div>
+    <div style="font-weight: bold;">${analysis.functions}</div>
+    <div style="color: #aaa;">Loops:</div>
+    <div style="font-weight: bold;">${analysis.loops}</div>
+    <div style="color: #aaa;">Async Ops:</div>
+    <div style="font-weight: bold;">${analysis.asyncOps}</div>
+    <div style="color: #aaa;">Complexity:</div>
+    <div style="font-weight: bold;">
+      ${calculateComplexityScore(analysis).score}/10 ${calculateComplexityScore(analysis).icon}
+    </div>
+    <div style="color: #aaa;">Performance:</div>
+    <div style="font-weight: bold;">
+      ${getPerformanceRating(executionTime).label} ${getPerformanceRating(executionTime).icon}
+    </div>
+    <div style="color: #aaa;">Execution:</div>
+    <div style="font-weight: bold; color: ${executionTime < 100 ? "#a6e22e" : executionTime < 300 ? "#f6c343" : "#ff6b6b"}">
+      ${executionTime.toFixed(2)} ms
+    </div>
+    <div style="color: #aaa;">Memory:</div>
+    <div style="font-weight: bold;">
+      ${
+        (performance && performance.memory && performance.memory.usedJSHeapSize)
+            ? `${(performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2)} MB / ${(performance.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(0)} MB`
+            : "Not available"
+    }
+    </div>
+    <div style="color: #aaa;">Efficiency:</div>
+    <div style="font-weight: bold;">
+      ${calculateCodeEfficiency(analysis).label}
+    </div>
+    <div style="color: #aaa;">Maintainability:</div>
+    <div style="font-weight: bold;">
+      ${calculateMaintainabilityScore(analysis).label} (${calculateMaintainabilityScore(analysis).score}/10)
+    </div>
+  </div>
+  <!-- Code Structure Visualization -->
+  ${createCodeStructureVisualization(analysis, analyzeFunctionRelationships(code))}
+  <!-- Execution Hotspots Visualization -->
+  ${createExecutionTimeVisualization(analyzeExecutionHotspots(analysis, executionTime))}
+  <!-- Footer -->
+  <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right; border-top: 1px solid #444; padding-top: 8px;">
+    Click 💡 to open/close
+  </div>
+    `;
 }
 
 //-----Dead Code-----
