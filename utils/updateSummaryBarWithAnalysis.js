@@ -45,7 +45,7 @@ export function analyzeCode(code) {
  * @param {Object} analysis - The analysis results from analyzeCode
  * @param {number} [executionTime=0] - Total execution time in milliseconds
  */
-export function updateSummaryBarWithAnalysis(analysis, executionTime = 0) {
+export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code="") {
     const summaryElement = document.getElementById('summary-icons');
     const execTimeElement = document.getElementById('exec-time');
 
@@ -162,7 +162,7 @@ function getOptimizationTips(analysis, executionTime) {
  * @param {Object} analysis - The code analysis results
  * @param {number} executionTime - Execution time in milliseconds
  */
-function addDeveloperInsightsPanel(analysis, executionTime) {
+function addDeveloperInsightsPanel(analysis, executionTime,code="") {
     // Check if we already have an insights panel
     let insightsPanel = document.getElementById('dev-insights-panel');
 
@@ -290,24 +290,13 @@ function addDeveloperInsightsPanel(analysis, executionTime) {
       </div>
     </div>
     
-    <!-- Performance Insights -->
-    <div style="margin-top: 15px; padding: 10px; background: rgba(97, 218, 251, 0.1); border-radius: 6px; border-left: 3px solid #61dafb;">
-      <div style="font-weight: bold; margin-bottom: 8px; color: #61dafb;">⚡ Performance Insights</div>
-      <div style="font-size: 13px; color: #ddd;">
-        ${performanceRating.description || "No specific performance insights available."}
-      </div>
-    </div>
+    <!-- Code Structure Visualization -->
+    ${createCodeStructureVisualization(analysis, analyzeFunctionRelationships(code))}
     
-    <!-- Optimization Tips -->
-    <div style="margin-top: 15px; padding: 10px; background: rgba(151, 230, 48, 0.1); border-radius: 6px; border-left: 3px solid #97e630;">
-      <div style="font-weight: bold; margin-bottom: 8px; color: #97e630;">🔧 Optimization Tips(it can make mistakes)</div>
-      ${tips.length > 0 ?
-        `<ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-          ${tips.map(tip => `<li style="margin-bottom: 5px;">${tip}</li>`).join('')}
-        </ul>` :
-        '<div style="font-size: 13px; color: #ddd;">No specific optimization tips.</div>'
-    }
-    </div>
+     <!-- Execution Hotspots Visualization -->
+    ${createExecutionTimeVisualization(analyzeExecutionHotspots(analysis, executionTime))}
+    
+    
     
     <!-- Footer -->
     <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right; border-top: 1px solid #444; padding-top: 8px;">
@@ -322,6 +311,31 @@ function addDeveloperInsightsPanel(analysis, executionTime) {
         this.style.opacity = isVisible ? '0.9' : '1';
     };
 }
+
+//-----Dead Code-----
+/*
+<!-- Performance Insights -->
+
+<div style="margin-top: 15px; padding: 10px; background: rgba(97, 218, 251, 0.1); border-radius: 6px; border-left: 3px solid #61dafb;">
+    <div style="font-weight: bold; margin-bottom: 8px; color: #61dafb;">⚡ Performance Insights</div>
+    <div style="font-size: 13px; color: #ddd;">
+        ${performanceRating.description || "No specific performance insights available."}
+    </div>
+</div>
+
+<!-- Optimization Tips -->
+<div style="margin-top: 15px; padding: 10px; background: rgba(151, 230, 48, 0.1); border-radius: 6px; border-left: 3px solid #97e630;">
+    <div style="font-weight: bold; margin-bottom: 8px; color: #97e630;">🔧 Optimization Tips(it can make mistakes)</div>
+    ${tips.length > 0 ?
+    `<ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+          ${tips.map(tip => `<li style="margin-bottom: 5px;">${tip}</li>`).join('')}
+        </ul>` :
+    '<div style="font-size: 13px; color: #ddd;">No specific optimization tips.</div>'
+}
+</div>
+ */
+
+//-----------
 
 /**
  * Calculates code efficiency based on analysis
@@ -508,4 +522,261 @@ function getPerformanceRating(executionTime) {
             description: "Code execution is slow. Look for inefficient algorithms, unnecessary calculations, or blocking operations."
         };
     }
+}
+
+
+function analyzeExecutionHotspots(analysis, executionTime) {
+    // This is an estimation based on code structure
+    // In a real implementation, you would use actual profiling data
+
+    const hotspots = [];
+    let totalWeight = 0;
+
+    // Loops are often hotspots
+    if (analysis.loops > 0) {
+        const loopWeight = analysis.loops * 2;
+        totalWeight += loopWeight;
+        hotspots.push({
+            type: "Loops",
+            estimatedImpact: loopWeight,
+            recommendation: analysis.loops > 3
+                ? "Multiple loops detected - consider optimizing loop operations"
+                : "Loop operations appear reasonable"
+        });
+    }
+
+    // Async operations can be hotspots
+    if (analysis.asyncOps > 0) {
+        const asyncWeight = analysis.asyncOps * 1.5;
+        totalWeight += asyncWeight;
+        hotspots.push({
+            type: "Async Operations",
+            estimatedImpact: asyncWeight,
+            recommendation: analysis.asyncOps > 3
+                ? "Multiple async operations - consider using Promise.all for parallel execution"
+                : "Async operations appear reasonable"
+        });
+    }
+
+    // Function calls can be hotspots if there are many
+    if (analysis.functions > 0) {
+        const functionWeight = analysis.functions;
+        totalWeight += functionWeight;
+        hotspots.push({
+            type: "Function Calls",
+            estimatedImpact: functionWeight,
+            recommendation: analysis.functions > 5
+                ? "Many functions - consider memoization for expensive calculations"
+                : "Function count appears reasonable"
+        });
+    }
+
+    // Calculate estimated impact percentages
+    hotspots.forEach(hotspot => {
+        hotspot.estimatedPercentage = totalWeight > 0
+            ? Math.round((hotspot.estimatedImpact / totalWeight) * 100)
+            : 0;
+    });
+
+    // Sort by estimated impact
+    hotspots.sort((a, b) => b.estimatedPercentage - a.estimatedPercentage);
+
+    return {
+        hotspots,
+        hasCriticalHotspots: executionTime > 200 && hotspots.some(h => h.estimatedPercentage > 50),
+        executionCategory: executionTime < 100 ? "Fast" : executionTime < 300 ? "Moderate" : "Slow"
+    };
+}
+
+/**
+ * Analyzes function call relationships to create a simple structure visualization
+ * @param {string} code - The source code to analyze
+ * @returns {Object} Function relationship data
+ */
+function analyzeFunctionRelationships(code) {
+    // Extract function names
+    const functionNames = (code.match(/function\s+(\w+)/g) || [])
+        .map(fn => fn.replace('function ', '').trim());
+
+    // Find function calls
+    const relationships = [];
+
+    functionNames.forEach(fnName => {
+        // Look for calls to this function in the code
+        const regex = new RegExp(`\\b${fnName}\\s*\\(`, 'g');
+        let match;
+        let callCount = 0;
+
+        while ((match = regex.exec(code)) !== null) {
+            callCount++;
+        }
+
+        // Don't count the function definition itself
+        callCount = Math.max(0, callCount - 1);
+
+        relationships.push({
+            name: fnName,
+            callCount: callCount
+        });
+    });
+
+    // Sort by call count
+    relationships.sort((a, b) => b.callCount - a.callCount);
+
+    // Identify the most called functions
+    const mostCalledFunctions = relationships
+        .filter(r => r.callCount > 0)
+        .slice(0, 3)
+        .map(r => `${r.name} (${r.callCount} calls)`);
+
+    return {
+        functionCount: functionNames.length,
+        relationships: relationships,
+        mostCalledFunctions: mostCalledFunctions,
+        hasComplexRelationships: relationships.some(r => r.callCount > 3)
+    };
+}
+
+/**
+ * Creates a visual representation of code structure
+ * @param {Object} analysis - The code analysis results
+ * @param {Object} relationships - Function relationship data
+ * @returns {string} HTML representation of code structure
+ */
+function createCodeStructureVisualization(analysis, relationships) {
+    // Create a simple visual representation of code structure
+    let html = '<div style="margin-top: 15px;">';
+
+    // Only show visualization if we have functions
+    if (analysis.functions > 0) {
+        html += `
+      <div style="font-weight: bold; margin-bottom: 8px; color: #61dafb;">
+        📊 Code Structure
+      </div>
+      <div style="background: rgba(30,30,30,0.6); border-radius: 6px; padding: 10px; font-size: 13px;">
+    `;
+
+        // Function relationship visualization
+        if (relationships.mostCalledFunctions.length > 0) {
+            html += `
+        <div style="margin-bottom: 10px;">
+          <div style="color: #aaa; margin-bottom: 5px;">Most Called Functions:</div>
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+      `;
+
+            // Add bars for most called functions
+            relationships.mostCalledFunctions.forEach((funcText, index) => {
+                const func = relationships.relationships.find(r => funcText.includes(r.name));
+                if (func) {
+                    const barWidth = Math.min(100, func.callCount * 20);
+                    html += `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 120px; overflow: hidden; text-overflow: ellipsis;">${func.name}</div>
+              <div style="flex-grow: 1; display: flex; align-items: center; gap: 8px;">
+                <div style="height: 8px; width: ${barWidth}px; background: linear-gradient(to right, #61dafb, #3178c6); border-radius: 4px;"></div>
+                <div>${func.callCount} calls</div>
+              </div>
+            </div>
+          `;
+                }
+            });
+
+            html += '</div></div>';
+        }
+
+        // Code composition visualization
+        html += `
+      <div>
+        <div style="color: #aaa; margin-bottom: 5px;">Code Composition:</div>
+        <div style="display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 5px;">
+    `;
+
+        // Calculate percentages for visualization
+        const total = analysis.functions + analysis.loops + analysis.asyncOps;
+        const functionPercent = total > 0 ? Math.round((analysis.functions / total) * 100) : 0;
+        const loopPercent = total > 0 ? Math.round((analysis.loops / total) * 100) : 0;
+        const asyncPercent = total > 0 ? Math.round((analysis.asyncOps / total) * 100) : 0;
+
+        // Add colored bars
+        html += `
+          <div style="width: ${functionPercent}%; background: #61dafb;" title="Functions: ${analysis.functions}"></div>
+          <div style="width: ${loopPercent}%; background: #f6c343;" title="Loops: ${analysis.loops}"></div>
+          <div style="width: ${asyncPercent}%; background: #ff6b6b;" title="Async: ${analysis.asyncOps}"></div>
+        </div>
+        <div style="display: flex; font-size: 12px; justify-content: space-between;">
+          <div><span style="color: #61dafb;">■</span> Functions (${functionPercent}%)</div>
+          <div><span style="color: #f6c343;">■</span> Loops (${loopPercent}%)</div>
+          <div><span style="color: #ff6b6b;">■</span> Async (${asyncPercent}%)</div>
+        </div>
+      </div>
+    `;
+
+        html += '</div>';
+    } else {
+        html += '<div style="color: #aaa; font-style: italic;">No functions detected for structure visualization</div>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+/**
+ * Visualizes execution time distribution
+ * @param {Object} hotspots - Execution hotspot analysis
+ * @returns {string} HTML representation of execution time distribution
+ */
+function createExecutionTimeVisualization(hotspots) {
+    let html = '<div style="margin-top: 15px;">';
+
+    html += `
+    <div style="font-weight: bold; margin-bottom: 8px; color: #f6c343;">
+      ⏱️ Execution Time Distribution
+    </div>
+    <div style="background: rgba(30,30,30,0.6); border-radius: 6px; padding: 10px; font-size: 13px;">
+  `;
+
+    if (hotspots.hotspots.length > 0) {
+        html += `
+      <div style="display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 10px;">
+    `;
+
+        // Add colored bars for each hotspot
+        const colors = ['#f6c343', '#ff6b6b', '#61dafb', '#97e630'];
+        hotspots.hotspots.forEach((hotspot, index) => {
+            html += `
+        <div 
+          style="width: ${hotspot.estimatedPercentage}%; background: ${colors[index % colors.length]};" 
+          title="${hotspot.type}: ${hotspot.estimatedPercentage}%">
+        </div>
+      `;
+        });
+
+        html += '</div>';
+
+        // Add legend
+        html += '<div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px;">';
+        hotspots.hotspots.forEach((hotspot, index) => {
+            html += `
+        <div>
+          <span style="color: ${colors[index % colors.length]};">■</span> 
+          ${hotspot.type} (${hotspot.estimatedPercentage}%)
+        </div>
+      `;
+        });
+        html += '</div>';
+
+        // Add recommendations
+        if (hotspots.hasCriticalHotspots) {
+            html += `
+        <div style="margin-top: 10px; padding: 5px; background: rgba(255,107,107,0.2); border-radius: 4px; font-size: 12px;">
+          ⚠️ Critical hotspot detected: ${hotspots.hotspots[0].type} (${hotspots.hotspots[0].estimatedPercentage}%)
+        </div>
+      `;
+        }
+    } else {
+        html += '<div style="color: #aaa; font-style: italic;">No execution hotspots detected</div>';
+    }
+
+    html += '</div></div>';
+    return html;
 }

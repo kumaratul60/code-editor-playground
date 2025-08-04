@@ -77,14 +77,14 @@ export async function runCode(editor, output) {
 
     // Update UI with Analysis
     const analysis = analyzeCode(code);
-    updateSummaryBarWithAnalysis(analysis, executionTime);
+    updateSummaryBarWithAnalysis(analysis, executionTime,code);
 
   } catch (err) {
     // Error Handling
     // console.error('Error executing code:', err);
     const errorTime = performance.now() - startTime;
     const analysis = analyzeCode(code);
-    updateSummaryBarWithAnalysis(analysis, errorTime);
+    updateSummaryBarWithAnalysis(analysis, errorTime,code);
     logOutput([`❌ ${err.message}`], output, 0, "error");
   } finally {
     // Cleanup
