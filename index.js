@@ -49,6 +49,46 @@ document.addEventListener("DOMContentLoaded", () => {
     highlighted.scrollTop = editor.scrollTop;
   });
 
+
+  // --- Line Number Sync ---
+  function syncLineNumbers() {
+    updateLineNumbers(editor, lineNumbers);
+  }
+
+// Update on typing and pasting
+  editor.addEventListener('input', syncLineNumbers);
+  editor.addEventListener('paste', function () {
+    setTimeout(syncLineNumbers, 0); // after paste
+  });
+
+// --- Utilities for code insertion ---
+   function insertAtTop(code) {
+    editor.innerText = code + '\n' + editor.innerText;
+    syncLineNumbers();
+  }
+
+function insertAtBottom(code) {
+    editor.innerText = editor.innerText + '\n' + code;
+    syncLineNumbers();
+  }
+
+function insertAtCursor(code) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(code));
+    syncLineNumbers();
+  }
+
+// --- Initial line number setup ---
+  syncLineNumbers();
+
+// (Optional) Expose these to window for debugging or button wiring
+  window.insertAtTop = insertAtTop;
+  window.insertAtBottom = insertAtBottom;
+  window.insertAtCursor = insertAtCursor;
+
   editor.addEventListener("keydown", (e) => {
     // if (e.key === "Enter" && !e.shiftKey) {
     //   e.preventDefault();
