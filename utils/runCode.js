@@ -38,160 +38,109 @@ export async function runCode(editor, output) {
 
   // 3. --- Instrumentation Template ---
   const instrumentedCode = `
-    // ===== 1. INITIALIZATION =====
-    window.__sessionStats = window.__sessionStats || {
-      functionTimings: {},
-      totalAsyncTime: 0,
-      totalSyncTime: 0,
-      asyncCallCount: 0,
-      syncCallCount: 0,
-      longestAsync: 0,
-      shortestAsync: Infinity,
-      longestSync: 0,
-      shortestSync: Infinity
-    };
-
-    // ===== 2. CORE TRACKING FUNCTIONS =====
-    const trackFunction = (fn, name, isAsync = false) => {
-      return function(...args) {
-        const start = performance.now();
-        if (isAsync) {
-          return Promise.resolve(fn.apply(this, args))
-            .then(res => {
-              const end = performance.now();
-              recordFunctionTiming(name, start, end, true);
-              return res;
-            })
-            .catch(err => {
-              const end = performance.now();
-              recordFunctionTiming(name, start, end, true);
-              throw err;
-            });
-        }
-        try {
-          const result = fn.apply(this, args);
-          const end = performance.now();
-          recordFunctionTiming(name, start, end, false);
-          return result;
-        } catch (err) {
-          const end = performance.now();
-          recordFunctionTiming(name, start, end, false);
-          throw err;
-        }
-      };
-    };
-
-    const recordFunctionTiming = (name, start, end, isAsync) => {
-      const duration = end - start;
-      const stats = window.__sessionStats;
-      const timingData = { start, end, duration, async: isAsync, timestamp: performance.now() };
-      if (!stats.functionTimings[name]) {
-        stats.functionTimings[name] = [];
-      }
-      stats.functionTimings[name].push(timingData);
-
-      if (isAsync) {
-        stats.totalAsyncTime += duration;
-        stats.asyncCallCount += 1;
-        stats.longestAsync = Math.max(stats.longestAsync, duration);
-        stats.shortestAsync = Math.min(stats.shortestAsync, duration);
-      } else {
-        stats.totalSyncTime += duration;
-        stats.syncCallCount += 1;
-        stats.longestSync = Math.max(stats.longestSync, duration);
-        stats.shortestSync = Math.min(stats.shortestSync, duration);
-      }
-    };
-
-    // ===== 3. ASYNC OPERATION TRACKING =====
-    window.__trackAsync = async function(label, fn) {
-      const start = performance.now();
-      try {
-        return await fn();
-      } finally {
-        const duration = performance.now() - start;
-        window.__asyncSteps = window.__asyncSteps || [];
-        window.__asyncSteps.push({
-          label,
-          start: (start - startTime).toFixed(2),
-          duration: duration.toFixed(2),
-        });
-      }
-    };
-
-    // ===== 4. FUNCTION INSTRUMENTATION =====
-    // Execute user code to define functions in the global scope
-    eval(code);
-
-    // Find and wrap all function declarations
-    const functionRegex = /(?:function\\s+(\\w+)|const\\s+(\\w+)\\s*=\\s*(?:async\\s*)?\\([^)]*\\)\\s*=>|(\\w+)\\s*=\\s*(?:async\\s*)?function\\s*\\([^)]*\\))/g;
-    const context = typeof window !== 'undefined' ? window : globalThis;
-    const functionNameSet = new Set();
-    let match;
-    while ((match = functionRegex.exec(code)) !== null) {
-      const name = match[1] || match[2] || match[3];
-      if (name) functionNameSet.add(name);
-    }
-    functionNameSet.forEach(name => {
-      try {
-        if (context[name] && typeof context[name] === 'function' && !name.startsWith('__')) {
-          const original = context[name];
-          const isAsync = original.constructor.name === 'AsyncFunction' || /^\\s*async/.test(original.toString().trim());
-          context[name] = trackFunction(original, name, isAsync);
-        }
-      } catch (e) {
-        console.warn(\`Could not instrument function \${name}:\`, e);
-      }
-    });
-
-    // ===== 5. FETCH API INSTRUMENTATION =====
+    // --- 1. Monkey-patch fetch before any user code runs ---
     const originalFetch = window.fetch;
     window.fetch = async function(resource, init) {
       const start = performance.now();
-      let url = 'unknown';
+      let url = typeof resource === 'string' ? resource : resource?.url || 'unknown';
       try {
-        if (typeof resource === 'string') {
-          url = resource.split('?')[0];
-        } else if (resource?.url) {
-          url = resource.url.split('?')[0];
-        }
-        const response = await originalFetch.call(this, resource, init);
+        const result = await originalFetch.call(this, resource, init);
         const end = performance.now();
-        recordFunctionTiming(\`fetch:\${url}\`, start, end, true);
-        return response;
-      } catch (error) {
+        window.__sessionStats = window.__sessionStats || { functionTimings: {} };
+        if (!window.__sessionStats.functionTimings['fetch']) window.__sessionStats.functionTimings['fetch'] = [];
+        window.__sessionStats.functionTimings['fetch'].push({
+          name: 'fetch',
+          type: 'async',
+          duration: end - start
+        });
+        return result;
+      } catch (e) {
         const end = performance.now();
-        recordFunctionTiming(\`fetch:\${url}\`, start, end, true);
-        throw error;
+        window.__sessionStats = window.__sessionStats || { functionTimings: {} };
+        if (!window.__sessionStats.functionTimings['fetch']) window.__sessionStats.functionTimings['fetch'] = [];
+        window.__sessionStats.functionTimings['fetch'].push({
+          name: 'fetch',
+          type: 'async',
+          duration: end - start
+        });
+        throw e;
       }
     };
+
+    // --- 2. Define user code (so functions exist on window) ---
+    eval(code);
+
+    // --- 3. Wrap all named functions on window ---
+    window.__sessionStats = window.__sessionStats || { functionTimings: {} };
+    const context = typeof window !== 'undefined' ? window : globalThis;
+    Object.keys(context).forEach(name => {
+      if (
+        typeof context[name] === 'function' &&
+        !name.startsWith('__') &&
+        name !== 'fetch' // already wrapped
+      ) {
+        const orig = context[name];
+        const isAsync = orig.constructor.name === 'AsyncFunction';
+        context[name] = function(...args) {
+          const start = performance.now();
+          if (isAsync) {
+            return Promise.resolve(orig.apply(this, args)).then(res => {
+              const end = performance.now();
+              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
+              window.__sessionStats.functionTimings[name].push({
+                name,
+                type: 'async',
+                duration: end - start
+              });
+              return res;
+            });
+          } else {
+            try {
+              const result = orig.apply(this, args);
+              const end = performance.now();
+              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
+              window.__sessionStats.functionTimings[name].push({
+                name,
+                type: 'sync',
+                duration: end - start
+              });
+              return result;
+            } catch (e) {
+              const end = performance.now();
+              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
+              window.__sessionStats.functionTimings[name].push({
+                name,
+                type: 'sync',
+                duration: end - start
+              });
+              throw e;
+            }
+          }
+        };
+      }
+    });
   `;
 
   try {
     // 4. --- Execute Instrumented Code with startTime and code as arguments ---
     const wrappedCode = `(function(startTime, code) { 
-  ${instrumentedCode} 
-})(${startTime}, \`${code.replace(/`/g, '\\`')}\`);`;
-
+      ${instrumentedCode} 
+    })(${startTime}, \`${code.replace(/`/g, '\\`')}\`);`;
     await eval(wrappedCode);
 
-    // 5. --- Log Execution Statistics ---
+    // 5. --- Minimal stats output for debugging (optional) ---
+    // const timings = (window.__sessionStats && window.__sessionStats.functionTimings) || {};
+    // console.log('Function execution timings:', timings);
+
+    // 6. --- Log Execution Statistics ---
     const endTime = performance.now();
     const executionTime = endTime - startTime;
-    console.log('Code executed in', executionTime.toFixed(2), 'ms');
-
-    // 6. --- Display Detailed Statistics ---
-    if (window.__sessionStats) {
-      console.log('Function execution statistics:', window.__sessionStats);
-    }
-    if (window.__asyncSteps) {
-      console.log('Async operation steps:', window.__asyncSteps);
-    }
+    // console.log('Code executed in', executionTime.toFixed(2), 'ms');
 
     // 7. --- Update UI with Analysis ---
     const analysis = analyzeCode(code);
     updateSummaryBarWithAnalysis(analysis, executionTime);
-    logStatsTable(output, executionTime);
+
 
   } catch (err) {
     // 8. --- Error Handling ---
