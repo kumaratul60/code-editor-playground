@@ -1,8 +1,4 @@
-/**
- * Analyzes the code to count functions, loops, and async operations
- * @param {string} code - The source code to analyze
- * @returns {Object} An object containing the analysis results
- */
+
 export function analyzeCode(code) {
     // Count functions (including arrow functions, function declarations, and methods)
     const functionCount = (code.match(/\bfunction\s+\w+\s*\(|\bconst\s+\w+\s*=\s*[^=]*=>|\b\w+\s*\([^)]*\)\s*=>/g) || []).length;
@@ -20,11 +16,7 @@ export function analyzeCode(code) {
     };
 }
 
-/**
- * Updates the summary bar with code analysis results and execution time
- * @param {Object} analysis - The analysis results from analyzeCode
- * @param {number} [executionTime=0] - Total execution time in milliseconds
- */
+
 // function updateSummaryBarWithAnalysis(analysis, executionTime = 0) {
 //   const summaryElement = document.getElementById('summary-icons');
 //   const execTimeElement = document.getElementById('exec-time');
@@ -40,11 +32,7 @@ export function analyzeCode(code) {
 // }
 
 
-/**
- * Updates the summary bar with code analysis results and execution time
- * @param {Object} analysis - The analysis results from analyzeCode
- * @param {number} [executionTime=0] - Total execution time in milliseconds
- */
+
 export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code="") {
     const summaryElement = document.getElementById('summary-icons');
     const execTimeElement = document.getElementById('exec-time');
@@ -83,14 +71,10 @@ export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code=""
     }
 
     // Optionally add a detailed developer insights panel
-    addDeveloperInsightsPanel(analysis, executionTime);
+    addDeveloperInsightsPanel(analysis, executionTime,code);
 }
 
-/**
- * Calculates a code complexity score based on code analysis
- * @param {Object} analysis - The code analysis results
- * @returns {Object} Complexity score object with score, label and icon
- */
+
 function calculateComplexityScore(analysis) {
     // Simple heuristic: functions + (loops * 1.5) + (asyncOps * 1.2)
     const rawScore = analysis.functions + (analysis.loops * 1.5) + (analysis.asyncOps * 1.2);
@@ -129,12 +113,7 @@ function calculateComplexityScore(analysis) {
 //   }
 // }
 
-/**
- * Generates optimization tips based on code analysis and execution time
- * @param {Object} analysis - The code analysis results
- * @param {number} executionTime - Execution time in milliseconds
- * @returns {string} Optimization tips
- */
+
 function getOptimizationTips(analysis, executionTime) {
     const tips = [];
 
@@ -157,11 +136,7 @@ function getOptimizationTips(analysis, executionTime) {
     return tips.length > 0 ? "Optimization Tips:\n- " + tips.join("\n- ") : "";
 }
 
-/**
- * Adds a collapsible developer insights panel to the UI
- * @param {Object} analysis - The code analysis results
- * @param {number} executionTime - Execution time in milliseconds
- */
+
 function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
     // Sidebar container
     let sidebar = document.getElementById('dev-insights-sidebar');
@@ -189,6 +164,9 @@ function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
         sidebar.appendChild(panel);
     }
 
+    const bigO = estimateBigOComplexity(code);
+
+
 
     panel.innerHTML = `
       <div style="font-weight:bold; font-size:16px; color:#61dafb; margin-bottom:10px;">
@@ -199,7 +177,22 @@ function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
     <span style="font-weight: bold; font-size: 15px;">Code Analysis Dashboard</span>
     <span style="float: right; font-size: 12px; color: #888;">${new Date().toLocaleTimeString()}</span>
   </div>
+  
   <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-bottom: 15px;">
+  <div style="font-weight: bold">~Complexity (Time):</div>
+  <div>
+    <span style="color:#f6c343">${bigO.time}</span>
+    <span style="color:#888;">
+      (${bigO.maxLoopDepth > 1 ? 'Nested loops detected' : bigO.maxLoopDepth === 1 ? 'Single loop' : 'No loops'})
+    </span>
+  </div>
+  <div style="font-weight: bold;">~Complexity (Space):</div>
+  <div>
+    <span style="color:#f6c343">${bigO.space}</span>
+    <span style="color:#888;">
+      (${bigO.arrayCount} arrays, ${bigO.objectCount} objects)
+    </span>
+  </div>
     <div style="color: #aaa;">Functions:</div>
     <div style="font-weight: bold;">${analysis.functions}</div>
     <div style="color: #aaa;">Loops:</div>
@@ -271,11 +264,7 @@ function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
 
 //-----------
 
-/**
- * Calculates code efficiency based on analysis
- * @param {Object} analysis - The code analysis results
- * @returns {Object} Efficiency score object
- */
+
 function calculateCodeEfficiency(analysis) {
     // Calculate efficiency based on ratio of functions to loops and async operations
     const totalOperations = analysis.functions + analysis.loops + analysis.asyncOps;
@@ -310,11 +299,7 @@ function calculateCodeEfficiency(analysis) {
     return { score: efficiency, percentage: efficiency, label: label };
 }
 
-/**
- * Calculates maintainability score based on code analysis
- * @param {Object} analysis - The code analysis results
- * @returns {Object} Maintainability score object
- */
+
 function calculateMaintainabilityScore(analysis) {
     // Base score out of 10
     let score = 10;
@@ -344,12 +329,7 @@ function calculateMaintainabilityScore(analysis) {
     return { score, label };
 }
 
-/**
- * Generates detailed optimization tips based on code analysis
- * @param {Object} analysis - The code analysis results
- * @param {number} executionTime - Execution time in milliseconds
- * @returns {Array} Array of optimization tips
- */
+
 function generateOptimizationTips(analysis, executionTime) {
     const tips = [];
 
@@ -402,11 +382,7 @@ function generateOptimizationTips(analysis, executionTime) {
     return tips;
 }
 
-/**
- * Returns a gradient color based on a value between 0 and 1
- * @param {number} value - Value between 0 and 1
- * @returns {string} CSS gradient color
- */
+
 function getGradientColor(value) {
     // Ensure value is between 0 and 1
     value = Math.max(0, Math.min(1, value));
@@ -425,11 +401,7 @@ function getGradientColor(value) {
     }
 }
 
-/**
- * Enhanced performance rating with descriptions
- * @param {number} executionTime - Execution time in milliseconds
- * @returns {Object} Enhanced performance rating object
- */
+
 function getPerformanceRating(executionTime) {
     if (executionTime < 50) {
         return {
@@ -522,11 +494,7 @@ function analyzeExecutionHotspots(analysis, executionTime) {
     };
 }
 
-/**
- * Analyzes function call relationships to create a simple structure visualization
- * @param {string} code - The source code to analyze
- * @returns {Object} Function relationship data
- */
+
 function analyzeFunctionRelationships(code) {
     // Extract function names
     const functionNames = (code.match(/function\s+(\w+)/g) || [])
@@ -571,12 +539,7 @@ function analyzeFunctionRelationships(code) {
     };
 }
 
-/**
- * Creates a visual representation of code structure
- * @param {Object} analysis - The code analysis results
- * @param {Object} relationships - Function relationship data
- * @returns {string} HTML representation of code structure
- */
+
 function createCodeStructureVisualization(analysis, relationships) {
     // Create a simple visual representation of code structure
     let html = '<div style="margin-top: 15px;">';
@@ -654,11 +617,7 @@ function createCodeStructureVisualization(analysis, relationships) {
     return html;
 }
 
-/**
- * Visualizes execution time distribution
- * @param {Object} hotspots - Execution hotspot analysis
- * @returns {string} HTML representation of execution time distribution
- */
+
 function createExecutionTimeVisualization(hotspots) {
     let html = '<div style="margin-top: 15px;">';
 
@@ -713,4 +672,21 @@ function createExecutionTimeVisualization(hotspots) {
 
     html += '</div></div>';
     return html;
+}
+
+
+function estimateBigOComplexity(code) {
+    const loopCount = (code.match(/\b(for|while|do)\b/g) || []).length;
+    const arrayCount = (code.match(/\[[^\]]*\]|new\s+Array\s*\(|Array\s*\(|\.push\s*\(|\.unshift\s*\(/g) || []).length;
+    const objectCount = (code.match(/\{[^}]*\}/g) || []).filter(obj => !/(function|=>)/.test(obj)).length;
+    const setCount = (code.match(/new\s+Set\s*\(/g) || []).length;
+    const mapCount = (code.match(/new\s+Map\s*\(/g) || []).length;
+
+    let time = 'O(1)';
+    if (loopCount === 1) time = 'O(n)';
+    else if (loopCount > 1) time = `O(n^${loopCount})`|| 'O(n^2)';
+    const dynamicStructures = arrayCount + objectCount + setCount + mapCount;
+    let space = dynamicStructures > 0 ? 'O(n)' : 'O(1)';
+
+    return { time, space, maxLoopDepth:loopCount, arrayCount, objectCount, setCount, mapCount };
 }
