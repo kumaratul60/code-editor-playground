@@ -82,12 +82,6 @@ So I built this:
   - Optimization tips
 - **Non-Intrusive**: Sidebar does not take up space or shift your editor/output.
 
-🔜 Save/load local files
-
-🔜 Export logs as report
-
-🔜 Plugin support
-
 ## 🧪 Example Code You Can Run
 
 ```js
