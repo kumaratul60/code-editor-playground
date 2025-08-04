@@ -84,3 +84,6 @@ export function highlightCurrentLine(editor, lineNumbers) {
     span.classList.toggle("active-line", idx === lineIndex);
   });
 }
+
+
+

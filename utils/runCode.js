@@ -1,6 +1,7 @@
 
 
 // Global object to track performance statistics across a session.
+
 window.__sessionStats = {
   totalAsyncTime: 0,
   asyncCallCount: 0,
@@ -19,13 +20,13 @@ window.__asyncSteps = [];
 let lastLogTime = null;
 
 export async function runCode(editor, output) {
-  // 1. --- Initialization ---
+  // Initialization
   clearOutput(output);
   resetSessionStats();
   lastLogTime = performance.now();
   const startTime = performance.now();
 
-  // 2. --- Console Override Setup ---
+  // Console Override Setup
   const originalLog = console.log;
   const originalError = console.error;
   const originalWarn = console.warn;
@@ -36,121 +37,70 @@ export async function runCode(editor, output) {
 
   const code = editor.innerText;
 
-  // 3. --- Instrumentation Template ---
+  // Instrumentation Template
   const instrumentedCode = `
-    // --- 1. Monkey-patch fetch before any user code runs ---
-    const originalFetch = window.fetch;
-    window.fetch = async function(resource, init) {
-      const start = performance.now();
-      let url = typeof resource === 'string' ? resource : resource?.url || 'unknown';
-      try {
-        const result = await originalFetch.call(this, resource, init);
-        const end = performance.now();
-        window.__sessionStats = window.__sessionStats || { functionTimings: {} };
-        if (!window.__sessionStats.functionTimings['fetch']) window.__sessionStats.functionTimings['fetch'] = [];
-        window.__sessionStats.functionTimings['fetch'].push({
-          name: 'fetch',
-          type: 'async',
-          duration: end - start
-        });
-        return result;
-      } catch (e) {
-        const end = performance.now();
-        window.__sessionStats = window.__sessionStats || { functionTimings: {} };
-        if (!window.__sessionStats.functionTimings['fetch']) window.__sessionStats.functionTimings['fetch'] = [];
-        window.__sessionStats.functionTimings['fetch'].push({
-          name: 'fetch',
-          type: 'async',
-          duration: end - start
-        });
-        throw e;
-      }
-    };
+  // Define user code (so functions exist on window)
+  eval(code);
 
-    // --- 2. Define user code (so functions exist on window) ---
-    eval(code);
-
-    // --- 3. Wrap all named functions on window ---
-    window.__sessionStats = window.__sessionStats || { functionTimings: {} };
-    const context = typeof window !== 'undefined' ? window : globalThis;
-    Object.keys(context).forEach(name => {
-      if (
-        typeof context[name] === 'function' &&
-        !name.startsWith('__') &&
-        name !== 'fetch' // already wrapped
-      ) {
-        const orig = context[name];
-        const isAsync = orig.constructor.name === 'AsyncFunction';
-        context[name] = function(...args) {
-          const start = performance.now();
-          if (isAsync) {
-            return Promise.resolve(orig.apply(this, args)).then(res => {
-              const end = performance.now();
-              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
-              window.__sessionStats.functionTimings[name].push({
-                name,
-                type: 'async',
-                duration: end - start
-              });
-              return res;
-            });
-          } else {
-            try {
-              const result = orig.apply(this, args);
-              const end = performance.now();
-              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
-              window.__sessionStats.functionTimings[name].push({
-                name,
-                type: 'sync',
-                duration: end - start
-              });
-              return result;
-            } catch (e) {
-              const end = performance.now();
-              if (!window.__sessionStats.functionTimings[name]) window.__sessionStats.functionTimings[name] = [];
-              window.__sessionStats.functionTimings[name].push({
-                name,
-                type: 'sync',
-                duration: end - start
-              });
-              throw e;
-            }
-          }
-        };
-      }
-    });
-  `;
+  // Optionally wrap all named functions on window (no timing, just pass-through)
+  const context = typeof window !== 'undefined' ? window : globalThis;
+  Object.keys(context).forEach(name => {
+    if (
+      typeof context[name] === 'function' &&
+      !name.startsWith('__')
+    ) {
+      const orig = context[name];
+      context[name] = function(...args) {
+        // Just call the original function, no timing, no stats
+        return orig.apply(this, args);
+      };
+    }
+  });
+`;
 
   try {
-    // 4. --- Execute Instrumented Code with startTime and code as arguments ---
+
+    let memoryBefore, memoryAfter, memoryDelta;
+    let memorySupported = !!(performance && performance.memory && performance.memory.usedJSHeapSize);
+    if (memorySupported) {
+      memoryBefore = performance.memory.usedJSHeapSize;
+    }
+
+    //  Execute Instrumented Code with startTime and code as arguments
     const wrappedCode = `(function(startTime, code) { 
       ${instrumentedCode} 
     })(${startTime}, \`${code.replace(/`/g, '\\`')}\`);`;
     await eval(wrappedCode);
 
-    // 5. --- Minimal stats output for debugging (optional) ---
-    // const timings = (window.__sessionStats && window.__sessionStats.functionTimings) || {};
-    // console.log('Function execution timings:', timings);
 
-    // 6. --- Log Execution Statistics ---
+    if (memorySupported) {
+      memoryAfter = performance.memory.usedJSHeapSize;
+      memoryDelta = memoryAfter - memoryBefore;
+      updateMemoryUsageInUI(memoryDelta, true);
+    } else {
+      updateMemoryUsageInUI(0, false);
+    }
+
+
+    // Log Execution Statistics
     const endTime = performance.now();
     const executionTime = endTime - startTime;
     // console.log('Code executed in', executionTime.toFixed(2), 'ms');
 
-    // 7. --- Update UI with Analysis ---
+    // Update UI with Analysis
     const analysis = analyzeCode(code);
     updateSummaryBarWithAnalysis(analysis, executionTime);
 
 
   } catch (err) {
-    // 8. --- Error Handling ---
+    // Error Handling
     console.error('Error executing code:', err);
     const errorTime = performance.now() - startTime;
     const analysis = analyzeCode(code);
     updateSummaryBarWithAnalysis(analysis, errorTime);
     logOutput([`❌ ${err.message}`], output, 0, "error");
   } finally {
-    // 9. --- Cleanup ---
+    // Cleanup
     console.log = originalLog;
     console.error = originalError;
     console.warn = originalWarn;
@@ -533,5 +483,30 @@ function updateSummaryBarWithAnalysis(analysis, executionTime = 0) {
   if (execTimeElement) {
     const timeColor = executionTime < 100 ? "#a6e22e" : executionTime < 300 ? "#f6c343" : "#ff6b6b";
     execTimeElement.innerHTML = `⏱️ Total Time: <span style="color: ${timeColor}">${executionTime.toFixed(2)} ms</span>`;
+  }
+}
+
+function updateMemoryUsageInUI(memoryDelta, supported = true) {
+  let memElem = document.getElementById("memory-usage");
+  if (!memElem) {
+    memElem = document.createElement("div");
+    memElem.id = "memory-usage";
+    memElem.style.marginTop = "8px";
+    memElem.style.fontSize = "14px";
+    memElem.style.color = "#7c3aed";
+    const summaryBar = document.getElementById("summary-bar");
+    if (summaryBar && summaryBar.parentNode) {
+      summaryBar.parentNode.insertBefore(memElem, summaryBar.nextSibling);
+    } else {
+      document.body.appendChild(memElem);
+    }
+  }
+  if (!supported) {
+    memElem.textContent = " Memory usage measurement is not supported in this browser.";
+  } else {
+    memElem.textContent =
+        " Approximate memory used by code: " +
+        (memoryDelta / 1024).toFixed(2) +
+        " KB";
   }
 }
