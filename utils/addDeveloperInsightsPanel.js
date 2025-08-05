@@ -193,113 +193,91 @@ export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
   <!-- Execution Hotspots Visualization -->
   ${createExecutionTimeVisualization(analyzeExecutionHotspots(analysis, executionTime))}
   
-   <!-- Code Quality Section -->
+    <!-- Code Quality Section -->
+  ${codeLines > 0 || commentRatio > 0 || avgLineLength > 0 || longLines > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">📊 Code Quality</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Lines of Code:</div>
-      <div style="font-weight: bold;">${codeLines}</div>
-      <div style="color: #aaa;">Comment Ratio:</div>
-      <div style="font-weight: bold;">${commentRatio}%</div>
-      <div style="color: #aaa;">Avg Line Length:</div>
-      <div style="font-weight: bold;">${avgLineLength.toFixed(0)} chars</div>
-       <div style="color: #aaa;">Long Lines (>80 chars):</div>
-      <div style="font-weight: bold; color: ${longLines > 5 ? '#f6c343' : '#a6e22e'}">${longLines}</div>
+      ${codeLines > 0 ? `<div style="color: #aaa;">Lines of Code:</div><div style="font-weight: bold;">${codeLines}</div>` : ''}
+      ${commentRatio > 0 ? `<div style="color: #aaa;">Comment Ratio:</div><div style="font-weight: bold;">${commentRatio}%</div>` : ''}
+      ${avgLineLength > 0 ? `<div style="color: #aaa;">Avg Line Length:</div><div style="font-weight: bold;">${avgLineLength.toFixed(0)} chars</div>` : ''}
+      ${longLines > 0 ? `<div style="color: #aaa;">Long Lines (>80 chars):</div><div style="font-weight: bold; color: ${longLines > 5 ? '#f6c343' : '#a6e22e'}">${longLines}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
    <!-- Modern JS Features -->
+  ${arrowFunctions > 0 || asyncAwait > 0 || destructuring > 0 || templateLiterals > 0 || spreadOperator > 0 || classes > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🚀 Modern Features</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Arrow Functions:</div>
-      <div style="font-weight: bold;">${arrowFunctions}</div>
-      <div style="color: #aaa;">Async/Await:</div>
-      <div style="font-weight: bold;">${asyncAwait}</div>
-      <div style="color: #aaa;">Destructuring:</div>
-      <div style="font-weight: bold;">${destructuring}</div>
-      <div style="color: #aaa;">Template Literals:</div>
-      <div style="font-weight: bold;">${templateLiterals}</div>
-      <div style="color: #aaa;">Spread Operator:</div>
-      <div style="font-weight: bold;">${spreadOperator}</div>
-      <div style="color: #aaa;">Classes:</div>
-      <div style="font-weight: bold;">${classes}</div>
+      ${arrowFunctions > 0 ? `<div style="color: #aaa;">Arrow Functions:</div><div style="font-weight: bold;">${arrowFunctions}</div>` : ''}
+      ${asyncAwait > 0 ? `<div style="color: #aaa;">Async/Await:</div><div style="font-weight: bold;">${asyncAwait}</div>` : ''}
+      ${destructuring > 0 ? `<div style="color: #aaa;">Destructuring:</div><div style="font-weight: bold;">${destructuring}</div>` : ''}
+      ${templateLiterals > 0 ? `<div style="color: #aaa;">Template Literals:</div><div style="font-weight: bold;">${templateLiterals}</div>` : ''}
+      ${spreadOperator > 0 ? `<div style="color: #aaa;">Spread Operator:</div><div style="font-weight: bold;">${spreadOperator}</div>` : ''}
+      ${classes > 0 ? `<div style="color: #aaa;">Classes:</div><div style="font-weight: bold;">${classes}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
     <!-- Performance Indicators -->
+  ${domQueries > 0 || eventListeners > 0 || intervals > 0 || apiCalls > 0 || jsonOperations > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">📊 Performance Indicators</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">DOM Queries:</div>
-      <div style="font-weight: bold; color: ${domQueries > 5 ? '#ff6b6b' : '#a6e22e'}">${domQueries}</div>
-      <div style="color: #aaa;">Event Listeners:</div>
-      <div style="font-weight: bold; color: ${eventListeners > 10 ? '#f6c343' : '#a6e22e'}">${eventListeners}</div>
-      <div style="color: #aaa;">Timers (setInterval/setTimeout):</div>
-      <div style="font-weight: bold; color: ${intervals > 5 ? '#f6c343' : '#a6e22e'}">${intervals}</div>
-      <div style="color: #aaa;">API Calls:</div>
-      <div style="font-weight: bold; color: ${apiCalls > 5 ? '#f6c343' : '#a6e22e'}">${apiCalls}</div>
-      <div style="color: #aaa;">JSON Operations:</div>
-      <div style="font-weight: bold;">${jsonOperations}</div>
+      ${domQueries > 0 ? `<div style="color: #aaa;">DOM Queries:</div><div style="font-weight: bold; color: ${domQueries > 5 ? '#ff6b6b' : '#a6e22e'}">${domQueries}</div>` : ''}
+      ${eventListeners > 0 ? `<div style="color: #aaa;">Event Listeners:</div><div style="font-weight: bold; color: ${eventListeners > 10 ? '#f6c343' : '#a6e22e'}">${eventListeners}</div>` : ''}
+      ${intervals > 0 ? `<div style="color: #aaa;">Timers (setInterval/setTimeout):</div><div style="font-weight: bold; color: ${intervals > 5 ? '#f6c343' : '#a6e22e'}">${intervals}</div>` : ''}
+      ${apiCalls > 0 ? `<div style="color: #aaa;">API Calls:</div><div style="font-weight: bold; color: ${apiCalls > 5 ? '#f6c343' : '#a6e22e'}">${apiCalls}</div>` : ''}
+      ${jsonOperations > 0 ? `<div style="color: #aaa;">JSON Operations:</div><div style="font-weight: bold;">${jsonOperations}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
   
     <!-- Performance Risks -->
+  ${memoryLeakRisks > 0 || globalVariables > 0 || closures > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">⚠️ Performance Risks</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Memory Leak Risks:</div>
-      <div style="font-weight: bold; color: ${memoryLeakRisks > 0 ? '#ff6b6b' : '#a6e22e'}">${memoryLeakRisks}</div>
-      <div style="color: #aaa;">Global Variables:</div>
-      <div style="font-weight: bold; color: ${globalVariables > 3 ? '#f6c343' : '#a6e22e'}">${globalVariables}</div>
-      <div style="color: #aaa;">Closures:</div>
-      <div style="font-weight: bold;">${closures}</div>
+      ${memoryLeakRisks > 0 ? `<div style="color: #aaa;">Memory Leak Risks:</div><div style="font-weight: bold; color: ${memoryLeakRisks > 0 ? '#ff6b6b' : '#a6e22e'}">${memoryLeakRisks}</div>` : ''}
+      ${globalVariables > 0 ? `<div style="color: #aaa;">Global Variables:</div><div style="font-weight: bold; color: ${globalVariables > 3 ? '#f6c343' : '#a6e22e'}">${globalVariables}</div>` : ''}
+      ${closures > 0 ? `<div style="color: #aaa;">Closures:</div><div style="font-weight: bold;">${closures}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
   <!-- Design Patterns -->
+  ${designPatterns.singleton > 0 || designPatterns.factory > 0 || designPatterns.observer > 0 || designPatterns.module > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🏗️ Design Patterns</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Singleton Pattern:</div>
-      <div style="font-weight: bold;">${designPatterns.singleton}</div>
-      <div style="color: #aaa;">Factory Pattern:</div>
-      <div style="font-weight: bold;">${designPatterns.factory}</div>
-      <div style="color: #aaa;">Observer Pattern:</div>
-      <div style="font-weight: bold;">${designPatterns.observer}</div>
-      <div style="color: #aaa;">Module Pattern:</div>
-      <div style="font-weight: bold;">${designPatterns.module}</div>
+      ${designPatterns.singleton > 0 ? `<div style="color: #aaa;">Singleton Pattern:</div><div style="font-weight: bold;">${designPatterns.singleton}</div>` : ''}
+      ${designPatterns.factory > 0 ? `<div style="color: #aaa;">Factory Pattern:</div><div style="font-weight: bold;">${designPatterns.factory}</div>` : ''}
+      ${designPatterns.observer > 0 ? `<div style="color: #aaa;">Observer Pattern:</div><div style="font-weight: bold;">${designPatterns.observer}</div>` : ''}
+      ${designPatterns.module > 0 ? `<div style="color: #aaa;">Module Pattern:</div><div style="font-weight: bold;">${designPatterns.module}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
   <!-- Testing & Debugging -->
+  ${testKeywords > 0 || debugStatements > 0 || conditionalLogic > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🧪 Testing & Debugging</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Test Keywords:</div>
-      <div style="font-weight: bold; color: ${testKeywords > 0 ? '#a6e22e' : '#888'}">${testKeywords}</div>
-      <div style="color: #aaa;">Debug Statements:</div>
-      <div style="font-weight: bold; color: ${debugStatements > 10 ? '#f6c343' : '#a6e22e'}">${debugStatements}</div>
-      <div style="color: #aaa;">Conditional Logic:</div>
-      <div style="font-weight: bold;">${conditionalLogic}</div>
+      ${testKeywords > 0 ? `<div style="color: #aaa;">Test Keywords:</div><div style="font-weight: bold; color: ${testKeywords > 0 ? '#a6e22e' : '#888'}">${testKeywords}</div>` : ''}
+      ${debugStatements > 0 ? `<div style="color: #aaa;">Debug Statements:</div><div style="font-weight: bold; color: ${debugStatements > 10 ? '#f6c343' : '#a6e22e'}">${debugStatements}</div>` : ''}
+      ${conditionalLogic > 0 ? `<div style="color: #aaa;">Conditional Logic:</div><div style="font-weight: bold;">${conditionalLogic}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
   <!-- Security & Error Handling -->
+  ${tryBlocks > 0 || catchBlocks > 0 || throwStatements > 0 || consoleUsage > 0 || (evalUsage + innerHTMLUsage) > 0 ? `
   <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
     <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🔒 Security & Errors</div>
     <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Try/Catch Blocks:</div>
-      <div style="font-weight: bold;">${tryBlocks}/${catchBlocks}</div>
-       <div style="color: #aaa;">Throw Statements:</div>
-      <div style="font-weight: bold; color: ${throwStatements > 0 ? '#a6e22e' : '#888'}">${throwStatements}</div>
-      <div style="color: #aaa;">Console Usage:</div>
-      <div style="font-weight: bold; color: ${consoleUsage > 10 ? '#f6c343' : '#a6e22e'}">${consoleUsage}</div>
-      <div style="color: #aaa;">Security Risks:</div>
-      <div style="font-weight: bold; color: ${evalUsage + innerHTMLUsage > 0 ? '#ff6b6b' : '#a6e22e'}">${evalUsage + innerHTMLUsage}</div>
+      ${(tryBlocks > 0 || catchBlocks > 0) ? `<div style="color: #aaa;">Try/Catch Blocks:</div><div style="font-weight: bold;">${tryBlocks}/${catchBlocks}</div>` : ''}
+      ${throwStatements > 0 ? `<div style="color: #aaa;">Throw Statements:</div><div style="font-weight: bold; color: ${throwStatements > 0 ? '#a6e22e' : '#888'}">${throwStatements}</div>` : ''}
+      ${consoleUsage > 0 ? `<div style="color: #aaa;">Console Usage:</div><div style="font-weight: bold; color: ${consoleUsage > 10 ? '#f6c343' : '#a6e22e'}">${consoleUsage}</div>` : ''}
+      ${(evalUsage + innerHTMLUsage) > 0 ? `<div style="color: #aaa;">Security Risks:</div><div style="font-weight: bold; color: ${evalUsage + innerHTMLUsage > 0 ? '#ff6b6b' : '#a6e22e'}">${evalUsage + innerHTMLUsage}</div>` : ''}
     </div>
-  </div>
+  </div>` : ''}
   
   
   

@@ -1,29 +1,41 @@
 // ==============================
-// 🔍 Syntax Highlight Pipeline
+// Syntax Highlight Pipeline
 // ==============================
 
+// Performance constants
+const MAX_HIGHLIGHT_SIZE = 50000; // Max characters to highlight (50KB)
+const PERFORMANCE_MODE_THRESHOLD = 20000; // Switch to performance mode above this size
+
 export function highlightSyntax(code) {
-  placeholders = []; // reset before each run
-  placeholderIndex = 0;
+    // Performance optimization: Skip highlighting for extremely large content
+    if (code.length > MAX_HIGHLIGHT_SIZE) {
+        return escapeHtml(code); // Just escape HTML, no highlighting
+    }
 
-  code = extractStrings(code); // Template literals + strings
-  code = extractComments(code);
-  code = highlightRegexLiterals(code);
-  code = highlightKeywords(code);
-  code = highlightLiterals(code);
-  code = highlightGlobals(code);
-  code = highlightFunctionCalls(code);
-  code = highlightBrackets(code);
+    placeholders = []; // reset before each run
+    placeholderIndex = 0;
 
-  // Highlight nested brackets (AFTER all token replacements)
-  code = highlightBrackets(code);
+    // Performance mode for large content
+    if (code.length > PERFORMANCE_MODE_THRESHOLD) {
+        return highlightSyntaxPerformanceMode(code);
+    }
 
-  // Restore placeholders
-  for (const { token, html } of placeholders) {
-    code = code.replace(token, html);
-  }
+    // Standard highlighting for normal-sized content
+    code = extractStrings(code); // Template literals + strings
+    code = extractComments(code);
+    code = highlightRegexLiterals(code);
+    code = highlightKeywords(code);
+    code = highlightLiterals(code);
+    code = highlightGlobals(code);
+    code = highlightFunctionCalls(code);
+    code = highlightBrackets(code);
 
-  return code;
+    // Restore placeholders
+    for (const { token, html } of placeholders) {
+        code = code.replace(token, html);
+    }
+
+    return code;
 }
 
 let placeholders = [];
@@ -109,9 +121,55 @@ const highlightBrackets = (input) => {
   return chars.join("");
 };
 
-export function highlightEditorSyntax(editor, highlighted) {
-  const code = editor.innerText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// Performance mode with simplified highlighting
+function highlightSyntaxPerformanceMode(code) {
+    // Only highlight the most essential elements for performance
+    code = escapeHtml(code);
 
-  const highlightedHTML = highlightSyntax(code);
-  highlighted.innerHTML = highlightedHTML + "<br />";
+    // Simplified keyword highlighting (most common keywords only)
+    code = code.replace(
+        /\b(function|const|let|var|if|else|return|class|async|await)\b/g,
+        '<span class="keyword">$1</span>'
+    );
+
+    // Simplified string highlighting
+    code = code.replace(
+        /(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g,
+        '<span class="string">$1</span>'
+    );
+
+    // Simplified comment highlighting
+    code = code.replace(
+        /\/\/[^\n]*/g,
+        '<span class="comment">$1</span>'
+    );
+
+    return code;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+export function highlightEditorSyntax(editor, highlighted) {
+    const code = editor.innerText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // Performance check: Show loading indicator for large content
+    if (code.length > PERFORMANCE_MODE_THRESHOLD) {
+        highlighted.innerHTML = '<span class="loading">Highlighting large content...</span>';
+
+        // Use requestAnimationFrame for non-blocking processing
+        requestAnimationFrame(() => {
+            const highlightedHTML = highlightSyntax(code);
+            highlighted.innerHTML = highlightedHTML + "<br />";
+        });
+    } else {
+        // Standard processing for normal-sized content
+        const highlightedHTML = highlightSyntax(code);
+        highlighted.innerHTML = highlightedHTML + "<br />";
+    }
 }

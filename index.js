@@ -88,9 +88,12 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLineNumbers(editor, lineNumbers);
   }
   editor.addEventListener('input', syncLineNumbers);
-  editor.addEventListener('paste', function () {
-    setTimeout(syncLineNumbers, 0);
-  });
+    editor.addEventListener('paste', function () {
+        setTimeout(() => {
+            syncLineNumbers();
+            debouncedHighlight();
+        }, 0);
+    });
 
   // === Code Insertion Utilities ===
   function insertAtTop(code) {

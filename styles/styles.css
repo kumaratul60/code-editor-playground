@@ -224,6 +224,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.loading {
+    color: #888;
+    font-style: italic;
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.6;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .playground-wrapper {
