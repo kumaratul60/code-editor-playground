@@ -1,5 +1,7 @@
 import {renderValue} from "./logOutputUtils.js";
-import {analyzeCode,updateSummaryBarWithAnalysis} from "./updateSummaryBarWithAnalysis.js";
+import {updateSummaryBarWithAnalysis} from "./updateSummaryBarWithAnalysis.js";
+import {analyzeCode} from "./analyzedCode.js";
+import {executionTracker} from "./executionTracker.js";
 
 
 // Global object to track performance statistics across a session.
@@ -24,6 +26,10 @@ export async function runCode(editor, output) {
   // Initialization
   clearOutput(output);
   resetSessionStats();
+
+  // Reset execution tracker for new run
+  executionTracker.reset();
+
   lastLogTime = performance.now();
   const startTime = performance.now();
 
