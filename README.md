@@ -1,11 +1,11 @@
-# 🧠 JavaScript Code Editor — Built from Scratch
+# 🚀 JavaScript Code Editor — Built from Scratch
 
 [![wakatime](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778.svg)](https://wakatime.com/badge/user/1499525d-7f42-4e3a-b9c6-fbf14aa13712/project/a4c8d9fe-52e5-4cc1-8872-abc3e71f2778)
 
 > A modern JavaScript code editor playground with real-time code analysis, developer insights, and a non-intrusive floating insights sidebar.
 
 
-A **pure vanilla JavaScript** code editor with advanced developer insights, real-time analysis, and professional-grade features. Built without any external dependencies, AI assistance, or third-party packages - just clean, efficient code.
+A **pure vanilla JavaScript** code editor with advanced developer insights, real-time analysis, and professional-grade features. Built without any external dependencies, or third-party packages - just clean, efficient code.
 
 ## ✨ Key Features
 
@@ -44,6 +44,13 @@ Our crown jewel - a comprehensive developer insights panel that provides:
 - **Status-Based Colors**: Green/yellow/red indicators for performance warnings
 - **Code Quality Scoring**: 0-100 performance scores with actionable recommendations
 - **Complexity Analysis**: Big O notation analysis and optimization suggestions
+- **Smart Summary Bar**: Real-time code metrics display with comprehensive hover tooltips
+- **Detailed Hover Analysis**: Intelligent tooltips showing only non-zero values for:
+    - **Function Breakdown**: Regular, arrow, async, methods, constructors, generators, higher-order
+    - **Loop Analysis**: For, while, do-while, for-in, for-of, forEach, functional methods
+    - **Async Operations**: Async functions, await expressions, promises, fetch calls, timers, callbacks
+    - **Performance Rating**: Dynamic performance assessment with execution metrics
+
 
 ### 🎨 **Professional Design**
 - **Modern UI**: Clean, minimalist design with professional typography
@@ -53,9 +60,6 @@ Our crown jewel - a comprehensive developer insights panel that provides:
 - **Enterprise-Grade Styling**: Professional color schemes and spacing
 
 ## 🛠️ **Technical Architecture**
-
-### **Modular Structure**
-
 
 ### **Core Technologies**
 - **HTML5**: Semantic markup with modern standards
