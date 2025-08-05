@@ -14,6 +14,21 @@
   --line-number-bg: #222;
   --line-number-color: #888;
   --line-number-border: #333;
+    --dev-panel-bg: #1a1a1a;
+    --dev-panel-text: #e0e0e0;
+    --dev-panel-border: #333;
+    --dev-panel-accent: #61dafb;
+    --dev-panel-secondary: #f6c343;
+    --dev-panel-success: #4ade80;
+    --dev-panel-warning: #f59e0b;
+    --dev-panel-error: #ef4444;
+    --dev-panel-card-bg: rgba(30, 30, 30, 0.8);
+    --dev-panel-card-border: rgba(255, 255, 255, 0.1);
+    --dev-panel-shadow: rgba(0, 0, 0, 0.3);
+    --dev-panel-scrollbar: #444;
+    --dev-panel-scrollbar-thumb: #666;
+    --dev-panel-metric-bg: rgba(97, 218, 251, 0.1);
+    --dev-panel-metric-border: rgba(97, 218, 251, 0.3);
 }
 
 /* Light Theme */
@@ -32,6 +47,21 @@
   --line-number-bg: #f4f4f4;
   --line-number-color: #aaa;
   --line-number-border: #ddd;
+    --dev-panel-bg: #ffffff;
+    --dev-panel-text: #1f2937;
+    --dev-panel-border: #d1d5db;
+    --dev-panel-accent: #0ea5e9;
+    --dev-panel-secondary: #f59e0b;
+    --dev-panel-success: #10b981;
+    --dev-panel-warning: #f59e0b;
+    --dev-panel-error: #ef4444;
+    --dev-panel-card-bg: rgba(255, 255, 255, 0.9);
+    --dev-panel-card-border: rgba(0, 0, 0, 0.1);
+    --dev-panel-shadow: rgba(0, 0, 0, 0.1);
+    --dev-panel-scrollbar: #e5e7eb;
+    --dev-panel-scrollbar-thumb: #9ca3af;
+    --dev-panel-metric-bg: rgba(14, 165, 233, 0.1);
+    --dev-panel-metric-border: rgba(14, 165, 233, 0.3);
 }
 
 #theme-toggle {
