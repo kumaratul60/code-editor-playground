@@ -143,20 +143,46 @@ header h1 {
     position: absolute;
     top: 0;
     left: 0;
+    font-variant-ligatures: none;
+    text-rendering: optimizeSpeed;
 }
+
 #highlighted-code {
     z-index: 0;
     pointer-events: none;
     color: var(--text);
     overflow: hidden;
+    /* Ensure background layer doesn't interfere with cursor */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    /* Allow scrolling for proper layer synchronization */
+    overflow-x: auto;
+    overflow-y: auto;
+    /* Hide scrollbars but maintain scroll functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
+
+#highlighted-code::-webkit-scrollbar {
+    display: none;
+}
+
 #code-text {
     z-index: 1;
     color: transparent;
     caret-color: var(--caret, var(--text));
     overflow: hidden;
-    /* Ensure the text input receives clicks */
     pointer-events: auto;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    /* Fix cursor positioning at end of content */
+    resize: none;
+    /* Ensure cursor is visible at the end */
+    min-height: calc(100% + 1.5em);
 }
 
 /* Output section */

@@ -62,19 +62,60 @@ export function toggleRunButton(editor, runBtn) {
 }
 
 export function highlightCurrentLine(editor, lineNumbers) {
-  const selection = window.getSelection();
-  if (!selection.rangeCount) return;
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
 
-  const range = selection.getRangeAt(0);
-  const preCaretRange = range.cloneRange();
-  preCaretRange.selectNodeContents(editor);
-  preCaretRange.setEnd(range.endContainer, range.endOffset);
+    const range = selection.getRangeAt(0);
 
-  const lineIndex = preCaretRange.toString().split(/\n/).length - 1;
+    // Better cursor position calculation for layered editor
+    let lineIndex = 0;
 
-  lineNumbers.querySelectorAll("span").forEach((span, idx) => {
-    span.classList.toggle("active-line", idx === lineIndex);
-  });
+    try {
+        // Get the text content up to cursor position
+        const textBeforeCursor = getTextBeforeCursor(editor, range);
+
+        // Count actual line breaks in the content
+        const lines = textBeforeCursor.split(/\r\n|\r|\n/);
+        lineIndex = Math.max(0, lines.length - 1);
+
+    } catch (error) {
+        // Fallback to original method if new method fails
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(editor);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        lineIndex = preCaretRange.toString().split(/\n/).length - 1;
+    }
+
+    // Update line number highlighting
+    lineNumbers.querySelectorAll("span").forEach((span, idx) => {
+        span.classList.toggle("active-line", idx === lineIndex);
+    });
+}
+
+// Helper function to get text before cursor position
+function getTextBeforeCursor(editor, range) {
+    const walker = document.createTreeWalker(
+        editor,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+
+    let textContent = '';
+    let node;
+
+    while (node = walker.nextNode()) {
+        if (node === range.startContainer) {
+            // Add partial text up to cursor position
+            textContent += node.textContent.substring(0, range.startOffset);
+            break;
+        } else {
+            // Add full text content of this node
+            textContent += node.textContent;
+        }
+    }
+
+    return textContent;
 }
 
 
