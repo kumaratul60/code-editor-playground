@@ -47,72 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(range);
     }
 
-    // === Helper: Preserve Cursor Position ===
-    function preserveCursorPosition(callback) {
-        const sel = window.getSelection();
-        let cursorPos = 0;
-        let startContainer = null;
-        let startOffset = 0;
-
-        if (sel.rangeCount > 0) {
-            const range = sel.getRangeAt(0);
-            // Store exact position for precise restoration
-            startContainer = range.startContainer;
-            startOffset = range.startOffset;
-
-            // Calculate text position as fallback
-            const preCaretRange = range.cloneRange();
-            preCaretRange.selectNodeContents(editor);
-            preCaretRange.setEnd(range.endContainer, range.endOffset);
-            cursorPos = preCaretRange.toString().length;
-        }
-
-        // Execute callback (highlighting, etc.)
-        callback();
-
-        // Restore cursor position with improved logic
-        requestAnimationFrame(() => {
-            try {
-                const sel = window.getSelection();
-                const range = document.createRange();
-
-                // Method 1: Try to restore to exact container and offset (most precise)
-                if (startContainer && startContainer.parentNode && editor.contains(startContainer)) {
-                    const maxOffset = startContainer.nodeType === Node.TEXT_NODE
-                        ? startContainer.textContent.length
-                        : startContainer.childNodes.length;
-                    range.setStart(startContainer, Math.min(startOffset, maxOffset));
-                    range.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    return; // Success - exit early
-                }
-
-                // Method 2: Fallback to text position calculation
-                const textNode = editor.firstChild;
-                if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-                    range.setStart(textNode, Math.min(cursorPos, textNode.textContent.length));
-                    range.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    return; // Success - exit early
-                }
-
-                // Method 3: Last resort - position at end of editor content
-                if (editor.childNodes.length > 0) {
-                    range.selectNodeContents(editor);
-                    range.collapse(false);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                }
-
-            } catch (e) {
-                // If all positioning methods fail, don't force cursor movement
-                console.warn('Cursor positioning failed, keeping current position:', e);
-                // Don't call focusEditorAtEnd() to avoid unwanted jumps
-            }
-        });
-    }
 
     // === Helper: Sync Scroll Between Layers ===
     function syncScrollPosition() {
@@ -127,12 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Scroll Sync Event ===
     document.querySelector('.editor-container').addEventListener('scroll', syncScrollPosition);
 
-
-    const debouncedHighlight = debounceUtils(() => {
-        preserveCursorPosition(() => {
-            highlightEditorSyntax(editor, highlighted);
-        });
-    }, 150);
 
     // === Click on Editor Section Focuses Editor ===
     document.querySelector('.editor-section').addEventListener('click', () => {
@@ -162,9 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Immediate sync
         syncLineNumbers();
         toggleRunButton(editor, runBtn);
-
-        // Debounced highlight with cursor preservation
-        debouncedHighlight();
+        highlightEditorSyntax(editor, highlighted);
     });
 
     // === Paste Event Handler ===
@@ -173,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             syncLineNumbers();
             toggleRunButton(editor, runBtn);
-            debouncedHighlight();
+            highlightEditorSyntax(editor, highlighted);
         }, 20);
     });
 
@@ -197,6 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
         syncLineNumbers();
         focusEditorAtEnd();
     }
+
     window.insertAtTop = insertAtTop;
     window.insertAtBottom = insertAtBottom;
     window.insertAtCursor = insertAtCursor;
@@ -236,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
             requestAnimationFrame(() => {
                 updateLineNumbers(editor, lineNumbers);
                 toggleRunButton(editor, runBtn);
-                // Use debounced highlight to avoid cursor jumping
-                debouncedHighlight();
+                highlightEditorSyntax(editor, highlighted);
+
             });
             return;
         }
@@ -249,12 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
             editor.innerText = formatted;
             focusEditorAtEnd()
             requestAnimationFrame(() => {
-                debouncedHighlight();
+                highlightEditorSyntax(editor, highlighted);
                 updateLineNumbers(editor, lineNumbers);
                 toggleRunButton(editor, runBtn);
                 runCode(editor, output);
             });
-            return;
+            // return;
         }
     });
 
@@ -279,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Console Override for Output Panel ===
     const originalLog = console.log;
     console.log = (...args) => {
-        originalLog(...args);
-        logOutput(args.join(" "), output);
+        args.forEach((arg) => logOutput(arg, output));
+        originalLog.apply(console, args);
     };
 });
