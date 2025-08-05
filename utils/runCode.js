@@ -1,7 +1,7 @@
 import {renderValue} from "./logOutputUtils.js";
-import {updateSummaryBarWithAnalysis} from "./updateSummaryBarWithAnalysis.js";
-import {analyzeCode} from "./analyzedCode.js";
-import {executionTracker} from "./executionTracker.js";
+import {updateSummaryBarWithAnalysis} from "../devInsights/updateSummaryBarWithAnalysis.js";
+import {analyzeCode} from "../devInsights/analyzedCode.js";
+import {executionTracker} from "../devInsights/executionTracker.js";
 
 
 // Global object to track performance statistics across a session.
