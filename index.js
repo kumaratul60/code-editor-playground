@@ -3,7 +3,6 @@ import {
     spawnFloatingEmoji,
     toggleRunButton,
     updateLineNumbers,
-    debounceUtils
 } from "./utils/commonUtils.js";
 import { formatCode } from "./utils/formatCode.js";
 import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
