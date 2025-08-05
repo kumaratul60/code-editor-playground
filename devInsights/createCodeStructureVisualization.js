@@ -6,7 +6,7 @@ export function createCodeStructureVisualization(analysis, relationships) {
     if (analysis.functions > 0) {
         html += `
       <div style="font-weight: bold; margin-bottom: 8px; color: #61dafb;">
-        📊 Code Structure
+        Code Structure
       </div>
       <div style="background: rgba(30,30,30,0.6); border-radius: 6px; padding: 10px; font-size: 13px;">
     `;

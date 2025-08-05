@@ -18,16 +18,17 @@ export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code=""
         summaryElement.innerHTML = `
       🧩 ${analysis.functions} func |
       🔁 ${analysis.loops} loops |
-      ⏳ ${analysis.asyncOps} async |
-      🧠 Complexity: ${complexityScore.score}/10 ${complexityScore.icon}
+      ⏳ ${analysis.asyncOps} async
+     
     `;
+        // 🧠 Complexity: ${complexityScore.score}/10 ${complexityScore.icon}
+        // Complexity Score: ${complexityScore.score}/10 (${complexityScore.label})
 
         // Add tooltip with more detailed information
         summaryElement.title = `
       Functions: ${analysis.functions}
       Loops: ${analysis.loops}
       Async Operations: ${analysis.asyncOps}
-      Complexity Score: ${complexityScore.score}/10 (${complexityScore.label})
       Performance: ${performanceRating.label}
       
       ${getOptimizationTips(analysis, executionTime)}
@@ -40,7 +41,6 @@ export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code=""
         execTimeElement.title = `Performance Rating: ${performanceRating.label}`;
     }
 
-    // Optionally add a detailed developer insights panel
     addDeveloperInsightsPanel(analysis, executionTime,code);
 }
 

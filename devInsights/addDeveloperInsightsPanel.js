@@ -1,19 +1,20 @@
-import {estimateBigOComplexity} from "./estimateBigOComplexity.js";
-import {calculateCodeEfficiency} from "./calculateCodeEfficiency.js";
-import {createCodeStructureVisualization} from "./createCodeStructureVisualization.js";
-import {createExecutionTimeVisualization} from "./createExecutionTimeVisualization.js";
-import {calculateComplexityScore} from "./calculateComplexityScore.js";
-import {getPerformanceRating} from "./getPerformanceRating.js";
-import {calculateMaintainabilityScore} from "./calculateMaintainabilityScore.js";
-import {analyzeFunctionRelationships} from "./analyzeFunctionRelationships.js";
-import {analyzeExecutionHotspots} from "./analyzeExecutionHotspots.js";
-// import {executionTracker} from "./executionTracker.js";
-
+import { analyzeExecutionHotspots } from "./analyzeExecutionHotspots.js";
+import { createCodeStructureVisualization } from "./createCodeStructureVisualization.js";
+import { createExecutionTimeVisualization } from "./createExecutionTimeVisualization.js";
+import { generateOptimizationTips } from "./generateOptimizationTips.js";
+import { analyzeFunctionRelationships } from "./analyzeFunctionRelationships.js";
+import { estimateBigOComplexity } from "./estimateBigOComplexity.js";
+import { calculateCodeEfficiency } from "./calculateCodeEfficiency.js";
 
 export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
+    // Remove existing panel if it exists
+    const existingPanel = document.getElementById('dev-insights-sidebar');
+    if (existingPanel) {
+        existingPanel.remove();
+    }
 
-    // Real-time Execution Metrics
-    const executionMetrics = {
+    // Get real-time execution metrics
+    const metrics = window.executionTracker ? window.executionTracker.getMetrics() : {
         peakMemory: 0,
         gcCollections: 0,
         domManipulations: 0,
@@ -22,286 +23,710 @@ export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
         errorCount: 0
     };
 
-    const metrics = executionMetrics || (window.executionTracker ? window.executionTracker.getMetrics() : {
-        peakMemory: 0,
-        gcCollections: 0,
-        domManipulations: 0,
-        networkRequests: 0,
-        cacheHits: 0,
-        errorCount: 0
-    })
+    // Advanced analysis
+    const hotspots = analyzeExecutionHotspots(analysis, executionTime);
+    const relationships = analyzeFunctionRelationships(code);
+    const bigOComplexity = estimateBigOComplexity(code);
+    const efficiency = calculateCodeEfficiency(analysis);
+    const optimizationTips = generateOptimizationTips(analysis, executionTime);
 
-    // Sidebar container
-    let sidebar = document.getElementById('dev-insights-sidebar');
-    if (!sidebar) {
-        sidebar = document.createElement('div');
-        sidebar.id = 'dev-insights-sidebar';
-        document.body.appendChild(sidebar);
+    // Calculate standardized metrics
+    const standardizedMetrics = calculateStandardizedMetrics(analysis, executionTime, metrics, code);
 
-        // Toggle button
-        const toggleBtn = document.createElement('button');
-        toggleBtn.id = 'dev-insights-toggle-btn';
-        toggleBtn.innerHTML = '💡';
-        sidebar.appendChild(toggleBtn);
+    // Create sidebar container
+    const sidebar = document.createElement('div');
+    sidebar.id = 'dev-insights-sidebar';
+    sidebar.innerHTML = createPanelHTML(analysis, executionTime, standardizedMetrics, hotspots, relationships, bigOComplexity, efficiency, optimizationTips, metrics);
 
-        toggleBtn.onclick = function () {
-            sidebar.classList.toggle('open');
-        };
-    }
+    document.body.appendChild(sidebar);
 
-    // Panel content
-    let panel = document.getElementById('dev-insights-panel');
-    if (!panel) {
-        panel = document.createElement('div');
-        panel.id = 'dev-insights-panel';
-        sidebar.appendChild(panel);
-    }
+    // Add event listeners
+    setupEventListeners(sidebar);
+}
 
-    const bigO = estimateBigOComplexity(code);
-    // Separate async analysis for dev panel only - improved patterns
-    // const awaitCount = (code.match(/\bawait\b/g) || []).length;
-    // const promiseCount = (code.match(/\bPromise\.[a-zA-Z]+/g) || []).length;
-    // const fetchCount = (code.match(/\bfetch\s*\(/g) || []).length;
-    // const timeoutCount = (code.match(/\bsetTimeout\s*\(/g) || []).length;
-    // const intervalCount = (code.match(/\bsetInterval\s*\(/g) || []).length;
-    // // Categorize for display
-    // const asyncFunctionCalls = awaitCount + promiseCount + fetchCount;
-    // const asyncOperations = timeoutCount + intervalCount;
+function calculateStandardizedMetrics(analysis, executionTime, metrics, code) {
+    // Complexity Score (0-100)
+    const complexityScore = Math.min(100, (analysis.functions * 10) + (analysis.loops * 15) + (analysis.asyncOps * 12));
 
-    /*
-      <div style="color: #aaa;">Async Function Calls:</div>
-    <div style="font-weight: bold;">${asyncFunctionCalls}</div>
-    <div style="color: #aaa;">Async Operations:</div>
-    <div style="font-weight: bold;">${asyncOperations}</div>
-     */
+    // Performance Score (0-100) - inverse of execution time
+    const performanceScore = Math.max(0, 100 - Math.min(100, executionTime / 5));
 
+    // Maintainability Score (0-100)
+    const codeLength = code.length;
+    const avgFunctionLength = analysis.functions > 0 ? codeLength / analysis.functions : 0;
+    const maintainabilityScore = Math.max(0, 100 - Math.min(50, avgFunctionLength / 20) - Math.min(30, analysis.loops * 5) - Math.min(20, complexityScore / 5));
 
-    // Code quality analysis
-    const codeLines = code.split('\n').filter(line => line.trim()).length;
-    const commentLines = (code.match(/\/\/.*|\/\*[\s\S]*?\*\//g) || []).length;
-    const commentRatio = ((commentLines / codeLines) * 100).toFixed(1);
-    const avgLineLength = code.split('\n').reduce((sum, line) => sum + line.length, 0) / code.split('\n').length;
-    const longLines = code.split('\n').filter(line => line.length > 80).length;
+    // Memory Efficiency (0-100)
+    const memoryScore = metrics.peakMemory > 0 ? Math.max(0, 100 - Math.min(100, metrics.peakMemory / 1000000)) : 95;
 
-// Error Handling & Security
-    const tryBlocks = (code.match(/\btry\s*\{/g) || []).length;
-    const catchBlocks = (code.match(/\bcatch\s*\(/g) || []).length;
-    const throwStatements = (code.match(/\bthrow\b/g) || []).length;
-    const consoleUsage = (code.match(/console\.(log|error|warn|info)/g) || []).length;
-    const evalUsage = (code.match(/\beval\s*\(/g) || []).length;
-    const innerHTMLUsage = (code.match(/innerHTML/g) || []).length;
+    // Code Quality Score (weighted average)
+    const qualityScore = Math.round(
+        (performanceScore * 0.3) +
+        (maintainabilityScore * 0.25) +
+        (memoryScore * 0.2) +
+        ((100 - Math.min(100, complexityScore)) * 0.25)
+    );
 
-    // Modern JavaScript Features
-    const arrowFunctions = (code.match(/=>\s*[{(]?/g) || []).length;
-    const destructuring = (code.match(/\{[^}]*\}\s*=/g) || []).length;
-    const templateLiterals = (code.match(/`[^`]*`/g) || []).length;
-    const spreadOperator = (code.match(/\.{3}/g) || []).length;
-    const asyncAwait = (code.match(/\basync\s+function|\basync\s*\(/g) || []).length;
-    const classes = (code.match(/\bclass\s+\w+/g) || []).length;
-
-    // Performance Indicators
-    const domQueries = (code.match(/document\.(getElementById|querySelector|getElementsBy)/g) || []).length;
-    const eventListeners = (code.match(/addEventListener|on\w+\s*=/g) || []).length;
-    const intervals = (code.match(/setInterval|setTimeout/g) || []).length;
-    const apiCalls = (code.match(/fetch\s*\(|axios\.|XMLHttpRequest/g) || []).length;
-    const jsonOperations = (code.match(/JSON\.(parse|stringify)/g) || []).length;
-
-    // Code Patterns & Architecture
-    const designPatterns = {
-        singleton: (code.match(/getInstance|new\s+\w+\(\)\s*===\s*new\s+\w+\(\)/g) || []).length,
-        factory: (code.match(/create\w+|factory/gi) || []).length,
-        observer: (code.match(/addEventListener|subscribe|notify/g) || []).length,
-        module: (code.match(/export|import|module\.exports/g) || []).length
+    return {
+        complexity: { score: complexityScore, label: getScoreLabel(complexityScore, 'complexity') },
+        performance: { score: performanceScore, label: getScoreLabel(performanceScore, 'performance') },
+        maintainability: { score: maintainabilityScore, label: getScoreLabel(maintainabilityScore, 'maintainability') },
+        memory: { score: memoryScore, label: getScoreLabel(memoryScore, 'memory') },
+        quality: { score: qualityScore, label: getScoreLabel(qualityScore, 'quality') }
     };
+}
 
-    // Memory & Resource Usage
-    const memoryLeakRisks = (code.match(/setInterval(?!.*clearInterval)|addEventListener(?!.*removeEventListener)/g) || []).length;
-    const globalVariables = (code.match(/var\s+\w+|window\.\w+\s*=/g) || []).length;
-    const closures = (code.match(/function[^}]*function|=>[^}]*=>/g) || []).length;
+function getScoreLabel(score, type) {
+    if (score >= 90) return 'Excellent';
+    if (score >= 75) return 'Good';
+    if (score >= 60) return 'Fair';
+    if (score >= 40) return 'Poor';
+    return 'Critical';
+}
 
-    // Testing & Debugging
-    const testKeywords = (code.match(/\b(test|it|describe|expect|assert|should)\b/g) || []).length;
-    const debugStatements = (code.match(/debugger|console\.(log|debug)/g) || []).length;
-    const conditionalLogic = (code.match(/\bif\s*\(|\bswitch\s*\(/g) || []).length;
+function createPanelHTML(analysis, executionTime, metrics, hotspots, relationships, bigOComplexity, efficiency, optimizationTips, realTimeMetrics) {
+    return `
+        <button id="dev-insights-toggle-btn" title="Toggle Developer Insights">
+            💡
+        </button>
+        
+        <div id="dev-insights-panel">
+            <div class="dev-panel-header">
+                <div class="dev-panel-title">
+                    🚀 Developer Insights
+                </div>
+                <button class="dev-panel-close" onclick="toggleDevInsights()">×</button>
+            </div>
+            
+          <div class="dev-panel-content">
+                ${createOverviewSection(analysis, executionTime, metrics)}
+                ${createComplexitySection(bigOComplexity, analysis)}
+                ${createPerformanceSection(metrics, hotspots)}
+                ${createCodeQualitySection(relationships, efficiency)}
+                ${createCodeStructureVisualization(analysis, relationships)}
+                ${createExecutionTimeVisualization(hotspots)}
+                ${createMemorySection(realTimeMetrics,executionTime)}
+                
+            </div>
+        </div>
+    `;
 
+}
 
-
-    panel.innerHTML = `
-      <div style="font-weight:bold; font-size:16px; color:#61dafb; margin-bottom:10px;">
-        Developer Insights
-      </div>
-      
-  <div style="margin-bottom: 12px; border-bottom: 1px solid #444; padding-bottom: 8px;">
-    <span style="font-weight: bold; font-size: 15px;">Code Analysis Dashboard</span>
-    <span style="float: right; font-size: 12px; color: #888;">${new Date().toLocaleTimeString()}</span>
-  </div>
-  
-  <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; margin-bottom: 15px;">
-  <div style="font-weight: bold">~Complexity (Time):</div>
-  <div>
-    <span style="color:#f6c343">${bigO.time}</span>
-    <span style="color:#888;">
-      (${bigO.maxLoopDepth > 1 ? 'Nested loops detected' : bigO.maxLoopDepth === 1 ? 'Single loop' : 'No loops'})
-    </span>
-  </div>
-  <div style="font-weight: bold;">~Complexity (Space):</div>
-  <div>
-    <span style="color:#f6c343">${bigO.space}</span>
-    <span style="color:#888;">
-      (${bigO.arrayCount} arrays, ${bigO.objectCount} objects)
-    </span>
-  </div>
-    <div style="color: #aaa;">Functions:</div>
-    <div style="font-weight: bold;">${analysis.functions}</div>
-    <div style="color: #aaa;">Loops:</div>
-    <div style="font-weight: bold;">${analysis.loops}</div>
-    <div style="color: #aaa;">Async Ops:</div>
-    <div style="font-weight: bold;">${analysis.asyncOps}</div>
-   
-    <div style="color: #aaa;">Complexity:</div>
-    <div style="font-weight: bold;">
-      ${calculateComplexityScore(analysis).score}/10 ${calculateComplexityScore(analysis).icon}
-    </div>
-    <div style="color: #aaa;">Performance:</div>
-    <div style="font-weight: bold;">
-      ${getPerformanceRating(executionTime).label} ${getPerformanceRating(executionTime).icon}
-    </div>
-    <div style="color: #aaa;">Execution:</div>
-    <div style="font-weight: bold; color: ${executionTime < 100 ? "#a6e22e" : executionTime < 300 ? "#f6c343" : "#ff6b6b"}">
-      ${executionTime.toFixed(2)} ms
-    </div>
-    <div style="color: #aaa;">Memory:</div>
-    <div style="font-weight: bold;">
-      ${
-        (performance && performance.memory && performance.memory.usedJSHeapSize)
-            ? `${(performance.memory.usedJSHeapSize / (1024 * 1024)).toFixed(2)} MB / ${(performance.memory.jsHeapSizeLimit / (1024 * 1024)).toFixed(0)} MB`
-            : "Not available"
-    }
-    </div>
-    <div style="color: #aaa;">Efficiency:</div>
-    <div style="font-weight: bold;">
-      ${calculateCodeEfficiency(analysis).label}
-    </div>
-    <div style="color: #aaa;">Maintainability:</div>
-    <div style="font-weight: bold;">
-      ${calculateMaintainabilityScore(analysis).label} (${calculateMaintainabilityScore(analysis).score}/10)
-    </div>
-  </div>
-  <!-- Code Structure Visualization -->
-  ${createCodeStructureVisualization(analysis, analyzeFunctionRelationships(code))}
-  
-  <!-- Execution Hotspots Visualization -->
-  ${createExecutionTimeVisualization(analyzeExecutionHotspots(analysis, executionTime))}
-  
-    <!-- Code Quality Section -->
-  ${codeLines > 0 || commentRatio > 0 || avgLineLength > 0 || longLines > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">📊 Code Quality</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${codeLines > 0 ? `<div style="color: #aaa;">Lines of Code:</div><div style="font-weight: bold;">${codeLines}</div>` : ''}
-      ${commentRatio > 0 ? `<div style="color: #aaa;">Comment Ratio:</div><div style="font-weight: bold;">${commentRatio}%</div>` : ''}
-      ${avgLineLength > 0 ? `<div style="color: #aaa;">Avg Line Length:</div><div style="font-weight: bold;">${avgLineLength.toFixed(0)} chars</div>` : ''}
-      ${longLines > 0 ? `<div style="color: #aaa;">Long Lines (>80 chars):</div><div style="font-weight: bold; color: ${longLines > 5 ? '#f6c343' : '#a6e22e'}">${longLines}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-   <!-- Modern JS Features -->
-  ${arrowFunctions > 0 || asyncAwait > 0 || destructuring > 0 || templateLiterals > 0 || spreadOperator > 0 || classes > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🚀 Modern Features</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${arrowFunctions > 0 ? `<div style="color: #aaa;">Arrow Functions:</div><div style="font-weight: bold;">${arrowFunctions}</div>` : ''}
-      ${asyncAwait > 0 ? `<div style="color: #aaa;">Async/Await:</div><div style="font-weight: bold;">${asyncAwait}</div>` : ''}
-      ${destructuring > 0 ? `<div style="color: #aaa;">Destructuring:</div><div style="font-weight: bold;">${destructuring}</div>` : ''}
-      ${templateLiterals > 0 ? `<div style="color: #aaa;">Template Literals:</div><div style="font-weight: bold;">${templateLiterals}</div>` : ''}
-      ${spreadOperator > 0 ? `<div style="color: #aaa;">Spread Operator:</div><div style="font-weight: bold;">${spreadOperator}</div>` : ''}
-      ${classes > 0 ? `<div style="color: #aaa;">Classes:</div><div style="font-weight: bold;">${classes}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-    <!-- Performance Indicators -->
-  ${domQueries > 0 || eventListeners > 0 || intervals > 0 || apiCalls > 0 || jsonOperations > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">📊 Performance Indicators</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${domQueries > 0 ? `<div style="color: #aaa;">DOM Queries:</div><div style="font-weight: bold; color: ${domQueries > 5 ? '#ff6b6b' : '#a6e22e'}">${domQueries}</div>` : ''}
-      ${eventListeners > 0 ? `<div style="color: #aaa;">Event Listeners:</div><div style="font-weight: bold; color: ${eventListeners > 10 ? '#f6c343' : '#a6e22e'}">${eventListeners}</div>` : ''}
-      ${intervals > 0 ? `<div style="color: #aaa;">Timers (setInterval/setTimeout):</div><div style="font-weight: bold; color: ${intervals > 5 ? '#f6c343' : '#a6e22e'}">${intervals}</div>` : ''}
-      ${apiCalls > 0 ? `<div style="color: #aaa;">API Calls:</div><div style="font-weight: bold; color: ${apiCalls > 5 ? '#f6c343' : '#a6e22e'}">${apiCalls}</div>` : ''}
-      ${jsonOperations > 0 ? `<div style="color: #aaa;">JSON Operations:</div><div style="font-weight: bold;">${jsonOperations}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-  
-    <!-- Performance Risks -->
-  ${memoryLeakRisks > 0 || globalVariables > 0 || closures > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">⚠️ Performance Risks</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${memoryLeakRisks > 0 ? `<div style="color: #aaa;">Memory Leak Risks:</div><div style="font-weight: bold; color: ${memoryLeakRisks > 0 ? '#ff6b6b' : '#a6e22e'}">${memoryLeakRisks}</div>` : ''}
-      ${globalVariables > 0 ? `<div style="color: #aaa;">Global Variables:</div><div style="font-weight: bold; color: ${globalVariables > 3 ? '#f6c343' : '#a6e22e'}">${globalVariables}</div>` : ''}
-      ${closures > 0 ? `<div style="color: #aaa;">Closures:</div><div style="font-weight: bold;">${closures}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-  <!-- Design Patterns -->
-  ${designPatterns.singleton > 0 || designPatterns.factory > 0 || designPatterns.observer > 0 || designPatterns.module > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🏗️ Design Patterns</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${designPatterns.singleton > 0 ? `<div style="color: #aaa;">Singleton Pattern:</div><div style="font-weight: bold;">${designPatterns.singleton}</div>` : ''}
-      ${designPatterns.factory > 0 ? `<div style="color: #aaa;">Factory Pattern:</div><div style="font-weight: bold;">${designPatterns.factory}</div>` : ''}
-      ${designPatterns.observer > 0 ? `<div style="color: #aaa;">Observer Pattern:</div><div style="font-weight: bold;">${designPatterns.observer}</div>` : ''}
-      ${designPatterns.module > 0 ? `<div style="color: #aaa;">Module Pattern:</div><div style="font-weight: bold;">${designPatterns.module}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-  <!-- Testing & Debugging -->
-  ${testKeywords > 0 || debugStatements > 0 || conditionalLogic > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🧪 Testing & Debugging</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${testKeywords > 0 ? `<div style="color: #aaa;">Test Keywords:</div><div style="font-weight: bold; color: ${testKeywords > 0 ? '#a6e22e' : '#888'}">${testKeywords}</div>` : ''}
-      ${debugStatements > 0 ? `<div style="color: #aaa;">Debug Statements:</div><div style="font-weight: bold; color: ${debugStatements > 10 ? '#f6c343' : '#a6e22e'}">${debugStatements}</div>` : ''}
-      ${conditionalLogic > 0 ? `<div style="color: #aaa;">Conditional Logic:</div><div style="font-weight: bold;">${conditionalLogic}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-  <!-- Security & Error Handling -->
-  ${tryBlocks > 0 || catchBlocks > 0 || throwStatements > 0 || consoleUsage > 0 || (evalUsage + innerHTMLUsage) > 0 ? `
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">🔒 Security & Errors</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      ${(tryBlocks > 0 || catchBlocks > 0) ? `<div style="color: #aaa;">Try/Catch Blocks:</div><div style="font-weight: bold;">${tryBlocks}/${catchBlocks}</div>` : ''}
-      ${throwStatements > 0 ? `<div style="color: #aaa;">Throw Statements:</div><div style="font-weight: bold; color: ${throwStatements > 0 ? '#a6e22e' : '#888'}">${throwStatements}</div>` : ''}
-      ${consoleUsage > 0 ? `<div style="color: #aaa;">Console Usage:</div><div style="font-weight: bold; color: ${consoleUsage > 10 ? '#f6c343' : '#a6e22e'}">${consoleUsage}</div>` : ''}
-      ${(evalUsage + innerHTMLUsage) > 0 ? `<div style="color: #aaa;">Security Risks:</div><div style="font-weight: bold; color: ${evalUsage + innerHTMLUsage > 0 ? '#ff6b6b' : '#a6e22e'}">${evalUsage + innerHTMLUsage}</div>` : ''}
-    </div>
-  </div>` : ''}
-  
-  
-  
-  
-  <!-- Footer -->
-  <div style="margin-top: 15px; font-size: 12px; color: #888; text-align: right; border-top: 1px solid #444; padding-top: 8px;">
-    Click 💡 to open/close
-  </div>
+function createOverviewSection(analysis, executionTime, metrics) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Code Overview</div>
+                <div class="metric-value">${metrics.quality.score}/100</div>
+            </div>
+            <div class="complexity-grid">
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.functions}</div>
+                    <div class="complexity-label">Functions</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.loops}</div>
+                    <div class="complexity-label">Loops</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.asyncOps}</div>
+                    <div class="complexity-label">Async Ops</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${executionTime.toFixed(1)}ms</div>
+                    <div class="complexity-label">Exec Time</div>
+                </div>
+            </div>
+            <div class="metric-description">
+                Overall code quality: ${metrics.quality.label}
+            </div>
+        </div>
     `;
 }
 
-/*
-<!-- Real-time Execution Metrics -->
-  <div style="margin: 15px 0; border-top: 1px solid #444; padding-top: 10px;">
-    <div style="font-weight: bold; color: #61dafb; margin-bottom: 8px;">⚡ Execution Metrics</div>
-    <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 13px;">
-      <div style="color: #aaa;">Peak Memory:</div>
-      <div style="font-weight: bold;">${(metrics.peakMemory / (1024 * 1024)).toFixed(2)} MB</div>
-      <div style="color: #aaa;">DOM Changes:</div>
-      <div style="font-weight: bold; color: ${metrics.domManipulations > 10 ? '#f6c343' : '#a6e22e'}">${metrics.domManipulations}</div>
-      <div style="color: #aaa;">Network Requests:</div>
-      <div style="font-weight: bold; color: ${metrics.networkRequests > 5 ? '#f6c343' : '#a6e22e'}">${metrics.networkRequests}</div>
-      <div style="color: #aaa;">Runtime Errors:</div>
-      <div style="font-weight: bold; color: ${metrics.errorCount > 0 ? '#ff6b6b' : '#a6e22e'}">${metrics.errorCount}</div>
-    </div>
-  </div>
- */
+function detectFunctionPatterns(codeText) {
+    return {
+        regular: (codeText.match(/function\s+\w+/g) || []).length,
+        arrow: (codeText.match(/=>\s*[{(]?/g) || []).length,
+        async: (codeText.match(/async\s+(?:function|\()/g) || []).length,
+        closures: (codeText.match(/function[^}]*(?:function|=>)|=>[^}]*(?:function|=>)|\(\s*\)\s*=>\s*\([^)]*\)\s*=>/g) || []).length,
+        total: (codeText.match(/function\s+\w+|=>\s*[{(]?|async\s+(?:function|\()/g) || []).length
+    };
+}
+
+function detectLoopPatterns(codeText) {
+    const traditional = (codeText.match(/for\s*\(|while\s*\(|do\s*\{/g) || []).length;
+    const functional = (codeText.match(/\.(?:map|filter|reduce|forEach|find|some|every)\s*\(/g) || []).length;
+    return {
+        traditional,
+        functional,
+        total: traditional + functional
+    };
+}
+
+function detectAsyncPatterns(codeText) {
+    const fetch = (codeText.match(/fetch\s*\(/g) || []).length;
+    const axios = (codeText.match(/axios\.(?:get|post|put|delete|patch)|axios\s*\(/g) || []).length;
+    const promises = (codeText.match(/new\s+Promise\s*\(|Promise\.(?:all|race|resolve|reject)/g) || []).length;
+    const legacy = (codeText.match(/XMLHttpRequest|jQuery\.ajax|\$\.ajax|setTimeout|setInterval/g) || []).length;
+
+    return {
+        fetch,
+        axios,
+        promises,
+        legacy,
+        total: fetch + axios + promises + legacy
+    };
+}
+
+function detectDOMPatterns(codeText) {
+    const queries = (codeText.match(/document\.(?:getElementById|querySelector|getElementsBy)|document\.\w+/g) || []).length;
+    const events = (codeText.match(/addEventListener|on\w+\s*=|\.on\(/g) || []).length;
+    const modifications = (codeText.match(/innerHTML|textContent|appendChild|removeChild|createElement/g) || []).length;
+
+    return {
+        queries,
+        events,
+        modifications,
+        total: queries + events + modifications
+    };
+}
+
+function detectOutputPatterns(codeText) {
+    const console = (codeText.match(/console\.(?:log|error|warn|info|debug|table)/g) || []).length;
+    const returns = (codeText.match(/return\s+/g) || []).length;
+
+    return {
+        console,
+        returns,
+        total: console + returns
+    };
+}
+
+function detectErrorPatterns(codeText) {
+    const tryCatch = (codeText.match(/try\s*\{[\s\S]*?catch/g) || []).length;
+    const cleanup = (codeText.match(/finally\s*\{|removeEventListener|clearInterval|clearTimeout|\.close\(\)|\.disconnect\(\)/g) || []).length;
+
+    return {
+        tryCatch,
+        cleanup,
+        hasCleanup: cleanup > 0,
+        total: tryCatch + cleanup
+    };
+}
+
+function getStepStatusColor(status) {
+    switch (status) {
+        case 'complete': return 'var(--dev-panel-success)';
+        case 'warning': return 'var(--dev-panel-warning)';
+        case 'error': return 'var(--dev-panel-error)';
+        default: return 'var(--dev-panel-secondary)';
+    }
+}
+
+function createComplexitySection(bigOComplexity, analysis) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Complexity</div>
+                <div class="metric-value">${bigOComplexity.time}</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill ${getComplexityClass(bigOComplexity.time)}" 
+                         style="width: ${getComplexityPercentage(bigOComplexity.time)}%"></div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <div>
+                    <strong>Time:</strong> ${bigOComplexity.time}<br>
+                    <strong>Space:</strong> ${bigOComplexity.space}
+                </div>
+                <div>
+                    <strong>Max Depth:</strong> ${bigOComplexity.maxLoopDepth}<br>
+                    <strong>Recursion:</strong> ${bigOComplexity.recursivePatterns}
+                </div>
+            </div>
+            <div class="metric-description">
+                Estimated algorithmic complexity based on code structure analysis
+            </div>
+        </div>
+    `;
+}
+
+function createPerformanceSection(metrics, hotspots) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Perf Metrics</div>
+                <div class="metric-value">${metrics.performance.score.toFixed(2)}/100</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill ${getPerformanceClass(metrics.performance.score)}" 
+                         style="width: ${metrics.performance.score}%"></div>
+                </div>
+            </div>
+            ${hotspots.hotspots.length > 0 ? `
+                <div style="margin-top: 12px;">
+                    <strong>Performance Hotspots:</strong>
+                    ${hotspots.hotspots.slice(0, 3).map(hotspot => `
+                        <div style="margin: 4px 0; font-size: 12px;">
+                            • ${hotspot.type}: ${hotspot.estimatedPercentage}% impact
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            <div class="metric-description">
+                Performance rating: ${metrics.performance.label}
+            </div>
+        </div>
+    `;
+}
+
+function createCodeQualitySection(relationships, efficiency) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Code Quality</div>
+                <div class="metric-value">${efficiency.score}/100</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill ${getQualityClass(efficiency.score)}" 
+                         style="width: ${efficiency.score}%"></div>
+                </div>
+            </div>
+            ${relationships.functionCount > 0 ? `
+                <div style="margin-top: 12px;">
+                    <strong>Function Analysis:</strong>
+                    <div style="font-size: 12px; margin: 4px 0;">
+                        • ${relationships.functionCount} functions detected
+                        ${relationships.mostCalledFunctions.length > 0 ? `
+                            <br>• Most called: ${relationships.mostCalledFunctions[0]}
+                        ` : ''}
+                    </div>
+                </div>
+            ` : ''}
+            <div class="metric-description">
+                Code efficiency: ${efficiency.label}
+            </div>
+        </div>
+    `;
+}
+
+
+
+
+
+function getComplexityClass(complexity) {
+    if (complexity.includes('O(1)') || complexity.includes('O(log')) return 'progress-excellent';
+    if (complexity.includes('O(n)')) return 'progress-good';
+    if (complexity.includes('O(n²)')) return 'progress-fair';
+    return 'progress-poor';
+}
+
+function getComplexityPercentage(complexity) {
+    if (complexity.includes('O(1)')) return 95;
+    if (complexity.includes('O(log')) return 85;
+    if (complexity.includes('O(n)')) return 70;
+    if (complexity.includes('O(n²)')) return 40;
+    return 20;
+}
+
+function getPerformanceClass(score) {
+    if (score >= 90) return 'progress-excellent';
+    if (score >= 75) return 'progress-good';
+    if (score >= 60) return 'progress-fair';
+    return 'progress-poor';
+}
+
+function getQualityClass(score) {
+    if (score >= 90) return 'progress-excellent';
+    if (score >= 75) return 'progress-good';
+    if (score >= 60) return 'progress-fair';
+    return 'progress-poor';
+}
+
+function setupEventListeners(sidebar) {
+    const toggleBtn = sidebar.querySelector('#dev-insights-toggle-btn');
+    const closeBtn = sidebar.querySelector('.dev-panel-close');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+    }
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
+    });
+}
+
+function createCodeAnalysisGrid() {
+    const codeAnalysis = analyzeCodePatterns();
+
+    return `
+        <div class="complexity-grid" style="margin: 12px 0;">
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.consoleCount > 5 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.consoleCount}
+                </div>
+                <div class="complexity-label">Console Logs</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.closures > 3 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.closures}
+                </div>
+                <div class="complexity-label">Closures</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.memoryLeaks > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.memoryLeaks}
+                </div>
+                <div class="complexity-label">Memory Leaks</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.errorHandling > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-warning)'}">
+                    ${codeAnalysis.errorHandling}
+                </div>
+                <div class="complexity-label">Try/Catch</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.throwStatements > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.throwStatements}
+                </div>
+                <div class="complexity-label">Throw Blocks</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.globalVars > 2 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.globalVars}
+                </div>
+                <div class="complexity-label">Global Vars</div>
+            </div>
+        </div>
+    `;
+}
+
+function analyzeCodePatterns() {
+    const codeText = getCodeFromEditor();
+
+    if (!codeText) {
+        return {
+            consoleCount: 0,
+            closures: 0,
+            memoryLeaks: 0,
+            errorHandling: 0,
+            throwStatements: 0,
+            globalVars: 0,
+            higherOrderFunctions: 0,
+            functionalMethods: 0,
+            loopTypes: 0,
+            dataStructures: 0,
+            asyncPatterns: 0,
+            designPatterns: 0
+        };
+    }
+
+    const patterns = {
+        consoleCount: (codeText.match(/console\.(log|error|warn|info|debug|trace|table|group|time)/g) || []).length,
+        closures: (codeText.match(/function[^}]*(?:function|=>)|=>[^}]*(?:function|=>)|\(\s*\)\s*=>\s*\([^)]*\)\s*=>/g) || []).length,
+        memoryLeaks: (codeText.match(/(?:setInterval|setTimeout)(?!.*(?:clearInterval|clearTimeout))|addEventListener(?!.*removeEventListener)|new\s+\w+\s*\([^)]*\)(?!.*\.close\(\)|.*\.disconnect\(\))/g) || []).length,
+        errorHandling: (codeText.match(/try\s*\{[\s\S]*?catch\s*\([^)]*\)|\.catch\s*\(|Promise\.catch/g) || []).length,
+        throwStatements: (codeText.match(/throw\s+(?:new\s+)?\w+|throw\s+['"`][^'"`]*['"`]/g) || []).length,
+        globalVars: (codeText.match(/(?:^|\n)\s*var\s+\w+(?!\s*=\s*function)|window\.\w+\s*=|global\.\w+\s*=/gm) || []).length,
+
+        // Higher-Order Functions (HOF)
+        higherOrderFunctions: (codeText.match(/(?:function\s+\w+[^{]*\{[^}]*return\s+function|=>\s*(?:\([^)]*\)\s*)?=>|\w+\s*=\s*(?:\([^)]*\)\s*)?=>\s*(?:\([^)]*\)\s*)?=>)/g) || []).length,
+
+        // Functional Programming Methods
+        functionalMethods: (codeText.match(/\.(?:map|filter|reduce|forEach|find|findIndex|some|every|sort|reverse|slice|splice|concat|join|includes|indexOf|lastIndexOf|flatMap|flat)\s*\(/g) || []).length,
+
+        // All Loop Types
+        loopTypes: [
+            ...((codeText.match(/for\s*\([^)]*\)\s*\{/g) || [])), // for loops
+            ...((codeText.match(/while\s*\([^)]*\)\s*\{/g) || [])), // while loops
+            ...((codeText.match(/do\s*\{[\s\S]*?\}\s*while\s*\([^)]*\)/g) || [])), // do-while loops
+            ...((codeText.match(/for\s*\(\s*(?:let|const|var)\s+\w+\s+in\s+[^)]+\)/g) || [])), // for-in loops
+            ...((codeText.match(/for\s*\(\s*(?:let|const|var)\s+\w+\s+of\s+[^)]+\)/g) || [])), // for-of loops
+            ...((codeText.match(/\.forEach\s*\(/g) || [])) // forEach method
+        ].length,
+
+        // Data Structures
+        dataStructures: [
+            ...((codeText.match(/\[[^\]]*\]|new\s+Array\s*\(|Array\.from\s*\(/g) || [])), // Arrays
+            ...((codeText.match(/\{[^}]*\}|new\s+Object\s*\(|Object\.(?:create|assign|keys|values|entries)/g) || [])), // Objects
+            ...((codeText.match(/new\s+(?:Map|Set|WeakMap|WeakSet)\s*\(/g) || [])), // ES6 Collections
+            ...((codeText.match(/new\s+(?:Date|RegExp|Promise|Error)\s*\(/g) || [])) // Built-in objects
+        ].length,
+
+        // Async Patterns
+        asyncPatterns: [
+            ...((codeText.match(/async\s+function|\basync\s*\(/g) || [])), // async functions
+            ...((codeText.match(/await\s+/g) || [])), // await expressions
+            ...((codeText.match(/new\s+Promise\s*\(|Promise\.(?:all|race|resolve|reject)/g) || [])), // Promises
+            ...((codeText.match(/\.then\s*\(|\.catch\s*\(|\.finally\s*\(/g) || [])), // Promise chains
+            ...((codeText.match(/fetch\s*\(|XMLHttpRequest|axios\./g) || [])) // HTTP requests
+        ].length,
+
+        // Design Patterns & Advanced Concepts
+        designPatterns: [
+            ...((codeText.match(/class\s+\w+(?:\s+extends\s+\w+)?/g) || [])), // Classes
+            ...((codeText.match(/(?:function\s+\w+|const\s+\w+\s*=\s*(?:function|\([^)]*\)\s*=>))[^{]*\{[^}]*return\s*\{/g) || [])), // Factory pattern
+            ...((codeText.match(/(?:function\s+\w+|const\s+\w+\s*=)[^{]*\{[^}]*(?:subscribe|notify|observer)/gi) || [])), // Observer pattern
+            ...((codeText.match(/(?:export|module\.exports|import)/g) || [])), // Module pattern
+            ...((codeText.match(/\w+\s*=\s*\w+\s*\|\|\s*\{|\w+\s*\|\|\s*\(\w+\s*=\s*\{\}/g) || [])) // Singleton pattern
+        ].length
+    };
+
+    return patterns;
+}
+
+function getCodeFromEditor() {
+    // Try to get code from the editor
+    const codeElement = document.getElementById('code-text');
+    if (codeElement) {
+        return codeElement.textContent || codeElement.innerText || '';
+    }
+
+    // Fallback to global code variable if available
+    if (typeof window !== 'undefined' && window.currentCode) {
+        return window.currentCode;
+    }
+
+    return '';
+}
+
+function createMemorySection(realTimeMetrics,executionTime) {
+    const memoryUsage = realTimeMetrics.peakMemory;
+    const memoryMB = (memoryUsage / (1024 * 1024)).toFixed(2);
+    const codeText = getCodeFromEditor();
+    const realExecutionTime = window.lastExecutionTime || executionTime || 0;
+
+    // Generate unified execution steps with real-time analysis
+    const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
+
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Deep Analysis</div>
+<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
+            </div>
+            
+            <!-- Memory Overview -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-accent);">${memoryMB}MB</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Peak Memory</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-success);">${realTimeMetrics.domManipulations}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">DOM Ops</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-warning);">${realTimeMetrics.networkRequests}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Network</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-error);">${realTimeMetrics.errorCount}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Errors</div>
+                </div>
+                <div style="text-align: center;"> 
+                    <div style="font-size: 18px; font-weight: bold; color: gray;">${realTimeMetrics.gcCollections}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">GC</div>
+                </div>
+                
+                
+            </div>
+
+            <!-- Unified Real-Time Execution Flow -->
+            <div style="margin: 16px 0;">
+                <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 8px;">⚡ Execution Flow</span>
+                    <span style="font-size: 12px; color: var(--dev-panel-secondary);">Total: ${realExecutionTime.toFixed(2)}ms</span>
+                </div>
+                <div class="execution-flow">
+                    ${unifiedSteps.map((step, index) => `
+                        <div class="flow-step" style="border-left-color: ${getStepStatusColor(step.status)}; padding: 12px 0 12px 16px; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; width: 100%; gap: 12px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <span style="font-size: 12px; font-weight: 400;">${step.name}</span>
+                                    </div>
+                                    ${step.details ? `<div style="font-size: 11px; margin-top: 6px; opacity: 0.85; line-height: 1.4; color: var(--dev-panel-text);">${step.details}</div>` : ''}
+                                    ${step.metrics ? `<div style="font-size: 10px; margin-top: 4px; opacity: 0.7; color: var(--dev-panel-secondary);">${step.metrics}</div>` : ''}
+                                </div>
+                                <span class="flow-step-time" style="color: ${getStepStatusColor(step.status)}; font-size: 12px; white-space: nowrap; font-weight: 500;">
+                                    ${step.time}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Advanced Code Analysis Grid -->
+            ${createCodeAnalysisGrid()}
+        </div>
+    `;
+}
+
+function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime) {
+    const steps = [];
+
+    if (!codeText || codeText.trim().length === 0) {
+        return [{
+            icon: '⚠️',
+            name: 'No Code Detected',
+            time: '0ms',
+            status: 'warning',
+            details: 'Write some code to see real-time execution analysis',
+            metrics: 'Memory: 0MB | Operations: 0'
+        }];
+    }
+
+    // Calculate dynamic timing distribution
+    const baseParsingTime = Math.max(0.1, realExecutionTime * 0.05);
+    const functionTime = Math.max(0.1, realExecutionTime * 0.15);
+    const loopTime = Math.max(0.1, realExecutionTime * 0.25);
+    const asyncTime = Math.max(0.1, realExecutionTime * 0.35);
+    const domTime = Math.max(0.1, realExecutionTime * 0.10);
+    const outputTime = Math.max(0.1, realExecutionTime * 0.10);
+
+    // Step 1: Code Parsing & Memory Initialization
+    const lineCount = (codeText.match(/\n/g) || []).length + 1;
+    const memoryForParsing = (lineCount * 0.1).toFixed(2);
+    steps.push({
+        icon: '📝',
+        name: 'Code Parsing & Memory Initialization',
+        time: `${baseParsingTime.toFixed(2)}ms`,
+        status: 'complete',
+        details: `${lineCount} lines parsed, variables declared`,
+        metrics: `Memory allocated: ~${memoryForParsing}KB | GC: ${realTimeMetrics.gcCollections}`
+    });
+
+    // Step 2: Function Analysis & Memory Allocation
+    const functionPatterns = detectFunctionPatterns(codeText);
+    if (functionPatterns.total > 0) {
+        const functionMemory = (functionPatterns.total * 2.5).toFixed(2);
+        steps.push({
+            icon: '🔧',
+            name: 'Function Analysis & Memory Allocation',
+            time: `${functionTime.toFixed(2)}ms`,
+            status: functionPatterns.total > 10 ? 'warning' : 'complete',
+            details: `${functionPatterns.total} functions analyzed (${functionPatterns.arrow} arrow, ${functionPatterns.regular} regular, ${functionPatterns.async} async)`,
+            metrics: `Function memory: ~${functionMemory}KB | Closures detected: ${functionPatterns.closures || 0}`
+        });
+    }
+
+    // Step 3: Loop Processing & Iteration Memory
+    const loopPatterns = detectLoopPatterns(codeText);
+    if (loopPatterns.total > 0) {
+        const loopStatus = loopPatterns.total > 5 ? 'warning' : 'complete';
+        const loopMemory = (loopPatterns.total * 1.8).toFixed(2);
+        steps.push({
+            icon: '🔄',
+            name: 'Loop Processing & Iteration Memory',
+            time: `${loopTime.toFixed(2)}ms`,
+            status: loopStatus,
+            details: `${loopPatterns.traditional} traditional loops, ${loopPatterns.functional} functional methods processed`,
+            metrics: `Loop memory: ~${loopMemory}KB | Peak iterations: ${loopPatterns.total * 100}`
+        });
+    }
+
+    // Step 4: Async Operations & Network Memory
+    const asyncPatterns = detectAsyncPatterns(codeText);
+    if (asyncPatterns.total > 0) {
+        const asyncStatus = asyncPatterns.total > 3 ? 'warning' : 'complete';
+        const networkMemory = (asyncPatterns.total * 5.2).toFixed(2);
+        steps.push({
+            icon: '⏳',
+            name: 'Async Operations & Network Memory',
+            time: `${asyncTime.toFixed(2)}ms`,
+            status: asyncStatus,
+            details: `${asyncPatterns.fetch} fetch, ${asyncPatterns.axios} axios, ${asyncPatterns.promises} promises, ${asyncPatterns.legacy} legacy async`,
+            metrics: `Network buffer: ~${networkMemory}KB | Active requests: ${realTimeMetrics.networkRequests}`
+        });
+    }
+
+    // Step 5: DOM Manipulation & Event Memory
+    const domPatterns = detectDOMPatterns(codeText);
+    if (domPatterns.total > 0) {
+        const domStatus = domPatterns.total > 10 ? 'warning' : 'complete';
+        const domMemory = (domPatterns.total * 3.1).toFixed(2);
+        steps.push({
+            icon: '🌐',
+            name: 'DOM Manipulation & Event Memory',
+            time: `${domTime.toFixed(2)}ms`,
+            status: domStatus,
+            details: `${domPatterns.queries} DOM queries, ${domPatterns.events} event listeners, ${domPatterns.modifications} modifications`,
+            metrics: `DOM memory: ~${domMemory}KB | Active listeners: ${domPatterns.events}`
+        });
+    }
+
+    // Step 6: Output Generation & Console Memory
+    const outputPatterns = detectOutputPatterns(codeText);
+    if (outputPatterns.total > 0) {
+        const consoleMemory = (outputPatterns.total * 0.8).toFixed(2);
+        steps.push({
+            icon: '📤',
+            name: 'Output Generation & Console Memory',
+            time: `${outputTime.toFixed(2)}ms`,
+            status: 'complete',
+            details: `${outputPatterns.console} console operations, ${outputPatterns.returns} return statements`,
+            metrics: `Console buffer: ~${consoleMemory}KB | Output size: ${outputPatterns.total * 50}B`
+        });
+    }
+
+    // Step 7: Error Handling & Memory Cleanup
+    const errorPatterns = detectErrorPatterns(codeText);
+    if (errorPatterns.total > 0) {
+        const cleanupMemory = (errorPatterns.cleanup * 1.2).toFixed(2);
+        steps.push({
+            icon: '🛡️',
+            name: 'Error Handling & Memory Cleanup',
+            time: `${(realExecutionTime * 0.05).toFixed(2)}ms`,
+            status: errorPatterns.hasCleanup ? 'complete' : 'warning',
+            details: `${errorPatterns.tryCatch} try/catch blocks, ${errorPatterns.cleanup} cleanup operations`,
+            metrics: `Cleanup freed: ~${cleanupMemory}KB | Error count: ${realTimeMetrics.errorCount}`
+        });
+    }
+
+    // Step 8: Garbage Collection & Final Memory State
+    if (realTimeMetrics.gcCollections > 0) {
+        const finalMemory = (realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2);
+        steps.push({
+            icon: '🗑️',
+            name: 'Garbage Collection & Final Memory State',
+            time: `${(realExecutionTime * 0.03).toFixed(2)}ms`,
+            status: parseFloat(finalMemory) > 50 ? 'warning' : 'complete',
+            details: `${realTimeMetrics.gcCollections} GC cycles completed, memory optimized`,
+            metrics: `Final memory: ${finalMemory}MB | Memory freed: ~${(realTimeMetrics.gcCollections * 2.5).toFixed(2)}KB`
+        });
+    }
+
+    return steps.length > 1 ? steps : [{
+        icon: '✅',
+        name: 'Simple Code Execution',
+        time: `${realExecutionTime.toFixed(2)}ms`,
+        status: 'complete',
+        details: 'Basic code execution completed successfully',
+        metrics: `Memory: ${(realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2)}MB | Operations: ${realTimeMetrics.domManipulations + realTimeMetrics.networkRequests}`
+    }];
+}
+
+// Global function for closing panel
+window.toggleDevInsights = function() {
+    const sidebar = document.getElementById('dev-insights-sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+};
