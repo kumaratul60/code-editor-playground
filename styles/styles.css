@@ -106,8 +106,9 @@ header h1 {
   font-size: 15px;
   line-height: 1.5;
   /*letter-spacing: 0.5px;*/
-  overflow: hidden;
-  height: 100%;
+    overflow: hidden;
+    height: auto;
+    min-height: 100%;
 }
 
 /* Editor container (layers code and highlight) */
