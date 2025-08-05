@@ -46,8 +46,8 @@ const extractStrings = (input) =>
             // Simple highlighting without recursion to prevent text duplication
             const simpleHighlighted = expr
                 .replace(/\b(let|const|var|function|return|if|else|for|while|class|async|await|true|false|null|undefined)\b/g, '<span class="keyword">$1</span>')
-                .replace(/\b\d+(\.\d+)?\b/g, '<span class="number">$1</span>')
-                .replace(/(['"`])(?:\\.|(?!\1)[^\\\n])*\1/g, '<span class="string">$1</span>');
+                .replace(/\b\d+(?:\.\d+)?\b/g, '<span class="number">$&</span>')
+                .replace(/(['"`])(?:\\.|(?!\1)[^\\\n])*\1/g, '<span class="string">$&</span>')
             return `\${<span class="template-expr">${simpleHighlighted}</span>}`;
           });
 

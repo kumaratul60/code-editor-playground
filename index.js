@@ -36,11 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleRunButton(editor, runBtn);
   highlightEditorSyntax(editor, highlighted);
 
+    const debouncedHighlight = debounceUtils(() => {
+        highlightEditorSyntax(editor, highlighted);
+    }, 100);
+
   // === Mutation Observer for Live Updates ===
   const observer = new MutationObserver(() => {
     toggleRunButton(editor, runBtn);
     updateLineNumbers(editor, lineNumbers);
-    highlightEditorSyntax(editor, highlighted);
+    debouncedHighlight();
   });
   observer.observe(editor, { childList: true, subtree: true, characterData: true });
 
