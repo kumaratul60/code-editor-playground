@@ -46,6 +46,77 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(range);
     }
 
+    function preserveCursorPosition(callback) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) {
+            callback();
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const startContainer = range.startContainer;
+        const startOffset = range.startOffset;
+
+        // Calculate text offset from start of editor
+        let textOffset = 0;
+        const walker = document.createTreeWalker(
+            editor,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        let node;
+        while (node = walker.nextNode()) {
+            if (node === startContainer) {
+                textOffset += startOffset;
+                break;
+            }
+            textOffset += node.textContent.length;
+        }
+
+        // Execute the callback
+        callback();
+
+        // Restore cursor position
+        setTimeout(() => {
+            const newWalker = document.createTreeWalker(
+                editor,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            let currentOffset = 0;
+            let targetNode = null;
+            let targetOffset = 0;
+
+            while (node = newWalker.nextNode()) {
+                const nodeLength = node.textContent.length;
+                if (currentOffset + nodeLength >= textOffset) {
+                    targetNode = node;
+                    targetOffset = textOffset - currentOffset;
+                    break;
+                }
+                currentOffset += nodeLength;
+            }
+
+            if (targetNode) {
+                const newRange = document.createRange();
+                const newSelection = window.getSelection();
+
+                try {
+                    newRange.setStart(targetNode, Math.min(targetOffset, targetNode.textContent.length));
+                    newRange.setEnd(targetNode, Math.min(targetOffset, targetNode.textContent.length));
+                    newSelection.removeAllRanges();
+                    newSelection.addRange(newRange);
+                } catch (e) {
+                    // Fallback: focus at end
+                    focusEditorAtEnd();
+                }
+            }
+        }, 0);
+    }
 
     // === Helper: Sync Scroll Between Layers ===
     function syncScrollPosition() {
@@ -96,9 +167,11 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.addEventListener('paste', (e) => {
         // Let the paste happen naturally, then sync UI
         setTimeout(() => {
-            syncLineNumbers();
-            toggleRunButton(editor, runBtn);
-            highlightEditorSyntax(editor, highlighted);
+            preserveCursorPosition(() => {
+                syncLineNumbers();
+                toggleRunButton(editor, runBtn);
+                highlightEditorSyntax(editor, highlighted);
+            });
         }, 20);
     });
 
