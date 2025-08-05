@@ -30,61 +30,61 @@ const db2 = DatabaseConnection.getInstance();
 console.log(db1 === db2); // Should be true
 
 // ========== 2. FACTORY PATTERN ==========
-class ShapeFactory {
-    static createShape(type, ...args) {
-        switch (type.toLowerCase()) {
-            case 'circle':
-                return new Circle(...args);
-            case 'rectangle':
-                return new Rectangle(...args);
-            case 'triangle':
-                return new Triangle(...args);
-            default:
-                throw new Error(`Shape type ${type} not supported`);
-        }
-    }
-}
-
-class Circle {
-    constructor(radius) {
-        this.radius = radius;
-        this.type = 'circle';
-    }
-
-    area() {
-        return Math.PI * this.radius ** 2;
-    }
-}
-
-class Rectangle {
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-        this.type = 'rectangle';
-    }
-
-    area() {
-        return this.width * this.height;
-    }
-}
-
-class Triangle {
-    constructor(base, height) {
-        this.base = base;
-        this.height = height;
-        this.type = 'triangle';
-    }
-
-    area() {
-        return 0.5 * this.base * this.height;
-    }
-}
-
-// Test Factory
-const circle = ShapeFactory.createShape('circle', 5);
-const rectangle = ShapeFactory.createShape('rectangle', 4, 6);
-console.log(`Circle area: ${circle.area()}`);
-console.log(`Rectangle area: ${rectangle.area()}`);
+// class ShapeFactory {
+//     static createShape(type, ...args) {
+//         switch (type.toLowerCase()) {
+//             case 'circle':
+//                 return new Circle(...args);
+//             case 'rectangle':
+//                 return new Rectangle(...args);
+//             case 'triangle':
+//                 return new Triangle(...args);
+//             default:
+//                 throw new Error(`Shape type ${type} not supported`);
+//         }
+//     }
+// }
+//
+// class Circle {
+//     constructor(radius) {
+//         this.radius = radius;
+//         this.type = 'circle';
+//     }
+//
+//     area() {
+//         return Math.PI * this.radius ** 2;
+//     }
+// }
+//
+// class Rectangle {
+//     constructor(width, height) {
+//         this.width = width;
+//         this.height = height;
+//         this.type = 'rectangle';
+//     }
+//
+//     area() {
+//         return this.width * this.height;
+//     }
+// }
+//
+// class Triangle {
+//     constructor(base, height) {
+//         this.base = base;
+//         this.height = height;
+//         this.type = 'triangle';
+//     }
+//
+//     area() {
+//         return 0.5 * this.base * this.height;
+//     }
+// }
+//
+// // Test Factory
+// const circle = ShapeFactory.createShape('circle', 5);
+// const rectangle = ShapeFactory.createShape('rectangle', 4, 6);
+// console.log(`Circle area: ${circle.area()}`);
+// console.log(`Rectangle area: ${rectangle.area()}`);
 
 // ========== 3. OBSERVER PATTERN ==========
 class EventEmitter {
