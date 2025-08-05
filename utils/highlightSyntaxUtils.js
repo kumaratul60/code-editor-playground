@@ -39,18 +39,21 @@ const makePlaceholder = (type, content) => {
 //   input.replace(/(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g, (match) => makePlaceholder("string", match));
 
 const extractStrings = (input) =>
-  input
-    .replace(/`(?:\\[\s\S]|[^\\`])*`/g, (match) => {
-      // Handle `${...}` interpolations
-      const inner = match.replace(/\$\{([^}]*)\}/g, (_, expr) => {
-        const highlighted = highlightSyntax(expr); // recursive!
-        return `\${<span class="template-expr">${highlighted}</span>}`;
-      });
+    input
+        .replace(/`(?:\\[\s\S]|[^\\`])*`/g, (match) => {
+          // Handle `${...}` interpolations - Fixed to prevent recursion
+          const inner = match.replace(/\$\{([^}]*)\}/g, (_, expr) => {
+            // Simple highlighting without recursion to prevent text duplication
+            const simpleHighlighted = expr
+                .replace(/\b(let|const|var|function|return|if|else|for|while|class|async|await|true|false|null|undefined)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b\d+(\.\d+)?\b/g, '<span class="number">$1</span>')
+                .replace(/(['"`])(?:\\.|(?!\1)[^\\\n])*\1/g, '<span class="string">$1</span>');
+            return `\${<span class="template-expr">${simpleHighlighted}</span>}`;
+          });
 
-      return makePlaceholder("string", inner);
-    })
-    .replace(/(['"])(?:\\.|(?!\1)[^\\\n])*\1/g, (match) => makePlaceholder("string", match));
-
+          return makePlaceholder("string", inner);
+        })
+        .replace(/(['"])(?:\\.|(?!\1)[^\\\n])*\1/g, (match) => makePlaceholder("string", match));
 const extractComments = (input) =>
   input.replace(/\/\/[^\n]*/g, (match) => makePlaceholder("comment", match));
 
