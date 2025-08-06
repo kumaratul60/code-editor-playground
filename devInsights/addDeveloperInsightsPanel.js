@@ -7,27 +7,15 @@ import { estimateBigOComplexity } from "./estimateBigOComplexity.js";
 import { calculateCodeEfficiency } from "./calculateCodeEfficiency.js";
 import detectionLogicHelper from "./ditectionLogicHelper.js";
 
-const {detectAsyncPatterns,
-    detectDOMPatterns,
-    detectErrorPatterns,
-    detectFunctionPatterns,
-    detectLoopPatterns,
-    detectOutputPatterns,
+const {
     generateUnifiedExecutionSteps,
     getStepStatusColor,
     getComplexityClass,
     getComplexityPercentage,
     getPerformanceClass,
-    getQualityClass,
     setupEventListeners,
-    detectMemoryLeaks,
-    detectCodeSmells,
-    detectTestingPatterns,
-    detectAccessibilityPatterns,
-    calculateCyclomaticComplexity,
-    detectCodeDuplication,
-    detectPerformanceAntiPatterns,
-    detectSecurityIssues} = detectionLogicHelper
+    analyzeCodePatterns,
+} = detectionLogicHelper
 
 export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
     // Remove existing panel if it exists
@@ -123,7 +111,7 @@ function createPanelHTML(analysis, executionTime, metrics, hotspots, relationshi
             </div>
             
           <div class="dev-panel-content">
-                ${createOverviewSection(analysis, executionTime, metrics)}
+              
                 ${createComplexitySection(bigOComplexity, analysis)}
                 ${createPerformanceSection(metrics, hotspots)}
                 ${createCodeQualitySection(relationships, efficiency)}
@@ -134,7 +122,7 @@ function createPanelHTML(analysis, executionTime, metrics, hotspots, relationshi
             </div>
         </div>
     `;
-
+//  ${createOverviewSection(analysis, executionTime, metrics)}
 }
 
 function createOverviewSection(analysis, executionTime, metrics) {
@@ -169,7 +157,59 @@ function createOverviewSection(analysis, executionTime, metrics) {
     `;
 }
 
+// function createComplexitySection(bigOComplexity, analysis) {
+//     return `
+//         <div class="metric-card fade-in">
+//             <div class="metric-header">
+//                 <div class="metric-title">Complexity</div>
+//                 <div class="metric-value">${bigOComplexity.time}</div>
+//             </div>
+//             <div class="progress-container">
+//                 <div class="progress-bar">
+//                     <div class="progress-fill ${getComplexityClass(bigOComplexity.time)}"
+//                          style="width: ${getComplexityPercentage(bigOComplexity.time)}%"></div>
+//                 </div>
+//             </div>
+//             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+//                 <div>
+//                     <strong>Time:</strong> ${bigOComplexity.time}<br>
+//                     <strong>Space:</strong> ${bigOComplexity.space}
+//                 </div>
+//                 <div>
+//                     <strong>Max Depth:</strong> ${bigOComplexity.maxLoopDepth}<br>
+//                     <strong>Recursion:</strong> ${bigOComplexity.recursivePatterns}
+//                 </div>
+//             </div>
+//             <div class="metric-description">
+//                 Estimated algorithmic complexity based on code structure analysis
+//             </div>
+//         </div>
+//     `;
+// }
+
 function createComplexitySection(bigOComplexity, analysis) {
+    // Tooltip content for each complexity metric
+    const tooltips = {
+        time: "Time complexity (Big O notation) based on the most complex operation in your code. Lower is better.",
+        space: "Space complexity (Big O notation) based on the memory usage of your code. Lower is better.",
+        maxDepth: "Maximum nesting depth of loops and conditionals. Higher values may indicate complex logic that's hard to maintain.",
+        recursion: "Indicates if the code contains recursive functions, which can be powerful but may cause stack overflow if not implemented carefully."
+    };
+
+    // Helper function to create tooltip elements
+    const createTooltip = (text, tooltipText) => `
+        <div class="tooltip-container">
+            <span class="info-icon">ℹ️</span>
+            <div class="tooltip">${tooltipText}</div>
+        </div>
+    `;
+
+    /*
+    <div class="metric-description">
+                Hover over the ℹ️ icons to learn more about each metric
+            </div>
+     */
+
     return `
         <div class="metric-card fade-in">
             <div class="metric-header">
@@ -182,19 +222,33 @@ function createComplexitySection(bigOComplexity, analysis) {
                          style="width: ${getComplexityPercentage(bigOComplexity.time)}%"></div>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                <div>
-                    <strong>Time:</strong> ${bigOComplexity.time}<br>
-                    <strong>Space:</strong> ${bigOComplexity.space}
+            <div class="complexity-grid">
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Time: ${bigOComplexity.time}
+                        ${createTooltip('Time', tooltips.time)}
+                    </div>
                 </div>
-                <div>
-                    <strong>Max Depth:</strong> ${bigOComplexity.maxLoopDepth}<br>
-                    <strong>Recursion:</strong> ${bigOComplexity.recursivePatterns}
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Space: ${bigOComplexity.space}
+                        ${createTooltip('Space', tooltips.space)}
+                    </div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Max Depth: ${bigOComplexity.maxLoopDepth}
+                        ${createTooltip('Max Depth', tooltips.maxDepth)}
+                    </div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Recursion: ${bigOComplexity.recursivePatterns}
+                        ${createTooltip('Recursion', tooltips.recursion)}
+                    </div>
                 </div>
             </div>
-            <div class="metric-description">
-                Estimated algorithmic complexity based on code structure analysis
-            </div>
+            
         </div>
     `;
 }
@@ -238,7 +292,7 @@ function createCodeQualitySection(relationships, efficiency) {
             </div>
             <div class="progress-container">
                 <div class="progress-bar">
-                    <div class="progress-fill ${getQualityClass(efficiency.score)}" 
+                    <div class="progress-fill ${getPerformanceClass(efficiency.score)}" 
                          style="width: ${efficiency.score}%"></div>
                 </div>
             </div>
@@ -261,108 +315,164 @@ function createCodeQualitySection(relationships, efficiency) {
 }
 
 function createCodeAnalysisGrid() {
-    const codeAnalysis = analyzeCodePatterns();
+    const codeText = getCodeFromEditor();
+    if (!codeText) {
+        return '<div class="no-code-message">No code to analyze</div>';
+    }
+
+    const analysis = analyzeCodePatterns(codeText);
+    if (analysis.error) {
+        return `<div class="error-message">${analysis.error}</div>`;
+    }
+
+    // Extract metrics with safe fallbacks
+    const metrics = {
+        // Console logs
+        consoleCount: (codeText.match(/console\.(log|error|warn|info|debug|table|group|time)/g) || []).length,
+
+        // From functions analysis
+        functions: analysis.functions?.total || 0,
+        closures: analysis.functions?.closures || 0,
+        higherOrderFunctions: analysis.functions?.higherOrder || 0,
+
+        // Memory and errors
+        memoryLeaks: analysis.memoryLeaks?.total || 0,
+        errorHandling: analysis.codeSmells?.errorHandling || 0,
+        throwStatements: (codeText.match(/throw\s+/g) || []).length,
+
+        // Variables and scoping
+        globalVars: (codeText.match(/^(\s*|;)\s*(var|let|const)\s+[a-zA-Z_$][\w$]*\s*[=;]/gm) || []).length,
+
+        // Loops and async
+        loopTypes: analysis.loops?.total || 0,
+        asyncPatterns: analysis.asyncPatterns?.total || 0,
+
+        // Code quality
+        codeSmells: analysis.codeSmells?.total || 0,
+        cyclomaticComplexity: analysis.metrics?.complexity || 0,
+        securityIssues: analysis.securityAnalysis?.issues?.total || 0,
+        performanceAntiPatterns: analysis.performanceIssues?.total || 0,
+
+        // Additional metrics
+        domOperations: analysis.domPatterns?.total || 0,
+        dataStructures: (codeText.match(/(?:new\s+(?:Map|Set|WeakMap|WeakSet|Date|RegExp|Promise|Error)\s*\(|Array\s*\.|Object\s*\.)/g) || []).length
+    };
+
+    // Helper function to determine color based on thresholds
+    const getColor = (value, thresholds = { good: 0, warn: 1, error: 5 }) => {
+        if (value <= thresholds.good) return 'var(--dev-panel-success)';
+        if (value <= thresholds.warn) return 'var(--dev-panel-warning)';
+        if (value <= thresholds.error) return 'var(--dev-panel-error)';
+        return 'var(--dev-panel-error)';
+    };
+
+    // Grid items configuration
+    const gridItems = [
+        {
+            label: 'Console Logs',
+            value: metrics.consoleCount,
+            color: getColor(metrics.consoleCount, { good: 2, warn: 5 })
+        },
+        {
+            label: 'Closures',
+            value: metrics.closures,
+            color: getColor(metrics.closures, { good: 2, warn: 5 })
+        },
+
+        {
+            label: 'Functions',
+            value: metrics.functions,
+            color: getColor(metrics.functions, { good: 4, warn: 8 })
+        },
+
+        {
+            label: 'Memory Leaks',
+            value: metrics.memoryLeaks,
+            color: metrics.memoryLeaks > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'
+        },
+        // {
+        //     label: 'Error Handling',
+        //     value: metrics.errorHandling,
+        //     color: metrics.errorHandling > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-warning)'
+        // },
+        {
+            label: 'Throw Blocks',
+            value: metrics.throwStatements,
+            color: metrics.throwStatements > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'
+        },
+        {
+            label: 'Global Vars',
+            value: metrics.globalVars,
+            color: getColor(metrics.globalVars, { good: 1, warn: 3 })
+        },
+        {
+            label: 'HOFs',
+            value: metrics.higherOrderFunctions,
+            color: metrics.higherOrderFunctions > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'
+        },
+        {
+            label: 'Loops',
+            value: metrics.loopTypes,
+            color: metrics.loopTypes > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'
+        },
+        {
+            label: 'Async Ops',
+            value: metrics.asyncPatterns,
+            color: metrics.asyncPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'
+        },
+        {
+            label: 'DOM Ops',
+            value: metrics.domOperations,
+            color: getColor(metrics.domOperations, { good: 5, warn: 10 })
+        },
+        // {
+        //     label: 'Data Structures',
+        //     value: metrics.dataStructures,
+        //     color: metrics.dataStructures > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'
+        // },
+        {
+            label: 'Code Smells',
+            value: metrics.codeSmells,
+            color: getColor(metrics.codeSmells, { good: 0, warn: 1 })
+        },
+        // {
+        //     label: 'Complexity',
+        //     value: metrics.cyclomaticComplexity,
+        //     color: getColor(metrics.cyclomaticComplexity, { good: 5, warn: 10 })
+        // },
+        {
+            label: 'Security Issues',
+            value: metrics.securityIssues,
+            color: metrics.securityIssues > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'
+        },
+        {
+            label: 'Perf Issues',
+            value: metrics.performanceAntiPatterns,
+            color: metrics.performanceAntiPatterns > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'
+        }
+    ];
+
+    // Generate grid items HTML
+    const gridItemsHTML = gridItems.map(item => `
+        <div class="complexity-item" title="${item.label}">
+            <div class="complexity-number" style="color: ${item.color}">
+                ${item.value}
+            </div>
+            <div class="complexity-label">${item.label}</div>
+        </div>
+    `).join('');
 
     return `
-        <div class="complexity-grid" style="margin: 12px 0;">
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.consoleCount > 5 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.consoleCount}
-                </div>
-                <div class="complexity-label">Console Logs</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.closures > 3 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.closures}
-                </div>
-                <div class="complexity-label">Closures</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.memoryLeaks > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.memoryLeaks}
-                </div>
-                <div class="complexity-label">Memory Leaks</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.errorHandling > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-warning)'}">
-                    ${codeAnalysis.errorHandling}
-                </div>
-                <div class="complexity-label">Try/Catch</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.throwStatements > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.throwStatements}
-                </div>
-                <div class="complexity-label">Throw Blocks</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.globalVars > 2 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.globalVars}
-                </div>
-                <div class="complexity-label">Global Vars</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.higherOrderFunctions > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.higherOrderFunctions}
-                </div>
-                <div class="complexity-label">Higher-Order Functions</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.loopTypes > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.loopTypes}
-                </div>
-                <div class="complexity-label">Loops</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.asyncPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.asyncPatterns}
-                </div>
-                <div class="complexity-label">Async Operations</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.accessibilityPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.accessibilityPatterns}
-                </div>
-                <div class="complexity-label">Accessibility</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.testingPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
-                    ${codeAnalysis.testingPatterns}
-                </div>
-                <div class="complexity-label">Testing</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.codeDuplication > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.codeDuplication}
-                </div>
-                <div class="complexity-label">Duplication</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.codeSmells > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.codeSmells}
-                </div>
-                <div class="complexity-label">Code Smells</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.cyclomaticComplexity > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.cyclomaticComplexity}
-                </div>
-                <div class="complexity-label">Cyclomatic Complexity</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.securityIssues > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.securityIssues}
-                </div>
-                <div class="complexity-label">Security Issues</div>
-            </div>
-            <div class="complexity-item">
-                <div class="complexity-number" style="color: ${codeAnalysis.performanceAntiPatterns > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
-                    ${codeAnalysis.performanceAntiPatterns}
-                </div>
-                <div class="complexity-label">Performance Anti-Patterns</div>
-            </div>
-           
-            
+        <div class="complexity-grid" style="
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin: 12px 0;
+            padding: 12px;
+            background: var(--dev-panel-bg-secondary);
+            border-radius: 8px;
+        ">
+            ${gridItemsHTML}
         </div>
     `;
 }
@@ -376,19 +486,6 @@ function createMemorySection(realTimeMetrics,executionTime) {
     // Generate unified execution steps with real-time analysis
     const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
 
-
-    let domOperationsHTML = '';
-    if (realTimeMetrics.domOperations && Object.keys(realTimeMetrics.domOperations).length > 0) {
-        domOperationsHTML = Object.entries(realTimeMetrics.domOperations)
-            .sort((a, b) => b[1] - a[1]) // Sort by count descending
-            .map(([op, count]) => `
-                <div style="background: var(--dev-panel-metric-bg); padding: 6px 10px; border-radius: 4px; font-size: 12px;">
-                    <span style="color: var(--dev-panel-text);">${op}:</span>
-                    <span style="color: var(--dev-panel-accent); font-weight: bold; margin-left: 4px;">${count}</span>
-                </div>
-            `)
-            .join('');
-    }
 
 /*
  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
@@ -459,110 +556,6 @@ function createMemorySection(realTimeMetrics,executionTime) {
               <!-- DOM Operations Breakdown -->
              
     `;
-}
-
-// Code analysis patterns
-function analyzeCodePatterns() {
-    const codeText = getCodeFromEditor();
-
-    if (!codeText) {
-        return {
-            consoleCount: 0,
-            closures: 0,
-            memoryLeaks: 0,
-            errorHandling: 0,
-            throwStatements: 0,
-            globalVars: 0,
-            higherOrderFunctions: 0,
-            functionalMethods: 0,
-            loopTypes: 0,
-            dataStructures: 0,
-            asyncPatterns: 0,
-            designPatterns: 0,
-            securityIssues: 0,
-            performanceAntiPatterns: 0,
-            codeDuplication: 0,
-            cyclomaticComplexity: 0,
-            accessibilityPatterns: 0,
-            testingPatterns: 0,
-            codeSmells: 0
-        };
-    }
-
-    const patterns = {
-        consoleCount: (codeText.match(/console\.(log|error|warn|info|debug|trace|table|group|time)/g) || []).length,
-        closures: (codeText.match(/function[^}]*(?:function|=>)|=>[^}]*(?:function|=>)|\(\s*\)\s*=>\s*\([^)]*\)\s*=>/g) || []).length,
-        // memoryLeaks: (codeText.match(/(?:setInterval|setTimeout)(?!.*(?:clearInterval|clearTimeout))|addEventListener(?!.*removeEventListener)|new\s+\w+\s*\([^)]*\)(?!.*\.close\(\)|.*\.disconnect\(\))/g) || []).length,
-        memoryLeaks: detectMemoryLeaks(codeText),
-        errorHandling: (codeText.match(/try\s*\{[\s\S]*?catch\s*\([^)]*\)|\.catch\s*\(|Promise\.catch/g) || []).length,
-        throwStatements: (codeText.match(/throw\s+(?:new\s+)?\w+|throw\s+['"`][^'"`]*['"`]/g) || []).length,
-        globalVars: (codeText.match(/(?:^|\n)\s*var\s+\w+(?!\s*=\s*function)|window\.\w+\s*=|global\.\w+\s*=/gm) || []).length,
-
-        // Higher-Order Functions (HOF)
-        higherOrderFunctions: (codeText.match(/(?:function\s+\w+[^{]*\{[^}]*return\s+function|=>\s*(?:\([^)]*\)\s*)?=>|\w+\s*=\s*(?:\([^)]*\)\s*)?=>\s*(?:\([^)]*\)\s*)?=>)/g) || []).length,
-
-        // Functional Programming Methods
-        functionalMethods: (codeText.match(/\.(?:map|filter|reduce|forEach|find|findIndex|some|every|sort|reverse|slice|splice|concat|join|includes|indexOf|lastIndexOf|flatMap|flat)\s*\(/g) || []).length,
-
-        // All Loop Types
-        loopTypes: [
-            ...((codeText.match(/for\s*\([^)]*\)\s*\{/g) || [])), // for loops
-            ...((codeText.match(/while\s*\([^)]*\)\s*\{/g) || [])), // while loops
-            ...((codeText.match(/do\s*\{[\s\S]*?\}\s*while\s*\([^)]*\)/g) || [])), // do-while loops
-            ...((codeText.match(/for\s*\(\s*(?:let|const|var)\s+\w+\s+in\s+[^)]+\)/g) || [])), // for-in loops
-            ...((codeText.match(/for\s*\(\s*(?:let|const|var)\s+\w+\s+of\s+[^)]+\)/g) || [])), // for-of loops
-            ...((codeText.match(/\.forEach\s*\(/g) || [])) // forEach method
-        ].length,
-
-        // Data Structures
-        dataStructures: [
-            ...((codeText.match(/\[[^\]]*\]|new\s+Array\s*\(|Array\.from\s*\(/g) || [])), // Arrays
-            ...((codeText.match(/\{[^}]*\}|new\s+Object\s*\(|Object\.(?:create|assign|keys|values|entries)/g) || [])), // Objects
-            ...((codeText.match(/new\s+(?:Map|Set|WeakMap|WeakSet)\s*\(/g) || [])), // ES6 Collections
-            ...((codeText.match(/new\s+(?:Date|RegExp|Promise|Error)\s*\(/g) || [])) // Built-in objects
-        ].length,
-
-        // Async Patterns
-        asyncPatterns: [
-            ...((codeText.match(/async\s+function|\basync\s*\(/g) || [])), // async functions
-            ...((codeText.match(/await\s+/g) || [])), // await expressions
-            ...((codeText.match(/new\s+Promise\s*\(|Promise\.(?:all|race|resolve|reject)/g) || [])), // Promises
-            ...((codeText.match(/\.then\s*\(|\.catch\s*\(|\.finally\s*\(/g) || [])), // Promise chains
-            ...((codeText.match(/fetch\s*\(|XMLHttpRequest|axios\./g) || [])) // HTTP requests
-        ].length,
-
-        // Design Patterns & Advanced Concepts
-        designPatterns: [
-            ...((codeText.match(/class\s+\w+(?:\s+extends\s+\w+)?/g) || [])), // Classes
-            ...((codeText.match(/(?:function\s+\w+|const\s+\w+\s*=\s*(?:function|\([^)]*\)\s*=>))[^{]*\{[^}]*return\s*\{/g) || [])), // Factory pattern
-            ...((codeText.match(/(?:function\s+\w+|const\s+\w+\s*=)[^{]*\{[^}]*(?:subscribe|notify|observer)/gi) || [])), // Observer pattern
-            ...((codeText.match(/(?:export|module\.exports|import)/g) || [])), // Module pattern
-            ...((codeText.match(/\w+\s*=\s*\w+\s*\|\|\s*\{|\w+\s*\|\|\s*\(\w+\s*=\s*\{\}/g) || [])) // Singleton pattern
-        ].length,
-
-        // Security Issues
-        securityIssues: detectSecurityIssues(codeText),
-
-        // Performance Anti-patterns
-        performanceAntiPatterns: detectPerformanceAntiPatterns(codeText),
-
-        // Code Duplication
-        codeDuplication: detectCodeDuplication(codeText),
-
-        // Cyclomatic Complexity
-        cyclomaticComplexity: calculateCyclomaticComplexity(codeText),
-
-        // Accessibility Patterns
-        accessibilityPatterns: detectAccessibilityPatterns(codeText),
-
-        // Testing Patterns
-        testingPatterns: detectTestingPatterns(codeText),
-
-        // Code Smells
-        codeSmells: detectCodeSmells(codeText)
-    };
-
-    return patterns;
 }
 
 function getCodeFromEditor() {
