@@ -316,10 +316,6 @@ function createCodeQualitySection(relationships, efficiency) {
     `;
 }
 
-
-
-
-
 function getComplexityClass(complexity) {
     if (complexity.includes('O(1)') || complexity.includes('O(log')) return 'progress-excellent';
     if (complexity.includes('O(n)')) return 'progress-good';
@@ -412,9 +408,275 @@ function createCodeAnalysisGrid() {
                 </div>
                 <div class="complexity-label">Global Vars</div>
             </div>
+           
+            
         </div>
     `;
 }
+
+/*
+ <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.higherOrderFunctions > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.higherOrderFunctions}
+                </div>
+                <div class="complexity-label">Higher-Order Functions</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.loopTypes > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.loopTypes}
+                </div>
+                <div class="complexity-label">Loops</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.asyncPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.asyncPatterns}
+                </div>
+                <div class="complexity-label">Async Operations</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.accessibilityPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.accessibilityPatterns}
+                </div>
+                <div class="complexity-label">Accessibility</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.testingPatterns > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
+                    ${codeAnalysis.testingPatterns}
+                </div>
+                <div class="complexity-label">Testing</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.codeDuplication > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.codeDuplication}
+                </div>
+                <div class="complexity-label">Duplication</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.codeSmells > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.codeSmells}
+                </div>
+                <div class="complexity-label">Code Smells</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.cyclomaticComplexity > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.cyclomaticComplexity}
+                </div>
+                <div class="complexity-label">Cyclomatic Complexity</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.securityIssues > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.securityIssues}
+                </div>
+                <div class="complexity-label">Security Issues</div>
+            </div>
+            <div class="complexity-item">
+                <div class="complexity-number" style="color: ${codeAnalysis.performanceAntiPatterns > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'}">
+                    ${codeAnalysis.performanceAntiPatterns}
+                </div>
+                <div class="complexity-label">Performance Anti-Patterns</div>
+            </div>
+ */
+
+/////-----
+
+
+// function createCodeAnalysisGrid() {
+//     const patterns = analyzeCodePatterns();
+//
+//     // Calculate total issues for each category
+//     const securityTotal = patterns.securityIssues;
+//     const performanceTotal = patterns.performanceAntiPatterns;
+//     const qualityTotal = patterns.codeDuplication + patterns.codeSmells;
+//     const complexityTotal = patterns.cyclomaticComplexity;
+//     const modernTotal = patterns.accessibilityPatterns + patterns.testingPatterns;
+//
+//     // Only show sections that have values > 0
+//     const sections = [];
+//
+//     // Core Patterns (always show if any exist)
+//     const coreItems = [
+//         { label: "Console Statements", value: patterns.consoleCount, icon: "🖥️" },
+//         { label: "Functions", value: patterns.higherOrderFunctions, icon: "⚡" },
+//         { label: "Loops", value: patterns.loopTypes, icon: "🔄" },
+//         { label: "Async Operations", value: patterns.asyncPatterns, icon: "⏱️" },
+//         { label: "Data Structures", value: patterns.dataStructures, icon: "📦" },
+//         { label: "Design Patterns", value: patterns.designPatterns, icon: "🏗️" }
+//     ].filter(item => item.value > 0);
+//
+//     if (coreItems.length > 0) {
+//         sections.push({
+//             title: "📊 Core Patterns",
+//             color: "var(--dev-panel-accent)",
+//             items: coreItems
+//         });
+//     }
+//
+//     // Security Analysis
+//     if (securityTotal > 0) {
+//         sections.push({
+//             title: "🛡️ Security Analysis",
+//             color: securityTotal > 3 ? "var(--dev-panel-error)" : securityTotal > 1 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
+//             items: [
+//                 { label: "Security Issues", value: patterns.securityIssues, icon: "⚠️", critical: patterns.securityIssues > 2 }
+//             ]
+//         });
+//     }
+//
+//     // Performance Analysis
+//     const performanceItems = [
+//         { label: "Anti-patterns", value: patterns.performanceAntiPatterns, icon: "🐌", critical: patterns.performanceAntiPatterns > 3 },
+//         { label: "Memory Leaks", value: patterns.memoryLeaks, icon: "💧", critical: patterns.memoryLeaks > 1 }
+//     ].filter(item => item.value > 0);
+//
+//     if (performanceItems.length > 0) {
+//         sections.push({
+//             title: "⚡ Performance Analysis",
+//             color: performanceTotal > 5 ? "var(--dev-panel-error)" : performanceTotal > 2 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
+//             items: performanceItems
+//         });
+//     }
+//
+//     // Code Quality
+//     const qualityItems = [
+//         { label: "Cyclomatic Complexity", value: patterns.cyclomaticComplexity, icon: "🔀", critical: patterns.cyclomaticComplexity > 15 },
+//         { label: "Code Duplication", value: patterns.codeDuplication, icon: "📋", critical: patterns.codeDuplication > 3 },
+//         { label: "Code Smells", value: patterns.codeSmells, icon: "👃", critical: patterns.codeSmells > 5 },
+//         { label: "Error Handling", value: patterns.errorHandling, icon: "🛠️" }
+//     ].filter(item => item.value > 0);
+//
+//     if (qualityItems.length > 0 || complexityTotal > 10) {
+//         sections.push({
+//             title: "📈 Code Quality",
+//             color: complexityTotal > 20 ? "var(--dev-panel-error)" : complexityTotal > 10 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
+//             items: qualityItems
+//         });
+//     }
+//
+//     // Modern Development Practices
+//     const modernItems = [
+//         { label: "Accessibility Patterns", value: patterns.accessibilityPatterns, icon: "♿" },
+//         { label: "Testing Patterns", value: patterns.testingPatterns, icon: "🧪" },
+//         { label: "Functional Methods", value: patterns.functionalMethods, icon: "🔧" },
+//         { label: "Closures", value: patterns.closures, icon: "🎯" }
+//     ].filter(item => item.value > 0);
+//
+//     if (modernItems.length > 0) {
+//         sections.push({
+//             title: "🚀 Modern Practices",
+//             color: "var(--dev-panel-success)",
+//             items: modernItems
+//         });
+//     }
+//
+//     // Advanced Patterns (if any exist)
+//     const advancedItems = [
+//         { label: "Global Variables", value: patterns.globalVars, icon: "🌐", critical: patterns.globalVars > 2 },
+//         { label: "Throw Statements", value: patterns.throwStatements, icon: "💥" }
+//     ].filter(item => item.value > 0);
+//
+//     if (advancedItems.length > 0) {
+//         sections.push({
+//             title: "🔬 Advanced Analysis",
+//             color: "var(--dev-panel-secondary)",
+//             items: advancedItems
+//         });
+//     }
+//
+//     // If no sections, show empty state
+//     if (sections.length === 0) {
+//         return `
+//             <div style="margin: 16px 0; text-align: center; color: var(--dev-panel-secondary); font-size: 12px;">
+//                 <div style="margin-bottom: 8px;">🔍</div>
+//                 <div>No code patterns detected</div>
+//                 <div style="font-size: 11px; opacity: 0.7;">Write some code to see analysis</div>
+//             </div>
+//         `;
+//     }
+//
+//     // Generate HTML for sections
+//     const sectionsHTML = sections.map(section => `
+//         <div class="analysis-section" style="margin-bottom: 16px;">
+//             <div style="font-weight: bold; color: ${section.color}; margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+//                 ${section.title}
+//                 ${section.items.some(item => item.critical) ? '<span style="color: var(--dev-panel-error); font-size: 12px;">⚠️</span>' : ''}
+//             </div>
+//             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
+//                 ${section.items.map(item => `
+//                     <div style="
+//                         display: flex;
+//                         align-items: center;
+//                         justify-content: space-between;
+//                         padding: 6px 8px;
+//                         background: ${item.critical ? 'rgba(255, 107, 107, 0.1)' : 'var(--dev-panel-metric-bg)'};
+//                         border-radius: 4px;
+//                         border-left: 3px solid ${item.critical ? 'var(--dev-panel-error)' : section.color};
+//                         font-size: 11px;
+//                     ">
+//                         <span style="display: flex; align-items: center; gap: 4px; opacity: 0.9;">
+//                             <span>${item.icon}</span>
+//                             <span>${item.label}</span>
+//                         </span>
+//                         <span style="
+//                             font-weight: bold;
+//                             color: ${item.critical ? 'var(--dev-panel-error)' : section.color};
+//                             font-size: 12px;
+//                         ">${item.value}</span>
+//                     </div>
+//                 `).join('')}
+//             </div>
+//         </div>
+//     `).join('');
+//
+//     // Summary insights
+//     const totalIssues = securityTotal + performanceTotal + patterns.memoryLeaks + patterns.codeSmells;
+//     const qualityScore = Math.max(0, 100 - (totalIssues * 5) - Math.max(0, (complexityTotal - 10) * 2));
+//
+//     const summaryColor = qualityScore >= 80 ? 'var(--dev-panel-success)' :
+//         qualityScore >= 60 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-error)';
+//
+//     return `
+//         <div style="margin: 16px 0;">
+//             <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+//                 <span style="display: flex; align-items: center; gap: 8px;">🔍 Advanced Code Analysis</span>
+//                 <span style="font-size: 12px; color: ${summaryColor}; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px;">
+//                     Quality: ${qualityScore}/100
+//                 </span>
+//             </div>
+//
+//             ${sectionsHTML}
+//
+//             ${totalIssues > 0 ? `
+//                 <div style="
+//                     margin-top: 12px;
+//                     padding: 8px 10px;
+//                     background: rgba(255, 193, 7, 0.1);
+//                     border-left: 3px solid var(--dev-panel-warning);
+//                     border-radius: 4px;
+//                     font-size: 11px;
+//                     color: var(--dev-panel-warning);
+//                 ">
+//                     💡 <strong>Recommendations:</strong>
+//                     ${securityTotal > 0 ? 'Review security patterns. ' : ''}
+//                     ${performanceTotal > 0 ? 'Optimize performance bottlenecks. ' : ''}
+//                     ${patterns.codeDuplication > 2 ? 'Refactor duplicated code. ' : ''}
+//                     ${complexityTotal > 15 ? 'Simplify complex functions. ' : ''}
+//                 </div>
+//             ` : `
+//                 <div style="
+//                     margin-top: 12px;
+//                     padding: 8px 10px;
+//                     background: rgba(76, 175, 80, 0.1);
+//                     border-left: 3px solid var(--dev-panel-success);
+//                     border-radius: 4px;
+//                     font-size: 11px;
+//                     color: var(--dev-panel-success);
+//                 ">
+//                     ✅ <strong>Excellent!</strong> Your code follows good practices with minimal issues detected.
+//                 </div>
+//             `}
+//         </div>
+//     `;
+// }
 
 function analyzeCodePatterns() {
     const codeText = getCodeFromEditor();
@@ -432,14 +694,22 @@ function analyzeCodePatterns() {
             loopTypes: 0,
             dataStructures: 0,
             asyncPatterns: 0,
-            designPatterns: 0
+            designPatterns: 0,
+            securityIssues: 0,
+            performanceAntiPatterns: 0,
+            codeDuplication: 0,
+            cyclomaticComplexity: 0,
+            accessibilityPatterns: 0,
+            testingPatterns: 0,
+            codeSmells: 0
         };
     }
 
     const patterns = {
         consoleCount: (codeText.match(/console\.(log|error|warn|info|debug|trace|table|group|time)/g) || []).length,
         closures: (codeText.match(/function[^}]*(?:function|=>)|=>[^}]*(?:function|=>)|\(\s*\)\s*=>\s*\([^)]*\)\s*=>/g) || []).length,
-        memoryLeaks: (codeText.match(/(?:setInterval|setTimeout)(?!.*(?:clearInterval|clearTimeout))|addEventListener(?!.*removeEventListener)|new\s+\w+\s*\([^)]*\)(?!.*\.close\(\)|.*\.disconnect\(\))/g) || []).length,
+        // memoryLeaks: (codeText.match(/(?:setInterval|setTimeout)(?!.*(?:clearInterval|clearTimeout))|addEventListener(?!.*removeEventListener)|new\s+\w+\s*\([^)]*\)(?!.*\.close\(\)|.*\.disconnect\(\))/g) || []).length,
+        memoryLeaks: detectMemoryLeaks(codeText),
         errorHandling: (codeText.match(/try\s*\{[\s\S]*?catch\s*\([^)]*\)|\.catch\s*\(|Promise\.catch/g) || []).length,
         throwStatements: (codeText.match(/throw\s+(?:new\s+)?\w+|throw\s+['"`][^'"`]*['"`]/g) || []).length,
         globalVars: (codeText.match(/(?:^|\n)\s*var\s+\w+(?!\s*=\s*function)|window\.\w+\s*=|global\.\w+\s*=/gm) || []).length,
@@ -484,10 +754,200 @@ function analyzeCodePatterns() {
             ...((codeText.match(/(?:function\s+\w+|const\s+\w+\s*=)[^{]*\{[^}]*(?:subscribe|notify|observer)/gi) || [])), // Observer pattern
             ...((codeText.match(/(?:export|module\.exports|import)/g) || [])), // Module pattern
             ...((codeText.match(/\w+\s*=\s*\w+\s*\|\|\s*\{|\w+\s*\|\|\s*\(\w+\s*=\s*\{\}/g) || [])) // Singleton pattern
-        ].length
+        ].length,
+
+        // Security Issues
+        securityIssues: detectSecurityIssues(codeText),
+
+        // Performance Anti-patterns
+        performanceAntiPatterns: detectPerformanceAntiPatterns(codeText),
+
+        // Code Duplication
+        codeDuplication: detectCodeDuplication(codeText),
+
+        // Cyclomatic Complexity
+        cyclomaticComplexity: calculateCyclomaticComplexity(codeText),
+
+        // Accessibility Patterns
+        accessibilityPatterns: detectAccessibilityPatterns(codeText),
+
+        // Testing Patterns
+        testingPatterns: detectTestingPatterns(codeText),
+
+        // Code Smells
+        codeSmells: detectCodeSmells(codeText)
     };
 
     return patterns;
+}
+
+// Memory leak detection
+function detectMemoryLeaks(codeText) {
+    let leaks = 0;
+
+    // Timer leaks (more accurate)
+    const timerMatches = codeText.match(/(?:setInterval|setTimeout)\s*\(/g) || [];
+    const clearMatches = codeText.match(/(?:clearInterval|clearTimeout)\s*\(/g) || [];
+    leaks += Math.max(0, timerMatches.length - clearMatches.length);
+
+    // Event listener leaks
+    const addListenerMatches = codeText.match(/addEventListener\s*\(/g) || [];
+    const removeListenerMatches = codeText.match(/removeEventListener\s*\(/g) || [];
+    leaks += Math.max(0, addListenerMatches.length - removeListenerMatches.length);
+
+    // Unclosed resources
+    leaks += (codeText.match(/new\s+(?:WebSocket|EventSource|Worker)\s*\([^)]*\)(?![\s\S]*\.close\(\))/g) || []).length;
+
+    // Global variable leaks
+    leaks += (codeText.match(/window\.\w+\s*=(?!\s*function)/g) || []).length;
+
+    return leaks;
+}
+
+// Security vulnerability detection
+function detectSecurityIssues(codeText) {
+    const securityPatterns = [
+        { pattern: /eval\s*\(/g, name: "eval() usage" },
+        { pattern: /innerHTML\s*=\s*[^;]+(?!\s*(?:textContent|innerText))/g, name: "XSS via innerHTML" },
+        { pattern: /document\.write\s*\(/g, name: "document.write usage" },
+        { pattern: /Function\s*\(/g, name: "Function constructor" },
+        { pattern: /(?:password|secret|key|token|api_key)\s*[:=]\s*['"`][^'"`]*['"`]/gi, name: "Hardcoded secrets" },
+        { pattern: /(?:http:\/\/|ftp:\/\/)/g, name: "Insecure protocols" },
+        { pattern: /localStorage\.setItem\s*\([^)]*(?:password|secret|token)/gi, name: "Sensitive data in localStorage" },
+        { pattern: /Math\.random\s*\(\)\s*\*\s*\d+(?=.*(?:password|token|key|security))/gi, name: "Weak random for security" },
+        { pattern: /(?:onclick|onload|onerror)\s*=\s*['"`]/g, name: "Inline event handlers" },
+        { pattern: /(?:src|href)\s*=\s*['"`]javascript:/g, name: "JavaScript URLs" }
+    ];
+
+    return securityPatterns.reduce((count, { pattern }) => {
+        return count + (codeText.match(pattern) || []).length;
+    }, 0);
+}
+
+// Performance anti-pattern detection
+function detectPerformanceAntiPatterns(codeText) {
+    const antiPatterns = [
+        { pattern: /document\.getElementById\s*\([^)]*\)\s*\.style\./g, name: "Direct style manipulation" },
+        { pattern: /for\s*\([^)]*\)\s*\{[^}]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in for loops" },
+        { pattern: /while\s*\([^)]*\)\s*\{[^}]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in while loops" },
+        { pattern: /\.innerHTML\s*\+=\s*/g, name: "innerHTML concatenation" },
+        { pattern: /new\s+RegExp\s*\(/g, name: "RegExp constructor in loops" },
+        { pattern: /JSON\.parse\s*\(\s*JSON\.stringify/g, name: "Deep clone anti-pattern" },
+        { pattern: /(?:setInterval|setTimeout)\s*\([^)]*,\s*0\s*\)/g, name: "Zero timeout" },
+        { pattern: /\.forEach\s*\([^)]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in forEach" },
+        { pattern: /(?:appendChild|insertBefore|removeChild)\s*\([^)]*\)(?=[\s\S]*(?:appendChild|insertBefore|removeChild))/g, name: "Multiple DOM manipulations" },
+        { pattern: /(?:offsetWidth|offsetHeight|clientWidth|clientHeight|scrollWidth|scrollHeight)\s*[;,\)](?=[\s\S]*(?:offsetWidth|offsetHeight|clientWidth|clientHeight|scrollWidth|scrollHeight))/g, name: "Layout thrashing" }
+    ];
+
+    return antiPatterns.reduce((count, { pattern }) => {
+        return count + (codeText.match(pattern) || []).length;
+    }, 0);
+}
+
+// Code duplication detection
+function detectCodeDuplication(codeText) {
+    const lines = codeText.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 15 && !line.startsWith('//') && !line.startsWith('/*'));
+
+    const lineMap = new Map();
+    let duplicates = 0;
+
+    lines.forEach(line => {
+        const count = lineMap.get(line) || 0;
+        lineMap.set(line, count + 1);
+        if (count === 1) duplicates++; // First duplicate
+    });
+
+    // Also check for repeated function patterns
+    const functionPatterns = codeText.match(/function\s+\w+\s*\([^)]*\)\s*\{[\s\S]*?\}/g) || [];
+    const functionBodies = functionPatterns.map(fn => fn.replace(/function\s+\w+/, 'function'));
+    const functionMap = new Map();
+
+    functionBodies.forEach(body => {
+        if (body.length > 50) { // Only check substantial functions
+            const count = functionMap.get(body) || 0;
+            functionMap.set(body, count + 1);
+            if (count === 1) duplicates += 2; // Weight function duplication higher
+        }
+    });
+
+    return duplicates;
+}
+
+// Cyclomatic complexity calculation
+function calculateCyclomaticComplexity(codeText) {
+    const complexityPatterns = [
+        { pattern: /if\s*\(/g, weight: 1 },
+        { pattern: /else\s+if\s*\(/g, weight: 1 },
+        { pattern: /while\s*\(/g, weight: 1 },
+        { pattern: /for\s*\(/g, weight: 1 },
+        { pattern: /switch\s*\(/g, weight: 1 },
+        { pattern: /case\s+/g, weight: 1 },
+        { pattern: /catch\s*\(/g, weight: 1 },
+        { pattern: /\?\s*[^:]*:/g, weight: 1 }, // Ternary operators
+        { pattern: /&&|\|\|/g, weight: 1 }, // Logical operators
+        { pattern: /function\s+\w+|=>\s*\{|=>\s*[^{]/g, weight: 1 } // Functions add complexity
+    ];
+
+    return complexityPatterns.reduce((complexity, { pattern, weight }) => {
+        return complexity + ((codeText.match(pattern) || []).length * weight);
+    }, 1); // Base complexity is 1
+}
+
+// Accessibility pattern detection
+function detectAccessibilityPatterns(codeText) {
+    const a11yPatterns = [
+        { pattern: /aria-\w+\s*=/g, name: "ARIA attributes" },
+        { pattern: /role\s*=\s*['"`]/g, name: "Role attributes" },
+        { pattern: /alt\s*=\s*['"`]/g, name: "Alt text" },
+        { pattern: /tabindex\s*=/g, name: "Tab index" },
+        { pattern: /(?:focus|blur)\s*\(/g, name: "Focus management" },
+        { pattern: /(?:keydown|keyup|keypress)/g, name: "Keyboard events" },
+        { pattern: /(?:screen|reader)/gi, name: "Screen reader considerations" },
+        { pattern: /(?:label|for)\s*=\s*['"`]/g, name: "Form labels" },
+        { pattern: /(?:title|description)\s*=\s*['"`]/g, name: "Descriptive text" }
+    ];
+
+    return a11yPatterns.reduce((count, { pattern }) => {
+        return count + (codeText.match(pattern) || []).length;
+    }, 0);
+}
+
+// Testing pattern detection
+function detectTestingPatterns(codeText) {
+    const testPatterns = [
+        { pattern: /(?:describe|it|test|expect|assert)\s*\(/g, name: "Test functions" },
+        { pattern: /(?:beforeEach|afterEach|beforeAll|afterAll)\s*\(/g, name: "Test hooks" },
+        { pattern: /\.(?:toBe|toEqual|toMatch|toContain|toThrow|toHaveBeenCalled)\s*\(/g, name: "Test matchers" },
+        { pattern: /(?:mock|spy|stub)/gi, name: "Mocking patterns" },
+        { pattern: /(?:jest|mocha|jasmine|chai)/gi, name: "Testing frameworks" },
+        { pattern: /\.(?:mockImplementation|mockReturnValue|mockResolvedValue)\s*\(/g, name: "Mock implementations" }
+    ];
+
+    return testPatterns.reduce((count, { pattern }) => {
+        return count + (codeText.match(pattern) || []).length;
+    }, 0);
+}
+
+// Code smell detection
+function detectCodeSmells(codeText) {
+    const smellPatterns = [
+        { pattern: /function\s+\w+\s*\([^)]{50,}\)/g, name: "Long parameter lists" },
+        { pattern: /function[^{]{0,100}\{(?:[^{}]*\{[^{}]*\})*[^{}]{300,}\}/g, name: "Long functions" },
+        { pattern: /(?:var|let|const)\s+\w+\s*,\s*\w+\s*,\s*\w+/g, name: "Multiple variable declarations" },
+        { pattern: /if\s*\([^)]*\)\s*\{\s*if\s*\([^)]*\)\s*\{/g, name: "Nested if statements" },
+        { pattern: /(?:TODO|FIXME|HACK|XXX|BUG)/gi, name: "Code comments indicating issues" },
+        { pattern: /console\.log\s*\(/g, name: "Debug statements left in code" },
+        { pattern: /(?:42|123|999|1000|100)\b(?!\s*[+\-*\/])/g, name: "Magic numbers" },
+        { pattern: /(?:temp|test|foo|bar|baz)\w*/gi, name: "Poor naming" },
+        { pattern: /(?:var\s+|let\s+|const\s+)\w+\s*=\s*(?:var\s+|let\s+|const\s+)/g, name: "Variable shadowing" },
+        { pattern: /catch\s*\([^)]*\)\s*\{\s*\}/g, name: "Empty catch blocks" }
+    ];
+
+    return smellPatterns.reduce((count, { pattern }) => {
+        return count + (codeText.match(pattern) || []).length;
+    }, 0);
 }
 
 function getCodeFromEditor() {
