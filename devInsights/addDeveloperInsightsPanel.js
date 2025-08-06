@@ -974,15 +974,9 @@ function createMemorySection(realTimeMetrics,executionTime) {
     // Generate unified execution steps with real-time analysis
     const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
 
-    return `
-        <div class="metric-card fade-in">
-            <div class="metric-header">
-                <div class="metric-title">Deep Analysis</div>
-<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
-            </div>
-            
-            <!-- Memory Overview -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
+
+    /*
+     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
                 <div style="text-align: center;">
                     <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-accent);">${memoryMB}MB</div>
                     <div style="font-size: 11px; opacity: 0.8;">Peak Memory</div>
@@ -999,13 +993,22 @@ function createMemorySection(realTimeMetrics,executionTime) {
                     <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-error);">${realTimeMetrics.errorCount}</div>
                     <div style="font-size: 11px; opacity: 0.8;">Errors</div>
                 </div>
-                <div style="text-align: center;"> 
+                <div style="text-align: center;">
                     <div style="font-size: 18px; font-weight: bold; color: gray;">${realTimeMetrics.gcCollections}</div>
                     <div style="font-size: 11px; opacity: 0.8;">GC</div>
                 </div>
-                
-                
             </div>
+     */
+
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Deep Analysis</div>
+<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
+            </div>
+            
+            <!-- Memory Overview -->
+           
 
             <!-- Unified Real-Time Execution Flow -->
             <div style="margin: 16px 0;">
