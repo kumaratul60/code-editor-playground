@@ -1,6 +1,6 @@
-import {calculateComplexityScore} from "./calculateComplexityScore.js";
+// import {calculateComplexityScore} from "./calculateComplexityScore.js";
 import {getPerformanceRating} from "./getPerformanceRating.js";
-import {getOptimizationTips} from "./getOptimizationTips.js";
+// import {getOptimizationTips} from "./getOptimizationTips.js";
 import {addDeveloperInsightsPanel} from "./addDeveloperInsightsPanel.js";
 
 export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code="") {
@@ -8,7 +8,7 @@ export function updateSummaryBarWithAnalysis(analysis, executionTime = 0,code=""
     const execTimeElement = document.getElementById('exec-time');
 
     // Calculate code complexity score (simple heuristic)
-    const complexityScore = calculateComplexityScore(analysis);
+    // const complexityScore = calculateComplexityScore(analysis);
 
     // Determine performance rating based on execution time
     const performanceRating = getPerformanceRating(executionTime);

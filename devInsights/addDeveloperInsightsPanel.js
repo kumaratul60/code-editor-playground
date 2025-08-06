@@ -316,10 +316,6 @@ function createCodeQualitySection(relationships, efficiency) {
     `;
 }
 
-
-
-
-
 function getComplexityClass(complexity) {
     if (complexity.includes('O(1)') || complexity.includes('O(log')) return 'progress-excellent';
     if (complexity.includes('O(n)')) return 'progress-good';
