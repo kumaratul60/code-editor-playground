@@ -5,6 +5,29 @@ import { generateOptimizationTips } from "./generateOptimizationTips.js";
 import { analyzeFunctionRelationships } from "./analyzeFunctionRelationships.js";
 import { estimateBigOComplexity } from "./estimateBigOComplexity.js";
 import { calculateCodeEfficiency } from "./calculateCodeEfficiency.js";
+import detectionLogicHelper from "./ditectionLogicHelper.js";
+
+const {detectAsyncPatterns,
+    detectDOMPatterns,
+    detectErrorPatterns,
+    detectFunctionPatterns,
+    detectLoopPatterns,
+    detectOutputPatterns,
+    generateUnifiedExecutionSteps,
+    getStepStatusColor,
+    getComplexityClass,
+    getComplexityPercentage,
+    getPerformanceClass,
+    getQualityClass,
+    setupEventListeners,
+    detectMemoryLeaks,
+    detectCodeSmells,
+    detectTestingPatterns,
+    detectAccessibilityPatterns,
+    calculateCyclomaticComplexity,
+    detectCodeDuplication,
+    detectPerformanceAntiPatterns,
+    detectSecurityIssues} = detectionLogicHelper
 
 export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
     // Remove existing panel if it exists
@@ -22,6 +45,7 @@ export function addDeveloperInsightsPanel(analysis, executionTime, code = "") {
         cacheHits: 0,
         errorCount: 0
     };
+
 
     // Advanced analysis
     const hotspots = analyzeExecutionHotspots(analysis, executionTime);
@@ -145,86 +169,6 @@ function createOverviewSection(analysis, executionTime, metrics) {
     `;
 }
 
-function detectFunctionPatterns(codeText) {
-    return {
-        regular: (codeText.match(/function\s+\w+/g) || []).length,
-        arrow: (codeText.match(/=>\s*[{(]?/g) || []).length,
-        async: (codeText.match(/async\s+(?:function|\()/g) || []).length,
-        closures: (codeText.match(/function[^}]*(?:function|=>)|=>[^}]*(?:function|=>)|\(\s*\)\s*=>\s*\([^)]*\)\s*=>/g) || []).length,
-        total: (codeText.match(/function\s+\w+|=>\s*[{(]?|async\s+(?:function|\()/g) || []).length
-    };
-}
-
-function detectLoopPatterns(codeText) {
-    const traditional = (codeText.match(/for\s*\(|while\s*\(|do\s*\{/g) || []).length;
-    const functional = (codeText.match(/\.(?:map|filter|reduce|forEach|find|some|every)\s*\(/g) || []).length;
-    return {
-        traditional,
-        functional,
-        total: traditional + functional
-    };
-}
-
-function detectAsyncPatterns(codeText) {
-    const fetch = (codeText.match(/fetch\s*\(/g) || []).length;
-    const axios = (codeText.match(/axios\.(?:get|post|put|delete|patch)|axios\s*\(/g) || []).length;
-    const promises = (codeText.match(/new\s+Promise\s*\(|Promise\.(?:all|race|resolve|reject)/g) || []).length;
-    const legacy = (codeText.match(/XMLHttpRequest|jQuery\.ajax|\$\.ajax|setTimeout|setInterval/g) || []).length;
-
-    return {
-        fetch,
-        axios,
-        promises,
-        legacy,
-        total: fetch + axios + promises + legacy
-    };
-}
-
-function detectDOMPatterns(codeText) {
-    const queries = (codeText.match(/document\.(?:getElementById|querySelector|getElementsBy)|document\.\w+/g) || []).length;
-    const events = (codeText.match(/addEventListener|on\w+\s*=|\.on\(/g) || []).length;
-    const modifications = (codeText.match(/innerHTML|textContent|appendChild|removeChild|createElement/g) || []).length;
-
-    return {
-        queries,
-        events,
-        modifications,
-        total: queries + events + modifications
-    };
-}
-
-function detectOutputPatterns(codeText) {
-    const console = (codeText.match(/console\.(?:log|error|warn|info|debug|table)/g) || []).length;
-    const returns = (codeText.match(/return\s+/g) || []).length;
-
-    return {
-        console,
-        returns,
-        total: console + returns
-    };
-}
-
-function detectErrorPatterns(codeText) {
-    const tryCatch = (codeText.match(/try\s*\{[\s\S]*?catch/g) || []).length;
-    const cleanup = (codeText.match(/finally\s*\{|removeEventListener|clearInterval|clearTimeout|\.close\(\)|\.disconnect\(\)/g) || []).length;
-
-    return {
-        tryCatch,
-        cleanup,
-        hasCleanup: cleanup > 0,
-        total: tryCatch + cleanup
-    };
-}
-
-function getStepStatusColor(status) {
-    switch (status) {
-        case 'complete': return 'var(--dev-panel-success)';
-        case 'warning': return 'var(--dev-panel-warning)';
-        case 'error': return 'var(--dev-panel-error)';
-        default: return 'var(--dev-panel-secondary)';
-    }
-}
-
 function createComplexitySection(bigOComplexity, analysis) {
     return `
         <div class="metric-card fade-in">
@@ -316,57 +260,6 @@ function createCodeQualitySection(relationships, efficiency) {
     `;
 }
 
-function getComplexityClass(complexity) {
-    if (complexity.includes('O(1)') || complexity.includes('O(log')) return 'progress-excellent';
-    if (complexity.includes('O(n)')) return 'progress-good';
-    if (complexity.includes('O(n²)')) return 'progress-fair';
-    return 'progress-poor';
-}
-
-function getComplexityPercentage(complexity) {
-    if (complexity.includes('O(1)')) return 95;
-    if (complexity.includes('O(log')) return 85;
-    if (complexity.includes('O(n)')) return 70;
-    if (complexity.includes('O(n²)')) return 40;
-    return 20;
-}
-
-function getPerformanceClass(score) {
-    if (score >= 90) return 'progress-excellent';
-    if (score >= 75) return 'progress-good';
-    if (score >= 60) return 'progress-fair';
-    return 'progress-poor';
-}
-
-function getQualityClass(score) {
-    if (score >= 90) return 'progress-excellent';
-    if (score >= 75) return 'progress-good';
-    if (score >= 60) return 'progress-fair';
-    return 'progress-poor';
-}
-
-function setupEventListeners(sidebar) {
-    const toggleBtn = sidebar.querySelector('#dev-insights-toggle-btn');
-    const closeBtn = sidebar.querySelector('.dev-panel-close');
-
-    toggleBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-    });
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-        });
-    }
-
-    // Close on escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-        }
-    });
-}
-
 function createCodeAnalysisGrid() {
     const codeAnalysis = analyzeCodePatterns();
 
@@ -408,14 +301,7 @@ function createCodeAnalysisGrid() {
                 </div>
                 <div class="complexity-label">Global Vars</div>
             </div>
-           
-            
-        </div>
-    `;
-}
-
-/*
- <div class="complexity-item">
+            <div class="complexity-item">
                 <div class="complexity-number" style="color: ${codeAnalysis.higherOrderFunctions > 0 ? 'var(--dev-panel-success)' : 'var(--dev-panel-secondary)'}">
                     ${codeAnalysis.higherOrderFunctions}
                 </div>
@@ -475,209 +361,107 @@ function createCodeAnalysisGrid() {
                 </div>
                 <div class="complexity-label">Performance Anti-Patterns</div>
             </div>
+           
+            
+        </div>
+    `;
+}
+
+function createMemorySection(realTimeMetrics,executionTime) {
+    const memoryUsage = realTimeMetrics.peakMemory;
+    const memoryMB = (memoryUsage / (1024 * 1024)).toFixed(2);
+    const codeText = getCodeFromEditor();
+    const realExecutionTime = window.lastExecutionTime || executionTime || 0;
+
+    // Generate unified execution steps with real-time analysis
+    const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
+
+
+    let domOperationsHTML = '';
+    if (realTimeMetrics.domOperations && Object.keys(realTimeMetrics.domOperations).length > 0) {
+        domOperationsHTML = Object.entries(realTimeMetrics.domOperations)
+            .sort((a, b) => b[1] - a[1]) // Sort by count descending
+            .map(([op, count]) => `
+                <div style="background: var(--dev-panel-metric-bg); padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                    <span style="color: var(--dev-panel-text);">${op}:</span>
+                    <span style="color: var(--dev-panel-accent); font-weight: bold; margin-left: 4px;">${count}</span>
+                </div>
+            `)
+            .join('');
+    }
+
+/*
+ <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
+               <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-accent);">${memoryMB}MB</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Peak Memory</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-success);">${realTimeMetrics.domManipulations}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">DOM Ops</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-warning);">${realTimeMetrics.networkRequests}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Network</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-error);">${realTimeMetrics.errorCount}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">Errors</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 18px; font-weight: bold; color: gray;">${realTimeMetrics.gcCollections}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">GC</div>
+                </div>
+            </div>
  */
 
-/////-----
 
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Deep Analysis</div>
+<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
+            </div>
+            
+            <!-- Memory Overview -->
+           
+            
+            <!-- Unified Real-Time Execution Flow -->
+            <div style="margin: 16px 0;">
+                <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 8px;">⚡ Execution Flow</span>
+                    <span style="font-size: 12px; color: var(--dev-panel-secondary);">Total: ${realExecutionTime.toFixed(2)}ms</span>
+                </div>
+                <div class="execution-flow">
+                    ${unifiedSteps.map((step, index) => `
+                        <div class="flow-step" style="border-left-color: ${getStepStatusColor(step.status)}; padding: 12px 0 12px 16px; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; width: 100%; gap: 12px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        <span style="font-size: 12px; font-weight: 400;">${step.name}</span>
+                                    </div>
+                                    ${step.details ? `<div style="font-size: 11px; margin-top: 6px; opacity: 0.85; line-height: 1.4; color: var(--dev-panel-text);">${step.details}</div>` : ''}
+                                    ${step.metrics ? `<div style="font-size: 10px; margin-top: 4px; opacity: 0.7; color: var(--dev-panel-secondary);">${step.metrics}</div>` : ''}
+                                </div>
+                                <span class="flow-step-time" style="color: ${getStepStatusColor(step.status)}; font-size: 12px; white-space: nowrap; font-weight: 500;">
+                                    ${step.time}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
 
-// function createCodeAnalysisGrid() {
-//     const patterns = analyzeCodePatterns();
-//
-//     // Calculate total issues for each category
-//     const securityTotal = patterns.securityIssues;
-//     const performanceTotal = patterns.performanceAntiPatterns;
-//     const qualityTotal = patterns.codeDuplication + patterns.codeSmells;
-//     const complexityTotal = patterns.cyclomaticComplexity;
-//     const modernTotal = patterns.accessibilityPatterns + patterns.testingPatterns;
-//
-//     // Only show sections that have values > 0
-//     const sections = [];
-//
-//     // Core Patterns (always show if any exist)
-//     const coreItems = [
-//         { label: "Console Statements", value: patterns.consoleCount, icon: "🖥️" },
-//         { label: "Functions", value: patterns.higherOrderFunctions, icon: "⚡" },
-//         { label: "Loops", value: patterns.loopTypes, icon: "🔄" },
-//         { label: "Async Operations", value: patterns.asyncPatterns, icon: "⏱️" },
-//         { label: "Data Structures", value: patterns.dataStructures, icon: "📦" },
-//         { label: "Design Patterns", value: patterns.designPatterns, icon: "🏗️" }
-//     ].filter(item => item.value > 0);
-//
-//     if (coreItems.length > 0) {
-//         sections.push({
-//             title: "📊 Core Patterns",
-//             color: "var(--dev-panel-accent)",
-//             items: coreItems
-//         });
-//     }
-//
-//     // Security Analysis
-//     if (securityTotal > 0) {
-//         sections.push({
-//             title: "🛡️ Security Analysis",
-//             color: securityTotal > 3 ? "var(--dev-panel-error)" : securityTotal > 1 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
-//             items: [
-//                 { label: "Security Issues", value: patterns.securityIssues, icon: "⚠️", critical: patterns.securityIssues > 2 }
-//             ]
-//         });
-//     }
-//
-//     // Performance Analysis
-//     const performanceItems = [
-//         { label: "Anti-patterns", value: patterns.performanceAntiPatterns, icon: "🐌", critical: patterns.performanceAntiPatterns > 3 },
-//         { label: "Memory Leaks", value: patterns.memoryLeaks, icon: "💧", critical: patterns.memoryLeaks > 1 }
-//     ].filter(item => item.value > 0);
-//
-//     if (performanceItems.length > 0) {
-//         sections.push({
-//             title: "⚡ Performance Analysis",
-//             color: performanceTotal > 5 ? "var(--dev-panel-error)" : performanceTotal > 2 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
-//             items: performanceItems
-//         });
-//     }
-//
-//     // Code Quality
-//     const qualityItems = [
-//         { label: "Cyclomatic Complexity", value: patterns.cyclomaticComplexity, icon: "🔀", critical: patterns.cyclomaticComplexity > 15 },
-//         { label: "Code Duplication", value: patterns.codeDuplication, icon: "📋", critical: patterns.codeDuplication > 3 },
-//         { label: "Code Smells", value: patterns.codeSmells, icon: "👃", critical: patterns.codeSmells > 5 },
-//         { label: "Error Handling", value: patterns.errorHandling, icon: "🛠️" }
-//     ].filter(item => item.value > 0);
-//
-//     if (qualityItems.length > 0 || complexityTotal > 10) {
-//         sections.push({
-//             title: "📈 Code Quality",
-//             color: complexityTotal > 20 ? "var(--dev-panel-error)" : complexityTotal > 10 ? "var(--dev-panel-warning)" : "var(--dev-panel-success)",
-//             items: qualityItems
-//         });
-//     }
-//
-//     // Modern Development Practices
-//     const modernItems = [
-//         { label: "Accessibility Patterns", value: patterns.accessibilityPatterns, icon: "♿" },
-//         { label: "Testing Patterns", value: patterns.testingPatterns, icon: "🧪" },
-//         { label: "Functional Methods", value: patterns.functionalMethods, icon: "🔧" },
-//         { label: "Closures", value: patterns.closures, icon: "🎯" }
-//     ].filter(item => item.value > 0);
-//
-//     if (modernItems.length > 0) {
-//         sections.push({
-//             title: "🚀 Modern Practices",
-//             color: "var(--dev-panel-success)",
-//             items: modernItems
-//         });
-//     }
-//
-//     // Advanced Patterns (if any exist)
-//     const advancedItems = [
-//         { label: "Global Variables", value: patterns.globalVars, icon: "🌐", critical: patterns.globalVars > 2 },
-//         { label: "Throw Statements", value: patterns.throwStatements, icon: "💥" }
-//     ].filter(item => item.value > 0);
-//
-//     if (advancedItems.length > 0) {
-//         sections.push({
-//             title: "🔬 Advanced Analysis",
-//             color: "var(--dev-panel-secondary)",
-//             items: advancedItems
-//         });
-//     }
-//
-//     // If no sections, show empty state
-//     if (sections.length === 0) {
-//         return `
-//             <div style="margin: 16px 0; text-align: center; color: var(--dev-panel-secondary); font-size: 12px;">
-//                 <div style="margin-bottom: 8px;">🔍</div>
-//                 <div>No code patterns detected</div>
-//                 <div style="font-size: 11px; opacity: 0.7;">Write some code to see analysis</div>
-//             </div>
-//         `;
-//     }
-//
-//     // Generate HTML for sections
-//     const sectionsHTML = sections.map(section => `
-//         <div class="analysis-section" style="margin-bottom: 16px;">
-//             <div style="font-weight: bold; color: ${section.color}; margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 6px;">
-//                 ${section.title}
-//                 ${section.items.some(item => item.critical) ? '<span style="color: var(--dev-panel-error); font-size: 12px;">⚠️</span>' : ''}
-//             </div>
-//             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
-//                 ${section.items.map(item => `
-//                     <div style="
-//                         display: flex;
-//                         align-items: center;
-//                         justify-content: space-between;
-//                         padding: 6px 8px;
-//                         background: ${item.critical ? 'rgba(255, 107, 107, 0.1)' : 'var(--dev-panel-metric-bg)'};
-//                         border-radius: 4px;
-//                         border-left: 3px solid ${item.critical ? 'var(--dev-panel-error)' : section.color};
-//                         font-size: 11px;
-//                     ">
-//                         <span style="display: flex; align-items: center; gap: 4px; opacity: 0.9;">
-//                             <span>${item.icon}</span>
-//                             <span>${item.label}</span>
-//                         </span>
-//                         <span style="
-//                             font-weight: bold;
-//                             color: ${item.critical ? 'var(--dev-panel-error)' : section.color};
-//                             font-size: 12px;
-//                         ">${item.value}</span>
-//                     </div>
-//                 `).join('')}
-//             </div>
-//         </div>
-//     `).join('');
-//
-//     // Summary insights
-//     const totalIssues = securityTotal + performanceTotal + patterns.memoryLeaks + patterns.codeSmells;
-//     const qualityScore = Math.max(0, 100 - (totalIssues * 5) - Math.max(0, (complexityTotal - 10) * 2));
-//
-//     const summaryColor = qualityScore >= 80 ? 'var(--dev-panel-success)' :
-//         qualityScore >= 60 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-error)';
-//
-//     return `
-//         <div style="margin: 16px 0;">
-//             <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-//                 <span style="display: flex; align-items: center; gap: 8px;">🔍 Advanced Code Analysis</span>
-//                 <span style="font-size: 12px; color: ${summaryColor}; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px;">
-//                     Quality: ${qualityScore}/100
-//                 </span>
-//             </div>
-//
-//             ${sectionsHTML}
-//
-//             ${totalIssues > 0 ? `
-//                 <div style="
-//                     margin-top: 12px;
-//                     padding: 8px 10px;
-//                     background: rgba(255, 193, 7, 0.1);
-//                     border-left: 3px solid var(--dev-panel-warning);
-//                     border-radius: 4px;
-//                     font-size: 11px;
-//                     color: var(--dev-panel-warning);
-//                 ">
-//                     💡 <strong>Recommendations:</strong>
-//                     ${securityTotal > 0 ? 'Review security patterns. ' : ''}
-//                     ${performanceTotal > 0 ? 'Optimize performance bottlenecks. ' : ''}
-//                     ${patterns.codeDuplication > 2 ? 'Refactor duplicated code. ' : ''}
-//                     ${complexityTotal > 15 ? 'Simplify complex functions. ' : ''}
-//                 </div>
-//             ` : `
-//                 <div style="
-//                     margin-top: 12px;
-//                     padding: 8px 10px;
-//                     background: rgba(76, 175, 80, 0.1);
-//                     border-left: 3px solid var(--dev-panel-success);
-//                     border-radius: 4px;
-//                     font-size: 11px;
-//                     color: var(--dev-panel-success);
-//                 ">
-//                     ✅ <strong>Excellent!</strong> Your code follows good practices with minimal issues detected.
-//                 </div>
-//             `}
-//         </div>
-//     `;
-// }
+            <!-- Advanced Code Analysis Grid -->
+            ${createCodeAnalysisGrid()}
+            
+            
+              <!-- DOM Operations Breakdown -->
+             
+    `;
+}
 
+// Code analysis patterns
 function analyzeCodePatterns() {
     const codeText = getCodeFromEditor();
 
@@ -781,175 +565,6 @@ function analyzeCodePatterns() {
     return patterns;
 }
 
-// Memory leak detection
-function detectMemoryLeaks(codeText) {
-    let leaks = 0;
-
-    // Timer leaks (more accurate)
-    const timerMatches = codeText.match(/(?:setInterval|setTimeout)\s*\(/g) || [];
-    const clearMatches = codeText.match(/(?:clearInterval|clearTimeout)\s*\(/g) || [];
-    leaks += Math.max(0, timerMatches.length - clearMatches.length);
-
-    // Event listener leaks
-    const addListenerMatches = codeText.match(/addEventListener\s*\(/g) || [];
-    const removeListenerMatches = codeText.match(/removeEventListener\s*\(/g) || [];
-    leaks += Math.max(0, addListenerMatches.length - removeListenerMatches.length);
-
-    // Unclosed resources
-    leaks += (codeText.match(/new\s+(?:WebSocket|EventSource|Worker)\s*\([^)]*\)(?![\s\S]*\.close\(\))/g) || []).length;
-
-    // Global variable leaks
-    leaks += (codeText.match(/window\.\w+\s*=(?!\s*function)/g) || []).length;
-
-    return leaks;
-}
-
-// Security vulnerability detection
-function detectSecurityIssues(codeText) {
-    const securityPatterns = [
-        { pattern: /eval\s*\(/g, name: "eval() usage" },
-        { pattern: /innerHTML\s*=\s*[^;]+(?!\s*(?:textContent|innerText))/g, name: "XSS via innerHTML" },
-        { pattern: /document\.write\s*\(/g, name: "document.write usage" },
-        { pattern: /Function\s*\(/g, name: "Function constructor" },
-        { pattern: /(?:password|secret|key|token|api_key)\s*[:=]\s*['"`][^'"`]*['"`]/gi, name: "Hardcoded secrets" },
-        { pattern: /(?:http:\/\/|ftp:\/\/)/g, name: "Insecure protocols" },
-        { pattern: /localStorage\.setItem\s*\([^)]*(?:password|secret|token)/gi, name: "Sensitive data in localStorage" },
-        { pattern: /Math\.random\s*\(\)\s*\*\s*\d+(?=.*(?:password|token|key|security))/gi, name: "Weak random for security" },
-        { pattern: /(?:onclick|onload|onerror)\s*=\s*['"`]/g, name: "Inline event handlers" },
-        { pattern: /(?:src|href)\s*=\s*['"`]javascript:/g, name: "JavaScript URLs" }
-    ];
-
-    return securityPatterns.reduce((count, { pattern }) => {
-        return count + (codeText.match(pattern) || []).length;
-    }, 0);
-}
-
-// Performance anti-pattern detection
-function detectPerformanceAntiPatterns(codeText) {
-    const antiPatterns = [
-        { pattern: /document\.getElementById\s*\([^)]*\)\s*\.style\./g, name: "Direct style manipulation" },
-        { pattern: /for\s*\([^)]*\)\s*\{[^}]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in for loops" },
-        { pattern: /while\s*\([^)]*\)\s*\{[^}]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in while loops" },
-        { pattern: /\.innerHTML\s*\+=\s*/g, name: "innerHTML concatenation" },
-        { pattern: /new\s+RegExp\s*\(/g, name: "RegExp constructor in loops" },
-        { pattern: /JSON\.parse\s*\(\s*JSON\.stringify/g, name: "Deep clone anti-pattern" },
-        { pattern: /(?:setInterval|setTimeout)\s*\([^)]*,\s*0\s*\)/g, name: "Zero timeout" },
-        { pattern: /\.forEach\s*\([^)]*document\.(?:getElementById|querySelector)/g, name: "DOM queries in forEach" },
-        { pattern: /(?:appendChild|insertBefore|removeChild)\s*\([^)]*\)(?=[\s\S]*(?:appendChild|insertBefore|removeChild))/g, name: "Multiple DOM manipulations" },
-        { pattern: /(?:offsetWidth|offsetHeight|clientWidth|clientHeight|scrollWidth|scrollHeight)\s*[;,\)](?=[\s\S]*(?:offsetWidth|offsetHeight|clientWidth|clientHeight|scrollWidth|scrollHeight))/g, name: "Layout thrashing" }
-    ];
-
-    return antiPatterns.reduce((count, { pattern }) => {
-        return count + (codeText.match(pattern) || []).length;
-    }, 0);
-}
-
-// Code duplication detection
-function detectCodeDuplication(codeText) {
-    const lines = codeText.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 15 && !line.startsWith('//') && !line.startsWith('/*'));
-
-    const lineMap = new Map();
-    let duplicates = 0;
-
-    lines.forEach(line => {
-        const count = lineMap.get(line) || 0;
-        lineMap.set(line, count + 1);
-        if (count === 1) duplicates++; // First duplicate
-    });
-
-    // Also check for repeated function patterns
-    const functionPatterns = codeText.match(/function\s+\w+\s*\([^)]*\)\s*\{[\s\S]*?\}/g) || [];
-    const functionBodies = functionPatterns.map(fn => fn.replace(/function\s+\w+/, 'function'));
-    const functionMap = new Map();
-
-    functionBodies.forEach(body => {
-        if (body.length > 50) { // Only check substantial functions
-            const count = functionMap.get(body) || 0;
-            functionMap.set(body, count + 1);
-            if (count === 1) duplicates += 2; // Weight function duplication higher
-        }
-    });
-
-    return duplicates;
-}
-
-// Cyclomatic complexity calculation
-function calculateCyclomaticComplexity(codeText) {
-    const complexityPatterns = [
-        { pattern: /if\s*\(/g, weight: 1 },
-        { pattern: /else\s+if\s*\(/g, weight: 1 },
-        { pattern: /while\s*\(/g, weight: 1 },
-        { pattern: /for\s*\(/g, weight: 1 },
-        { pattern: /switch\s*\(/g, weight: 1 },
-        { pattern: /case\s+/g, weight: 1 },
-        { pattern: /catch\s*\(/g, weight: 1 },
-        { pattern: /\?\s*[^:]*:/g, weight: 1 }, // Ternary operators
-        { pattern: /&&|\|\|/g, weight: 1 }, // Logical operators
-        { pattern: /function\s+\w+|=>\s*\{|=>\s*[^{]/g, weight: 1 } // Functions add complexity
-    ];
-
-    return complexityPatterns.reduce((complexity, { pattern, weight }) => {
-        return complexity + ((codeText.match(pattern) || []).length * weight);
-    }, 1); // Base complexity is 1
-}
-
-// Accessibility pattern detection
-function detectAccessibilityPatterns(codeText) {
-    const a11yPatterns = [
-        { pattern: /aria-\w+\s*=/g, name: "ARIA attributes" },
-        { pattern: /role\s*=\s*['"`]/g, name: "Role attributes" },
-        { pattern: /alt\s*=\s*['"`]/g, name: "Alt text" },
-        { pattern: /tabindex\s*=/g, name: "Tab index" },
-        { pattern: /(?:focus|blur)\s*\(/g, name: "Focus management" },
-        { pattern: /(?:keydown|keyup|keypress)/g, name: "Keyboard events" },
-        { pattern: /(?:screen|reader)/gi, name: "Screen reader considerations" },
-        { pattern: /(?:label|for)\s*=\s*['"`]/g, name: "Form labels" },
-        { pattern: /(?:title|description)\s*=\s*['"`]/g, name: "Descriptive text" }
-    ];
-
-    return a11yPatterns.reduce((count, { pattern }) => {
-        return count + (codeText.match(pattern) || []).length;
-    }, 0);
-}
-
-// Testing pattern detection
-function detectTestingPatterns(codeText) {
-    const testPatterns = [
-        { pattern: /(?:describe|it|test|expect|assert)\s*\(/g, name: "Test functions" },
-        { pattern: /(?:beforeEach|afterEach|beforeAll|afterAll)\s*\(/g, name: "Test hooks" },
-        { pattern: /\.(?:toBe|toEqual|toMatch|toContain|toThrow|toHaveBeenCalled)\s*\(/g, name: "Test matchers" },
-        { pattern: /(?:mock|spy|stub)/gi, name: "Mocking patterns" },
-        { pattern: /(?:jest|mocha|jasmine|chai)/gi, name: "Testing frameworks" },
-        { pattern: /\.(?:mockImplementation|mockReturnValue|mockResolvedValue)\s*\(/g, name: "Mock implementations" }
-    ];
-
-    return testPatterns.reduce((count, { pattern }) => {
-        return count + (codeText.match(pattern) || []).length;
-    }, 0);
-}
-
-// Code smell detection
-function detectCodeSmells(codeText) {
-    const smellPatterns = [
-        { pattern: /function\s+\w+\s*\([^)]{50,}\)/g, name: "Long parameter lists" },
-        { pattern: /function[^{]{0,100}\{(?:[^{}]*\{[^{}]*\})*[^{}]{300,}\}/g, name: "Long functions" },
-        { pattern: /(?:var|let|const)\s+\w+\s*,\s*\w+\s*,\s*\w+/g, name: "Multiple variable declarations" },
-        { pattern: /if\s*\([^)]*\)\s*\{\s*if\s*\([^)]*\)\s*\{/g, name: "Nested if statements" },
-        { pattern: /(?:TODO|FIXME|HACK|XXX|BUG)/gi, name: "Code comments indicating issues" },
-        { pattern: /console\.log\s*\(/g, name: "Debug statements left in code" },
-        { pattern: /(?:42|123|999|1000|100)\b(?!\s*[+\-*\/])/g, name: "Magic numbers" },
-        { pattern: /(?:temp|test|foo|bar|baz)\w*/gi, name: "Poor naming" },
-        { pattern: /(?:var\s+|let\s+|const\s+)\w+\s*=\s*(?:var\s+|let\s+|const\s+)/g, name: "Variable shadowing" },
-        { pattern: /catch\s*\([^)]*\)\s*\{\s*\}/g, name: "Empty catch blocks" }
-    ];
-
-    return smellPatterns.reduce((count, { pattern }) => {
-        return count + (codeText.match(pattern) || []).length;
-    }, 0);
-}
-
 function getCodeFromEditor() {
     // Try to get code from the editor
     const codeElement = document.getElementById('code-text');
@@ -963,227 +578,6 @@ function getCodeFromEditor() {
     }
 
     return '';
-}
-
-function createMemorySection(realTimeMetrics,executionTime) {
-    const memoryUsage = realTimeMetrics.peakMemory;
-    const memoryMB = (memoryUsage / (1024 * 1024)).toFixed(2);
-    const codeText = getCodeFromEditor();
-    const realExecutionTime = window.lastExecutionTime || executionTime || 0;
-
-    // Generate unified execution steps with real-time analysis
-    const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
-
-
-    /*
-     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-accent);">${memoryMB}MB</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Peak Memory</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-success);">${realTimeMetrics.domManipulations}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">DOM Ops</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-warning);">${realTimeMetrics.networkRequests}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Network</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-error);">${realTimeMetrics.errorCount}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Errors</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: gray;">${realTimeMetrics.gcCollections}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">GC</div>
-                </div>
-            </div>
-     */
-
-    return `
-        <div class="metric-card fade-in">
-            <div class="metric-header">
-                <div class="metric-title">Deep Analysis</div>
-<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
-            </div>
-            
-            <!-- Memory Overview -->
-           
-
-            <!-- Unified Real-Time Execution Flow -->
-            <div style="margin: 16px 0;">
-                <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <span style="display: flex; align-items: center; gap: 8px;">⚡ Execution Flow</span>
-                    <span style="font-size: 12px; color: var(--dev-panel-secondary);">Total: ${realExecutionTime.toFixed(2)}ms</span>
-                </div>
-                <div class="execution-flow">
-                    ${unifiedSteps.map((step, index) => `
-                        <div class="flow-step" style="border-left-color: ${getStepStatusColor(step.status)}; padding: 12px 0 12px 16px; margin-bottom: 8px;">
-                            <div style="display: flex; align-items: flex-start; justify-content: space-between; width: 100%; gap: 12px;">
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                        <span style="font-size: 12px; font-weight: 400;">${step.name}</span>
-                                    </div>
-                                    ${step.details ? `<div style="font-size: 11px; margin-top: 6px; opacity: 0.85; line-height: 1.4; color: var(--dev-panel-text);">${step.details}</div>` : ''}
-                                    ${step.metrics ? `<div style="font-size: 10px; margin-top: 4px; opacity: 0.7; color: var(--dev-panel-secondary);">${step.metrics}</div>` : ''}
-                                </div>
-                                <span class="flow-step-time" style="color: ${getStepStatusColor(step.status)}; font-size: 12px; white-space: nowrap; font-weight: 500;">
-                                    ${step.time}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Advanced Code Analysis Grid -->
-            ${createCodeAnalysisGrid()}
-        </div>
-    `;
-}
-
-function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime) {
-    const steps = [];
-
-    if (!codeText || codeText.trim().length === 0) {
-        return [{
-            icon: '⚠️',
-            name: 'No Code Detected',
-            time: '0ms',
-            status: 'warning',
-            details: 'Write some code to see real-time execution analysis',
-            metrics: 'Memory: 0MB | Operations: 0'
-        }];
-    }
-
-    // Calculate dynamic timing distribution
-    const baseParsingTime = Math.max(0.1, realExecutionTime * 0.05);
-    const functionTime = Math.max(0.1, realExecutionTime * 0.15);
-    const loopTime = Math.max(0.1, realExecutionTime * 0.25);
-    const asyncTime = Math.max(0.1, realExecutionTime * 0.35);
-    const domTime = Math.max(0.1, realExecutionTime * 0.10);
-    const outputTime = Math.max(0.1, realExecutionTime * 0.10);
-
-    // Step 1: Code Parsing & Memory Initialization
-    const lineCount = (codeText.match(/\n/g) || []).length + 1;
-    const memoryForParsing = (lineCount * 0.1).toFixed(2);
-    steps.push({
-        icon: '📝',
-        name: 'Code Parsing & Memory Initialization',
-        time: `${baseParsingTime.toFixed(2)}ms`,
-        status: 'complete',
-        details: `${lineCount} lines parsed, variables declared`,
-        metrics: `Memory allocated: ~${memoryForParsing}KB | GC: ${realTimeMetrics.gcCollections}`
-    });
-
-    // Step 2: Function Analysis & Memory Allocation
-    const functionPatterns = detectFunctionPatterns(codeText);
-    if (functionPatterns.total > 0) {
-        const functionMemory = (functionPatterns.total * 2.5).toFixed(2);
-        steps.push({
-            icon: '🔧',
-            name: 'Function Analysis & Memory Allocation',
-            time: `${functionTime.toFixed(2)}ms`,
-            status: functionPatterns.total > 10 ? 'warning' : 'complete',
-            details: `${functionPatterns.total} functions analyzed (${functionPatterns.arrow} arrow, ${functionPatterns.regular} regular, ${functionPatterns.async} async)`,
-            metrics: `Function memory: ~${functionMemory}KB | Closures detected: ${functionPatterns.closures || 0}`
-        });
-    }
-
-    // Step 3: Loop Processing & Iteration Memory
-    const loopPatterns = detectLoopPatterns(codeText);
-    if (loopPatterns.total > 0) {
-        const loopStatus = loopPatterns.total > 5 ? 'warning' : 'complete';
-        const loopMemory = (loopPatterns.total * 1.8).toFixed(2);
-        steps.push({
-            icon: '🔄',
-            name: 'Loop Processing & Iteration Memory',
-            time: `${loopTime.toFixed(2)}ms`,
-            status: loopStatus,
-            details: `${loopPatterns.traditional} traditional loops, ${loopPatterns.functional} functional methods processed`,
-            metrics: `Loop memory: ~${loopMemory}KB | Peak iterations: ${loopPatterns.total * 100}`
-        });
-    }
-
-    // Step 4: Async Operations & Network Memory
-    const asyncPatterns = detectAsyncPatterns(codeText);
-    if (asyncPatterns.total > 0) {
-        const asyncStatus = asyncPatterns.total > 3 ? 'warning' : 'complete';
-        const networkMemory = (asyncPatterns.total * 5.2).toFixed(2);
-        steps.push({
-            icon: '⏳',
-            name: 'Async Operations & Network Memory',
-            time: `${asyncTime.toFixed(2)}ms`,
-            status: asyncStatus,
-            details: `${asyncPatterns.fetch} fetch, ${asyncPatterns.axios} axios, ${asyncPatterns.promises} promises, ${asyncPatterns.legacy} legacy async`,
-            metrics: `Network buffer: ~${networkMemory}KB | Active requests: ${realTimeMetrics.networkRequests}`
-        });
-    }
-
-    // Step 5: DOM Manipulation & Event Memory
-    const domPatterns = detectDOMPatterns(codeText);
-    if (domPatterns.total > 0) {
-        const domStatus = domPatterns.total > 10 ? 'warning' : 'complete';
-        const domMemory = (domPatterns.total * 3.1).toFixed(2);
-        steps.push({
-            icon: '🌐',
-            name: 'DOM Manipulation & Event Memory',
-            time: `${domTime.toFixed(2)}ms`,
-            status: domStatus,
-            details: `${domPatterns.queries} DOM queries, ${domPatterns.events} event listeners, ${domPatterns.modifications} modifications`,
-            metrics: `DOM memory: ~${domMemory}KB | Active listeners: ${domPatterns.events}`
-        });
-    }
-
-    // Step 6: Output Generation & Console Memory
-    const outputPatterns = detectOutputPatterns(codeText);
-    if (outputPatterns.total > 0) {
-        const consoleMemory = (outputPatterns.total * 0.8).toFixed(2);
-        steps.push({
-            icon: '📤',
-            name: 'Output Generation & Console Memory',
-            time: `${outputTime.toFixed(2)}ms`,
-            status: 'complete',
-            details: `${outputPatterns.console} console operations, ${outputPatterns.returns} return statements`,
-            metrics: `Console buffer: ~${consoleMemory}KB | Output size: ${outputPatterns.total * 50}B`
-        });
-    }
-
-    // Step 7: Error Handling & Memory Cleanup
-    const errorPatterns = detectErrorPatterns(codeText);
-    if (errorPatterns.total > 0) {
-        const cleanupMemory = (errorPatterns.cleanup * 1.2).toFixed(2);
-        steps.push({
-            icon: '🛡️',
-            name: 'Error Handling & Memory Cleanup',
-            time: `${(realExecutionTime * 0.05).toFixed(2)}ms`,
-            status: errorPatterns.hasCleanup ? 'complete' : 'warning',
-            details: `${errorPatterns.tryCatch} try/catch blocks, ${errorPatterns.cleanup} cleanup operations`,
-            metrics: `Cleanup freed: ~${cleanupMemory}KB | Error count: ${realTimeMetrics.errorCount}`
-        });
-    }
-
-    // Step 8: Garbage Collection & Final Memory State
-    if (realTimeMetrics.gcCollections > 0) {
-        const finalMemory = (realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2);
-        steps.push({
-            icon: '🗑️',
-            name: 'Garbage Collection & Final Memory State',
-            time: `${(realExecutionTime * 0.03).toFixed(2)}ms`,
-            status: parseFloat(finalMemory) > 50 ? 'warning' : 'complete',
-            details: `${realTimeMetrics.gcCollections} GC cycles completed, memory optimized`,
-            metrics: `Final memory: ${finalMemory}MB | Memory freed: ~${(realTimeMetrics.gcCollections * 2.5).toFixed(2)}KB`
-        });
-    }
-
-    return steps.length > 1 ? steps : [{
-        icon: '✅',
-        name: 'Simple Code Execution',
-        time: `${realExecutionTime.toFixed(2)}ms`,
-        status: 'complete',
-        details: 'Basic code execution completed successfully',
-        metrics: `Memory: ${(realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2)}MB | Operations: ${realTimeMetrics.domManipulations + realTimeMetrics.networkRequests}`
-    }];
 }
 
 // Global function for closing panel
