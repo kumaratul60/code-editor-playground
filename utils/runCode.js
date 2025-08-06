@@ -203,7 +203,9 @@ export async function runCode(editor, output) {
 
     try {
         const code = editor.innerText;
+
         if (!performSafetyChecks(code, output)) return;
+
         await executeCodeSafely(code);
 
         const executionTime = performance.now() - startTime;
