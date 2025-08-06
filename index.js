@@ -9,7 +9,6 @@ import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
 import { logOutput, runCode } from "./utils/runCode.js";
 import {handleEditorHelpers} from "./utils/editorAutoCompleteHelper.js";
 import {preserveCursorPosition,focusEditorAtEnd,optimizeEditor,scrollToCursor,debounceIndexHelper} from "./utils/indexHelper.js";
-import {createDebouncedSave, EditorSynchronizer} from "./utils/editorSync.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     // === DOM Element References ===
@@ -20,8 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const runBtn = document.getElementById("run-btn");
     const highlighted = document.getElementById("highlighted-code");
     const copyBtn = document.getElementById("copy-btn");
-    const editorContainer = document.querySelector('.editor-container');
-
 
     // === Focus Editor and Move Caret to End on Load ===
     requestAnimationFrame(() => {
@@ -44,50 +41,40 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Initialize Editor ===
     optimizeEditor(editor);
 
-
-    // === Initialize Editor Synchronization ===
-    const editorSync = new EditorSynchronizer(
-        editor,
-        highlighted,
-        syncLineNumbers,
-        highlightEditorSyntax
-    );
-
-    // Create debounced save function
-    const debouncedSave = createDebouncedSave(editorSync);
-
-
     // === Focus Editor and Move Caret to End on Load ===
     requestAnimationFrame(() => {
         focusEditorAtEnd(editor);
+        scrollToCursor();
     });
 
+    // === Initial UI Sync ===
+    updateLineNumbers(editor, lineNumbers);
+    toggleRunButton(editor, runBtn);
+    highlightEditorSyntax(editor, highlighted);
 
 
     // === Sync Scroll Between Layers ===
     function syncScrollPosition() {
-        const scrollTop = editor.scrollTop;
-        const scrollLeft = editor.scrollLeft;
+        const container = document.querySelector('.editor-container');
+        const scrollTop = container.scrollTop;
+        const scrollLeft = container.scrollLeft;
 
-        if (highlighted) {
-            highlighted.scrollTop = scrollTop;
-            highlighted.scrollLeft = scrollLeft;
-        }
-
-        if (lineNumbers) {
-            lineNumbers.scrollTop = scrollTop;
-        }
+        // Use scroll properties instead of transform for better alignment
+        highlighted.scrollTop = scrollTop;
+        highlighted.scrollLeft = scrollLeft;
+        lineNumbers.scrollTop = scrollTop;
     }
 
     // === Scroll Sync Event ===
     document.querySelector('.editor-container').addEventListener('scroll', syncScrollPosition);
 
 
-
     // === Click on Editor Section Focuses Editor ===
     document.querySelector('.editor-section').addEventListener('click', () => {
         if (document.activeElement !== editor) editor.focus();
     });
+
+
 
     // === Line Number Sync on Input/Paste ===
     function syncLineNumbers() {
@@ -96,13 +83,12 @@ document.addEventListener("DOMContentLoaded", () => {
         syncScrollPosition();
     }
 
-    // === Input Handler ===
+    // === Enhanced Input Handler ===
     editor.addEventListener('input', () => {
         // Immediate sync
         syncLineNumbers();
         scrollToCursor();
         debouncedHighlight();
-        debouncedSave(); // Save to localStorage
     });
 
     // === Paste Event Handler ===
@@ -166,15 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.insertAtTop = insertAtTop;
     window.insertAtBottom = insertAtBottom;
     window.insertAtCursor = insertAtCursor;
-
-    // === Cleanup ===
-    window.addEventListener('beforeunload', () => {
-        if (editorSync?.destroy) editorSync.destroy();
-        editor.removeEventListener('input', handleEditorInput);
-        editor.removeEventListener('paste', handlePaste);
-        editorContainer?.removeEventListener('scroll', debouncedScrollSync);
-        document.removeEventListener('selectionchange', handleSelectionChange);
-    });
 
     // === Keyboard Handling for Editor ===
     editor.addEventListener("keydown", (e) => {
@@ -274,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-  // -- Buttons logic --
+    // -- Buttons logic --
 
     // === Theme Toggle Logic ===
     themeToggle.addEventListener("click", () => {
