@@ -206,9 +206,12 @@ export async function runCode(editor, output) {
         if (!performSafetyChecks(code, output)) return;
         await executeCodeSafely(code);
 
+        const executionTime = performance.now() - startTime;
+        window.lastExecutionTime = executionTime
+
         // Success path - update UI
         const analysis = analyzeCode(code);
-        updateSummaryBarWithAnalysis(analysis, performance.now() - startTime, code);
+        updateSummaryBarWithAnalysis(analysis, executionTime, code);
     } catch (err) {
         handleExecutionError(err, startTime, editor.innerText, output);
     } finally {
