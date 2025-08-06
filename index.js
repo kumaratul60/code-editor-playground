@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-  // -- Buttons logic --
+    // -- Buttons logic --
 
     // === Theme Toggle Logic ===
     themeToggle.addEventListener("click", () => {
