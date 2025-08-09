@@ -9,6 +9,7 @@ import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
 import { logOutput, runCode } from "./utils/runCode.js";
 import {handleEditorHelpers} from "./utils/editorAutoCompleteHelper.js";
 import {preserveCursorPosition,focusEditorAtEnd,optimizeEditor,scrollToCursor,debounceIndexHelper} from "./utils/indexHelper.js";
+import {checkIcon, copyIcon} from "./utils/svg.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     // === DOM Element References ===
@@ -19,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const runBtn = document.getElementById("run-btn");
     const highlighted = document.getElementById("highlighted-code");
     const copyBtn = document.getElementById("copy-btn");
+    const clearBtn = document.getElementById("clear-btn");
+
 
     // === Focus Editor and Move Caret to End on Load ===
     requestAnimationFrame(() => {
@@ -30,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.removeAllRanges();
         sel.addRange(range);
     });
+
+
 
 
     const debouncedHighlight = debounceIndexHelper(() => {
@@ -265,16 +270,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Run Button Logic ===
     runBtn.addEventListener("click", () => runCode(editor, output));
 
-    // === Copy Button Logic ===
+    // === Copy Button Logic with Fade Animation ===
     copyBtn.addEventListener("click", () => {
         const code = editor.innerText;
         try {
             navigator.clipboard.writeText(code).then(() => {
-                copyBtn.textContent = "✅";
-                setTimeout(() => (copyBtn.textContent = "📋"), 1000);
+                copyBtn.classList.add("fade-out");
+                setTimeout(() => {
+                    copyBtn.innerHTML = checkIcon;
+                    copyBtn.classList.remove("fade-out");
+                    copyBtn.classList.add("success");
+
+                    // Revert back to copy icon after delay
+                    setTimeout(() => {
+                        copyBtn.classList.add("fade-out");
+                        setTimeout(() => {
+                            copyBtn.innerHTML = copyIcon;
+                            copyBtn.classList.remove("fade-out", "success");
+                        }, 250);
+                    }, 1000);
+                }, 250);
             });
         } catch (err) {
             alert("Failed to copy code to clipboard.");
+        }
+    });
+
+// === Clear Button Logic ===
+    clearBtn.addEventListener("click", () => {
+        if (confirm("Clear the editor?")) {
+            editor.innerText = "";
+            updateLineNumbers(editor, lineNumbers);
+            highlightEditorSyntax(editor, highlighted);
         }
     });
 
