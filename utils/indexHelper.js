@@ -1,3 +1,7 @@
+import {toggleRunButton, updateLineNumbers} from "./commonUtils.js";
+import {editor, highlighted, lineNumbers, runBtn} from "../DOMIndex/domUtils.js";
+import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
+
 export function focusEditorAtEnd(editor) {
     editor.focus();
     const range = document.createRange();
@@ -151,7 +155,6 @@ export function scrollToCursor() {
     }
 }
 
-
 export function debounceIndexHelper(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -162,6 +165,34 @@ export function debounceIndexHelper(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+export function syncLineNumbers() {
+    updateLineNumbers(editor, lineNumbers);
+    toggleRunButton(editor, runBtn);
+    syncScrollPosition();
+}
+
+export function syncScrollPosition() {
+    const container = document.querySelector('.editor-container');
+    highlighted.scrollTop = container.scrollTop;
+    highlighted.scrollLeft = container.scrollLeft;
+    lineNumbers.scrollTop = container.scrollTop;
+}
+
+export const debouncedHighlight = debounceIndexHelper(() => {
+    preserveCursorPosition(() => {
+        highlightEditorSyntax(editor, highlighted);
+    }, editor);
+}, 50);
+
+
+export function clearEditor() {
+    if (confirm("Clear the editor?")) {
+        editor.innerText = "";
+        updateLineNumbers(editor, lineNumbers);
+        highlightEditorSyntax(editor, highlighted);
+    }
 }
 
 
