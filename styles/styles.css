@@ -211,6 +211,21 @@ button:disabled {
     transform: none;
 }
 
+.controls svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    transition: opacity 0.25s ease;
+}
+
+#copy-btn.fade-out svg {
+    opacity: 0;
+}
+
+#copy-btn.success svg {
+    color: green; /* optional green check */
+}
+
 /* Theme toggle animation */
 #theme-toggle {
     transition: transform 0.5s ease, background 0.3s, color 0.3s;
