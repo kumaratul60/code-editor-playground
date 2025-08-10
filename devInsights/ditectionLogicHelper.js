@@ -30,13 +30,15 @@ function detectFunctionPatterns(codeText) {
 // Loop detection
 function detectLoopPatterns(codeText) {
     const cleanCode = codeText.replace(/('.*?'|".*?"|`[\s\S]*?`)/g, '');
-    const forLoops= (cleanCode.match(/\bfor\s*\(/g) || []).length
-    const whileLoops= (cleanCode.match(/\bwhile\s*\(/g) || []).length
-    const doWhileLoops= (cleanCode.match(/\bdo\s*\{/g) || []).length
-    const forIn= (cleanCode.match(/\bfor\s*\(\s*(?:var|let|const)\s+\w+\s+in\s+/g) || []).length
-    const forOf=(cleanCode.match(/\bfor\s*\(\s*(?:var|let|const)\s+\w+\s+of\s+/g) || []).length
-    const forEach=(cleanCode.match(/\.forEach\s*\(/g) || []).length
-    const functional = (cleanCode.match(/\.(?:map|filter|reduce|forEach|find|some|every)\s*\(/g) || []).length;
+
+    const forLoops = (cleanCode.match(/\bfor\s*\(/g) || []).length;
+    const whileLoops = (cleanCode.match(/\bwhile\s*\(/g) || []).length;
+    const doWhileLoops = (cleanCode.match(/\bdo\s*\{/g) || []).length;
+    const forIn = (cleanCode.match(/\bfor\s*\(\s*(?:var|let|const)\s+\w+\s+in\s+/g) || []).length;
+    const forOf = (cleanCode.match(/\bfor\s*\(\s*(?:var|let|const)\s+\w+\s+of\s+/g) || []).length;
+    const forEach = (cleanCode.match(/\.forEach\s*\(/g) || []).length;
+    const functional = (cleanCode.match(/\.(?:map|filter|reduce|find|some|every)\s*\(/g) || []).length;
+
     return {
         forLoops,
         whileLoops,
@@ -62,62 +64,116 @@ function detectAsyncPatterns(codeText) {
     const newPromise = (cleanCode.match(/new\s+Promise\s*\(/g) || []).length;
     const promiseAll = (cleanCode.match(/Promise\.all\s*\(/g) || []).length;
     const promiseRace = (cleanCode.match(/Promise\.race\s*\(/g) || []).length;
+    const promiseThen = (cleanCode.match(/\.then\s*\(/g) || []).length;
+    const promiseCatch = (cleanCode.match(/\.catch\s*\(/g) || []).length;
 
     const fetch = (cleanCode.match(/\bfetch\s*\(/g) || []).length;
+    const axios = (cleanCode.match(/\baxios\s*[\.\(]/g) || []).length;
     const xmlHttp = (cleanCode.match(/\bXMLHttpRequest\b/g) || []).length;
     const timeouts = (cleanCode.match(/\b(?:setTimeout|setInterval)\s*\(/g) || []).length;
 
-    const total = asyncFunctions + awaitKeywords + newPromise + promiseAll + promiseRace + fetch + xmlHttp + timeouts;
+    // Calculate totals
+    const promises = newPromise + promiseAll + promiseRace + promiseThen + promiseCatch;
+    const legacy = xmlHttp + timeouts;
+    const total = asyncFunctions + awaitKeywords + promises + fetch + axios + legacy;
 
     return {
-        asyncFunctions,
-        awaitKeywords,
-        promises: {
+        fetch,
+        axios,
+        promises,
+        legacy,
+        total,
+        // Keep detailed breakdown for potential future use
+        details: {
+            asyncFunctions,
+            awaitKeywords,
             newPromise,
             promiseAll,
-            promiseRace
-        },
-        fetch,
-        xmlHttp,
-        timeouts,
-        total
+            promiseRace,
+            promiseThen,
+            promiseCatch,
+            xmlHttp,
+            timeouts
+        }
     };
 }
 
 // DOM detection
 function detectDOMPatterns(codeText) {
-    // Group 1: Query Selectors
-    const querySelectors = {
-        getElementById: (codeText.match(/document\.getElementById\s*\(/g) || []).length,
-        querySelector: (codeText.match(/document\.querySelector(?:All)?\s*\(/g) || []).length,
-        getElementsBy: (codeText.match(/document\.getElementsBy(?:Tag|Class|Name)\s*\(/g) || []).length
-    };
+    // Remove comments to avoid false positives
+    const cleanCode = codeText
+        .replace(/\/\/.*$/gm, '') // Line comments
+        .replace(/\/\*[\s\S]*?\*\//g, ''); // Block comments
 
-    // Group 2: DOM Manipulation
-    const manipulation = {
-        createElement: (codeText.match(/document\.createElement\s*\(/g) || []).length,
-        appendChild: (codeText.match(/\.appendChild\s*\(/g) || []).length,
-        innerHTML: (codeText.match(/\.innerHTML\s*=/g) || []).length,
-        textContent: (codeText.match(/\.textContent\s*=/g) || []).length,
-        setAttribute: (codeText.match(/\.setAttribute\s*\(/g) || []).length
-    };
+    // Query Selectors
+    const getElementById = (cleanCode.match(/document\.getElementById\s*\(/g) || []).length;
+    const querySelector = (cleanCode.match(/document\.querySelector\s*\(/g) || []).length;
+    const querySelectorAll = (cleanCode.match(/document\.querySelectorAll\s*\(/g) || []).length;
+    const getElementsByTag = (cleanCode.match(/document\.getElementsByTagName\s*\(/g) || []).length;
+    const getElementsByClass = (cleanCode.match(/document\.getElementsByClassName\s*\(/g) || []).length;
+    const getElementsByName = (cleanCode.match(/document\.getElementsByName\s*\(/g) || []).length;
 
-    // Group 3: Event Listeners
-    const events = {
-        addEventListener: (codeText.match(/\.addEventListener\s*\(/g) || []).length,
-        inlineEvents: (codeText.match(/\bon\w+\s*=/g) || []).length
-    };
+    // DOM Manipulation
+    const createElement = (cleanCode.match(/document\.createElement\s*\(/g) || []).length;
+    const appendChild = (cleanCode.match(/\.appendChild\s*\(/g) || []).length;
+    const removeChild = (cleanCode.match(/\.removeChild\s*\(/g) || []).length;
+    const innerHTML = (cleanCode.match(/\.innerHTML\s*=/g) || []).length;
+    const textContent = (cleanCode.match(/\.textContent\s*=/g) || []).length;
+    const innerText = (cleanCode.match(/\.innerText\s*=/g) || []).length;
+    const setAttribute = (cleanCode.match(/\.setAttribute\s*\(/g) || []).length;
+    const getAttribute = (cleanCode.match(/\.getAttribute\s*\(/g) || []).length;
+    const classList = (cleanCode.match(/\.classList\.\w+/g) || []).length;
+    const style = (cleanCode.match(/\.style\.\w+\s*=/g) || []).length;
 
-    // Calculate totals
-    const totalQueries = Object.values(querySelectors).reduce((a, b) => a + b, 0);
-    const totalManipulations = Object.values(manipulation).reduce((a, b) => a + b, 0);
-    const totalEvents = Object.values(events).reduce((a, b) => a + b, 0);
+    // Event Listeners
+    const addEventListener = (cleanCode.match(/\.addEventListener\s*\(/g) || []).length;
+    const removeEventListener = (cleanCode.match(/\.removeEventListener\s*\(/g) || []).length;
+    const inlineEvents = (cleanCode.match(/\bon\w+\s*=/g) || []).length;
+
+    // Calculate totals for calling code compatibility
+    const queries = getElementById + querySelector + querySelectorAll + getElementsByTag + getElementsByClass + getElementsByName;
+    const modifications = createElement + appendChild + removeChild + innerHTML + textContent + innerText + setAttribute + getAttribute + classList + style;
+    const events = addEventListener + removeEventListener + inlineEvents;
+    const total = queries + modifications + events;
 
     return {
-        queries: { ...querySelectors, total: totalQueries },
-        manipulation: { ...manipulation, total: totalManipulations },
-        events: { ...events, total: totalEvents },
-        total: totalQueries + totalManipulations + totalEvents
+        // Flat properties that calling code expects
+        queries,
+        modifications,
+        events,
+        total,
+
+        // Detailed breakdown for potential future use
+        details: {
+            querySelectors: {
+                getElementById,
+                querySelector,
+                querySelectorAll,
+                getElementsByTag,
+                getElementsByClass,
+                getElementsByName,
+                total: queries
+            },
+            manipulation: {
+                createElement,
+                appendChild,
+                removeChild,
+                innerHTML,
+                textContent,
+                innerText,
+                setAttribute,
+                getAttribute,
+                classList,
+                style,
+                total: modifications
+            },
+            eventListeners: {
+                addEventListener,
+                removeEventListener,
+                inlineEvents,
+                total: events
+            }
+        }
     };
 }
 
@@ -321,7 +377,8 @@ function detectCodeSmells(codeText) {
     return result;
 }
 
-// Generate unified execution steps
+
+
 function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime) {
     const steps = [];
 
@@ -336,64 +393,71 @@ function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionT
         }];
     }
 
-    // Calculate dynamic timing distribution
-    const baseParsingTime = Math.max(0.1, realExecutionTime * 0.05);
-    const functionTime = Math.max(0.1, realExecutionTime * 0.15);
-    const loopTime = Math.max(0.1, realExecutionTime * 0.25);
-    const asyncTime = Math.max(0.1, realExecutionTime * 0.35);
-    const domTime = Math.max(0.1, realExecutionTime * 0.10);
-    // const outputTime = Math.max(0.1, realExecutionTime * 0.10);
+    // Detect all patterns first to determine which steps will be included
+    const functionPatterns = detectFunctionPatterns(codeText);
+    const loopPatterns = detectLoopPatterns(codeText);
+    const asyncPatterns = detectAsyncPatterns(codeText);
+    const domPatterns = detectDOMPatterns(codeText);
 
-    // Step 1: Code Parsing & Memory Initialization
+    // Count active steps (parsing is always included)
+    let activeSteps = 1; // Always include parsing
+    if (functionPatterns.total > 0) activeSteps++;
+    if (loopPatterns.total > 0) activeSteps++;
+    if (asyncPatterns.total > 0) activeSteps++;
+    if (domPatterns.total > 0) activeSteps++;
+
+    // Distribute time evenly among active steps, with parsing getting slightly less
+    const parsingTime = Math.max(0.1, realExecutionTime * 0.1); // Fixed 10% for parsing
+    const remainingTime = realExecutionTime - parsingTime;
+    const stepTime = activeSteps > 1 ? remainingTime / (activeSteps - 1) : 0;
+
+    // Step 1: Code Parsing & Memory Initialization (always included)
     const lineCount = (codeText.match(/\n/g) || []).length + 1;
     const memoryForParsing = (lineCount * 0.1).toFixed(2);
     steps.push({
         icon: '📝',
         name: 'Code Parsing & Memory Initialization',
-        time: `${baseParsingTime.toFixed(2)}ms`,
+        time: `${parsingTime.toFixed(2)}ms`,
         status: 'complete',
         details: `${lineCount} lines parsed, variables declared`,
         metrics: `Memory allocated: ~${memoryForParsing}KB | GC: ${realTimeMetrics.gcCollections}`
     });
 
     // Step 2: Function Analysis & Memory Allocation
-    const functionPatterns = detectFunctionPatterns(codeText);
     if (functionPatterns.total > 0) {
         const functionMemory = (functionPatterns.total * 2.5).toFixed(2);
         steps.push({
             icon: '🔧',
             name: 'Function Analysis & Memory Allocation',
-            time: `${functionTime.toFixed(2)}ms`,
+            time: `${stepTime.toFixed(2)}ms`,
             status: functionPatterns.total > 10 ? 'warning' : 'complete',
-            details: `${functionPatterns.total} functions analyzed (${functionPatterns.arrow} arrow, ${functionPatterns.regular} regular, ${functionPatterns.async} async)`,
+            details: `${functionPatterns.total} functions analyzed (${functionPatterns.arrow || 0} arrow, ${functionPatterns.regular || 0} regular, ${functionPatterns.async || 0} async)`,
             metrics: `Function memory: ~${functionMemory}KB | Closures detected: ${functionPatterns.closures || 0}`
         });
     }
 
     // Step 3: Loop Processing & Iteration Memory
-    const loopPatterns = detectLoopPatterns(codeText);
     if (loopPatterns.total > 0) {
         const loopStatus = loopPatterns.total > 5 ? 'warning' : 'complete';
         const loopMemory = (loopPatterns.total * 1.8).toFixed(2);
         steps.push({
             icon: '🔄',
             name: 'Loop Processing & Iteration Memory',
-            time: `${loopTime.toFixed(2)}ms`,
+            time: `${stepTime.toFixed(2)}ms`,
             status: loopStatus,
-            details: `${loopPatterns.traditional} traditional loops, ${loopPatterns.functional} functional methods processed`,
+            details: `${loopPatterns.forLoops + loopPatterns.whileLoops + loopPatterns.doWhileLoops} traditional loops, ${loopPatterns.functional} functional methods processed`,
             metrics: `Loop memory: ~${loopMemory}KB | Peak iterations: ${loopPatterns.total * 100}`
         });
     }
 
     // Step 4: Async Operations & Network Memory
-    const asyncPatterns = detectAsyncPatterns(codeText);
     if (asyncPatterns.total > 0) {
         const asyncStatus = asyncPatterns.total > 3 ? 'warning' : 'complete';
         const networkMemory = (asyncPatterns.total * 5.2).toFixed(2);
         steps.push({
             icon: '⏳',
             name: 'Async Operations & Network Memory',
-            time: `${asyncTime.toFixed(2)}ms`,
+            time: `${stepTime.toFixed(2)}ms`,
             status: asyncStatus,
             details: `${asyncPatterns.fetch} fetch, ${asyncPatterns.axios} axios, ${asyncPatterns.promises} promises, ${asyncPatterns.legacy} legacy async`,
             metrics: `Network buffer: ~${networkMemory}KB | Active requests: ${realTimeMetrics.networkRequests}`
@@ -401,7 +465,6 @@ function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionT
     }
 
     // Step 5: DOM Manipulation & Event Memory
-    const domPatterns = detectDOMPatterns(codeText);
     if (domPatterns.total > 0) {
         const domStatus = domPatterns.total > 10 ? 'warning' : 'complete';
         const domMemory = (domPatterns.total * 3.1).toFixed(2);
@@ -415,56 +478,168 @@ function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionT
         });
     }
 
-    // Step 6: Output Generation & Console Memory
-    // const outputPatterns = detectOutputPatterns(codeText);
-    // if (outputPatterns.total > 0) {
-    //     const consoleMemory = (outputPatterns.total * 0.8).toFixed(2);
-    //     steps.push({
-    //         icon: '📤',
-    //         name: 'Output Generation & Console Memory',
-    //         time: `${outputTime.toFixed(2)}ms`,
-    //         status: 'complete',
-    //         details: `${outputPatterns.console} console operations, ${outputPatterns.returns} return statements`,
-    //         metrics: `Console buffer: ~${consoleMemory}KB | Output size: ${outputPatterns.total * 50}B`
-    //     });
-    // }
+    // Verify total time matches (for debugging)
+    const calculatedTotal = steps.reduce((sum, step) => {
+        const timeValue = parseFloat(step.time.replace('ms', ''));
+        return sum + timeValue;
+    }, 0);
 
-    // Step 7: Error Handling & Memory Cleanup
-    // const errorPatterns = detectErrorPatterns(codeText);
-    // if (errorPatterns.total > 0) {
-    //     const cleanupMemory = (errorPatterns.cleanup * 1.2).toFixed(2);
-    //     steps.push({
-    //         icon: '🛡️',
-    //         name: 'Error Handling & Memory Cleanup',
-    //         time: `${(realExecutionTime * 0.05).toFixed(2)}ms`,
-    //         status: errorPatterns.hasCleanup ? 'complete' : 'warning',
-    //         details: `${errorPatterns.tryCatch} try/catch blocks, ${errorPatterns.cleanup} cleanup operations`,
-    //         metrics: `Cleanup freed: ~${cleanupMemory}KB | Error count: ${realTimeMetrics.errorCount}`
-    //     });
-    // }
-
-    // Step 8: Garbage Collection & Final Memory State
-    if (realTimeMetrics.gcCollections > 0) {
-        const finalMemory = (realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2);
-        steps.push({
-            icon: '🗑️',
-            name: 'Garbage Collection & Final Memory State',
-            time: `${(realExecutionTime * 0.03).toFixed(2)}ms`,
-            status: parseFloat(finalMemory) > 50 ? 'warning' : 'complete',
-            details: `${realTimeMetrics.gcCollections} GC cycles completed, memory optimized`,
-            metrics: `Final memory: ${finalMemory}MB | Memory freed: ~${(realTimeMetrics.gcCollections * 2.5).toFixed(2)}KB`
-        });
+    // If there's a significant discrepancy, adjust the last step
+    const timeDifference = realExecutionTime - calculatedTotal;
+    if (Math.abs(timeDifference) > 0.01 && steps.length > 1) {
+        const lastStep = steps[steps.length - 1];
+        const lastStepTime = parseFloat(lastStep.time.replace('ms', ''));
+        const adjustedTime = Math.max(0.1, lastStepTime + timeDifference);
+        lastStep.time = `${adjustedTime.toFixed(2)}ms`;
     }
 
-    return steps.length > 1 ? steps : [{
-        icon: '✅',
-        name: 'Simple Code Execution',
-        time: `${realExecutionTime.toFixed(2)}ms`,
-        status: 'complete',
-        details: 'Basic code execution completed successfully',
-        metrics: `Memory: ${(realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2)}MB | Operations: ${realTimeMetrics.domManipulations + realTimeMetrics.networkRequests}`
-    }];
+    return steps;
 }
+
+// Generate unified execution steps
+// function generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime) {
+//     const steps = [];
+//
+//     if (!codeText || codeText.trim().length === 0) {
+//         return [{
+//             icon: '⚠️',
+//             name: 'No Code Detected',
+//             time: '0ms',
+//             status: 'warning',
+//             details: 'Write some code to see real-time execution analysis',
+//             metrics: 'Memory: 0MB | Operations: 0'
+//         }];
+//     }
+//
+//     // Calculate dynamic timing distribution
+//     const baseParsingTime = Math.max(0.1, realExecutionTime * 0.05);
+//     const functionTime = Math.max(0.1, realExecutionTime * 0.15);
+//     const loopTime = Math.max(0.1, realExecutionTime * 0.25);
+//     const asyncTime = Math.max(0.1, realExecutionTime * 0.35);
+//     const domTime = Math.max(0.1, realExecutionTime * 0.10);
+//     // const outputTime = Math.max(0.1, realExecutionTime * 0.10);
+//
+//     // Step 1: Code Parsing & Memory Initialization
+//     const lineCount = (codeText.match(/\n/g) || []).length + 1;
+//     const memoryForParsing = (lineCount * 0.1).toFixed(2);
+//     steps.push({
+//         icon: '📝',
+//         name: 'Code Parsing & Memory Initialization',
+//         time: `${baseParsingTime.toFixed(2)}ms`,
+//         status: 'complete',
+//         details: `${lineCount} lines parsed, variables declared`,
+//         metrics: `Memory allocated: ~${memoryForParsing}KB | GC: ${realTimeMetrics.gcCollections}`
+//     });
+//
+//     // Step 2: Function Analysis & Memory Allocation
+//     const functionPatterns = detectFunctionPatterns(codeText);
+//     if (functionPatterns.total > 0) {
+//         const functionMemory = (functionPatterns.total * 2.5).toFixed(2);
+//         steps.push({
+//             icon: '🔧',
+//             name: 'Function Analysis & Memory Allocation',
+//             time: `${functionTime.toFixed(2)}ms`,
+//             status: functionPatterns.total > 10 ? 'warning' : 'complete',
+//             details: `${functionPatterns.total} functions analyzed (${functionPatterns.arrow} arrow, ${functionPatterns.regular} regular, ${functionPatterns.async} async)`,
+//             metrics: `Function memory: ~${functionMemory}KB | Closures detected: ${functionPatterns.closures || 0}`
+//         });
+//     }
+//
+//     // Step 3: Loop Processing & Iteration Memory
+//     const loopPatterns = detectLoopPatterns(codeText);
+//     if (loopPatterns.total > 0) {
+//         const loopStatus = loopPatterns.total > 5 ? 'warning' : 'complete';
+//         const loopMemory = (loopPatterns.total * 1.8).toFixed(2);
+//         steps.push({
+//             icon: '🔄',
+//             name: 'Loop Processing & Iteration Memory',
+//             time: `${loopTime.toFixed(2)}ms`,
+//             status: loopStatus,
+//             details: `${loopPatterns.traditional} traditional loops, ${loopPatterns.functional} functional methods processed`,
+//             metrics: `Loop memory: ~${loopMemory}KB | Peak iterations: ${loopPatterns.total * 100}`
+//         });
+//     }
+//
+//     // Step 4: Async Operations & Network Memory
+//     const asyncPatterns = detectAsyncPatterns(codeText);
+//     if (asyncPatterns.total > 0) {
+//         const asyncStatus = asyncPatterns.total > 3 ? 'warning' : 'complete';
+//         const networkMemory = (asyncPatterns.total * 5.2).toFixed(2);
+//         steps.push({
+//             icon: '⏳',
+//             name: 'Async Operations & Network Memory',
+//             time: `${asyncTime.toFixed(2)}ms`,
+//             status: asyncStatus,
+//             details: `${asyncPatterns.fetch} fetch, ${asyncPatterns.axios} axios, ${asyncPatterns.promises} promises, ${asyncPatterns.legacy} legacy async`,
+//             metrics: `Network buffer: ~${networkMemory}KB | Active requests: ${realTimeMetrics.networkRequests}`
+//         });
+//     }
+//
+//     // Step 5: DOM Manipulation & Event Memory
+//     const domPatterns = detectDOMPatterns(codeText);
+//     if (domPatterns.total > 0) {
+//         const domStatus = domPatterns.total > 10 ? 'warning' : 'complete';
+//         const domMemory = (domPatterns.total * 3.1).toFixed(2);
+//         steps.push({
+//             icon: '🌐',
+//             name: 'DOM Manipulation & Event Memory',
+//             time: `${domTime.toFixed(2)}ms`,
+//             status: domStatus,
+//             details: `${domPatterns.queries} DOM queries, ${domPatterns.events} event listeners, ${domPatterns.modifications} modifications`,
+//             metrics: `DOM memory: ~${domMemory}KB | Active listeners: ${domPatterns.events}`
+//         });
+//     }
+//
+//     // Step 6: Output Generation & Console Memory
+//     // const outputPatterns = detectOutputPatterns(codeText);
+//     // if (outputPatterns.total > 0) {
+//     //     const consoleMemory = (outputPatterns.total * 0.8).toFixed(2);
+//     //     steps.push({
+//     //         icon: '📤',
+//     //         name: 'Output Generation & Console Memory',
+//     //         time: `${outputTime.toFixed(2)}ms`,
+//     //         status: 'complete',
+//     //         details: `${outputPatterns.console} console operations, ${outputPatterns.returns} return statements`,
+//     //         metrics: `Console buffer: ~${consoleMemory}KB | Output size: ${outputPatterns.total * 50}B`
+//     //     });
+//     // }
+//
+//     // Step 7: Error Handling & Memory Cleanup
+//     // const errorPatterns = detectErrorPatterns(codeText);
+//     // if (errorPatterns.total > 0) {
+//     //     const cleanupMemory = (errorPatterns.cleanup * 1.2).toFixed(2);
+//     //     steps.push({
+//     //         icon: '🛡️',
+//     //         name: 'Error Handling & Memory Cleanup',
+//     //         time: `${(realExecutionTime * 0.05).toFixed(2)}ms`,
+//     //         status: errorPatterns.hasCleanup ? 'complete' : 'warning',
+//     //         details: `${errorPatterns.tryCatch} try/catch blocks, ${errorPatterns.cleanup} cleanup operations`,
+//     //         metrics: `Cleanup freed: ~${cleanupMemory}KB | Error count: ${realTimeMetrics.errorCount}`
+//     //     });
+//     // }
+//
+//     // Step 8: Garbage Collection & Final Memory State
+//     if (realTimeMetrics.gcCollections > 0) {
+//         const finalMemory = (realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2);
+//         steps.push({
+//             icon: '🗑️',
+//             name: 'Garbage Collection & Final Memory State',
+//             time: `${(realExecutionTime * 0.03).toFixed(2)}ms`,
+//             status: parseFloat(finalMemory) > 50 ? 'warning' : 'complete',
+//             details: `${realTimeMetrics.gcCollections} GC cycles completed, memory optimized`,
+//             metrics: `Final memory: ${finalMemory}MB | Memory freed: ~${(realTimeMetrics.gcCollections * 2.5).toFixed(2)}KB`
+//         });
+//     }
+//
+//     return steps.length > 1 ? steps : [{
+//         icon: '✅',
+//         name: 'Simple Code Execution',
+//         time: `${realExecutionTime.toFixed(2)}ms`,
+//         status: 'complete',
+//         details: 'Basic code execution completed successfully',
+//         metrics: `Memory: ${(realTimeMetrics.peakMemory / (1024 * 1024)).toFixed(2)}MB | Operations: ${realTimeMetrics.domManipulations + realTimeMetrics.networkRequests}`
+//     }];
+// }
 
 // Function to analyze code for security vulnerabilities
 function analyzeSecurityIssues(codeText) {
