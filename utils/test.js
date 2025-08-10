@@ -1,3 +1,310 @@
+/////----------
+/**
+ * Complex JS snippet:
+ * - Fetches from multiple JSON endpoints (placeholders)
+ * - Demonstrates event loop ordering (microtasks/macrotasks/rAF)
+ * - Processes data in a 6-step pipeline:
+ *     1) fetch
+ *     2) validate
+ *     3) normalize
+ *     4) enrich (combine with other endpoint)
+ *     5) aggregate
+ *     6) output (and optional persistence)
+ *
+ * - Includes AbortController, concurrency limit, retries, and clear logs.
+ */
+
+// ---------- Config / Endpoints ----------
+const endpoints = {
+    users: 'https://jsonplaceholder.typicode.com/users',      // placeholder 1
+    posts: 'https://jsonplaceholder.typicode.com/posts',      // placeholder 2
+    comments: 'https://jsonplaceholder.typicode.com/comments',// placeholder 3
+    albums: 'https://jsonplaceholder.typicode.com/albums'     // optional 4th
+};
+
+const MAX_CONCURRENT_FETCHES = 3;
+const RETRY_COUNT = 2;
+const RETRY_DELAY_MS = 300;
+
+// ---------- Utilities ----------
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+async function retry(fn, attempts = RETRY_COUNT, delay = RETRY_DELAY_MS) {
+    let lastErr;
+    for (let i = 0; i <= attempts; i++) {
+        try {
+            return await fn();
+        } catch (err) {
+            lastErr = err;
+            if (i < attempts) await sleep(delay * (i + 1));
+        }
+    }
+    throw lastErr;
+}
+
+function safeJsonParse(text) {
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        return null;
+    }
+}
+
+// Simple concurrency pool for fetch tasks
+async function pool(tasks = [], concurrency = MAX_CONCURRENT_FETCHES) {
+    const results = [];
+    const executing = new Set();
+
+    for (const task of tasks) {
+        const p = (async () => {
+            try {
+                return await task();
+            } finally {
+                executing.delete(p);
+            }
+        })();
+
+        executing.add(p);
+        results.push(p);
+
+        if (executing.size >= concurrency) {
+            await Promise.race(executing);
+        }
+    }
+
+    return Promise.all(results);
+}
+
+// ---------- Fetch helpers with cancellation ----------
+function fetchWithTimeout(url, { signal, timeout = 8000 } = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    // If caller provides a signal, forward abort
+    if (signal) signal.addEventListener('abort', () => controller.abort(), { once: true });
+
+    return fetch(url, { signal: controller.signal })
+        .finally(() => clearTimeout(timeoutId));
+}
+
+// ---------- 6-step pipeline functions ----------
+
+// 1) FETCH step: fetch multiple endpoints concurrently (with retry + cancellation)
+async function fetchEndpoints(abortSignal) {
+    console.log('[STEP 1] fetchEndpoints start');
+
+    const tasks = Object.entries(endpoints).map(([k, url]) => async () => {
+        const text = await retry(() => fetchWithTimeout(url, { signal: abortSignal, timeout: 7000 })
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status} from ${url}`);
+                return r.text();
+            }));
+        return { key: k, text };
+    });
+
+    const rawResponses = await pool(tasks, MAX_CONCURRENT_FETCHES);
+    console.log('[STEP 1] fetchEndpoints done');
+    return rawResponses; // [{key, text}, ...]
+}
+
+// 2) VALIDATE: ensure JSON parsable and shape minimally valid
+function validateResponses(rawResponses) {
+    console.log('[STEP 2] validateResponses');
+    return rawResponses.reduce((acc, { key, text }) => {
+        const parsed = safeJsonParse(text);
+        if (!parsed) {
+            throw new Error(`Invalid JSON from ${key}`);
+        }
+        // Minimal schema checks (very small)
+        if (!Array.isArray(parsed) && typeof parsed !== 'object') {
+            throw new Error(`Unexpected shape for ${key}`);
+        }
+        acc[key] = parsed;
+        return acc;
+    }, {});
+}
+
+// 3) NORMALIZE: pick fields we care about and normalize keys
+function normalizeData(validData) {
+    console.log('[STEP 3] normalizeData');
+    const users = (validData.users || []).map(u => ({
+        id: Number(u.id),
+        name: String(u.name),
+        username: String(u.username),
+        email: u.email || null,
+    }));
+
+    const posts = (validData.posts || []).map(p => ({
+        id: Number(p.id),
+        userId: Number(p.userId),
+        title: String(p.title).trim(),
+        body: String(p.body).trim(),
+    }));
+
+    const comments = (validData.comments || []).map(c => ({
+        id: Number(c.id),
+        postId: Number(c.postId),
+        name: String(c.name),
+        body: String(c.body),
+        email: c.email || null
+    }));
+
+    return { users, posts, comments, albums: validData.albums || [] };
+}
+
+// 4) ENRICH: join posts -> users and attach comment counts
+function enrichData(normalized) {
+    console.log('[STEP 4] enrichData');
+    const userById = new Map(normalized.users.map(u => [u.id, u]));
+    const commentCountByPost = normalized.comments.reduce((m, c) => {
+        m.set(c.postId, (m.get(c.postId) || 0) + 1);
+        return m;
+    }, new Map());
+
+    const postsEnriched = normalized.posts.map(p => {
+        const user = userById.get(p.userId) || { id: p.userId, name: 'Unknown' };
+        const commentCount = commentCountByPost.get(p.id) || 0;
+        return { ...p, author: { id: user.id, name: user.name }, commentCount };
+    });
+
+    return { ...normalized, posts: postsEnriched };
+}
+
+// 5) AGGREGATE: produce summary metrics + top posts per user
+function aggregateData(enriched) {
+    console.log('[STEP 5] aggregateData');
+    const postsByUser = new Map();
+    for (const post of enriched.posts) {
+        const arr = postsByUser.get(post.userId) || [];
+        arr.push(post);
+        postsByUser.set(post.userId, arr);
+    }
+
+    const userSummaries = Array.from(postsByUser.entries()).map(([userId, posts]) => ({
+        userId,
+        userName: posts[0]?.author?.name || 'Unknown',
+        postCount: posts.length,
+        totalComments: posts.reduce((s, p) => s + p.commentCount, 0),
+        topPost: posts.slice().sort((a, b) => b.commentCount - a.commentCount)[0] || null
+    }));
+
+    const global = {
+        totalUsers: enriched.users.length,
+        totalPosts: enriched.posts.length,
+        totalComments: enriched.comments.length,
+        busiestUser: userSummaries.slice().sort((a, b) => b.postCount - a.postCount)[0] || null
+    };
+
+    return { userSummaries, global };
+}
+
+// 6) OUTPUT: log and optionally persist to localStorage (if available)
+function outputResults(aggregated) {
+    console.log('[STEP 6] outputResults');
+    console.table(aggregated.userSummaries.slice(0, 10));
+    console.log('Global summary:', aggregated.global);
+
+    // optional persistence (browser-only)
+    if (typeof localStorage !== 'undefined') {
+        try {
+            localStorage.setItem('lastAggregatedSummary', JSON.stringify(aggregated));
+            console.log('Saved summary to localStorage');
+        } catch (err) {
+            console.warn('Could not save to localStorage', err);
+        }
+    }
+}
+
+// ---------- Event loop demo (micro vs macro vs rAF) ----------
+function eventLoopDemo() {
+    console.log('--- eventLoopDemo START ---');
+
+    // Immediately scheduled (sync)
+    console.log('sync log 1');
+
+    // microtask
+    Promise.resolve().then(() => console.log('microtask (Promise.resolve)'));
+
+    // macrotask timer
+    setTimeout(() => console.log('macrotask (setTimeout 0)'), 0);
+
+    // rAF (only in browser)
+    if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => console.log('rAF callback (animation frame)'));
+    } else {
+        // Node fallback
+        setTimeout(() => console.log('rAF fallback (setTimeout)'), 16);
+    }
+
+    // another microtask
+    queueMicrotask(() => console.log('microtask (queueMicrotask)'));
+
+    console.log('sync log 2');
+    console.log('--- eventLoopDemo END ---');
+}
+
+// ---------- Orchestration: run the full pipeline with cancel support ----------
+async function runFullPipeline({ timeoutMs = 15000 } = {}) {
+    // show event loop ordering before heavy async work
+    eventLoopDemo();
+
+    const controller = new AbortController();
+    const killTimer = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
+
+    try {
+        // Step 1: fetch
+        const raw = await fetchEndpoints(controller.signal);
+
+        // Step 2: validate
+        const valid = validateResponses(raw);
+
+        // Step 3: normalize
+        const normalized = normalizeData(valid);
+
+        // Step 4: enrich
+        const enriched = enrichData(normalized);
+
+        // Step 5: aggregate
+        const aggregated = aggregateData(enriched);
+
+        // Step 6: output
+        outputResults(aggregated);
+
+        console.log('Pipeline completed successfully.');
+        return aggregated;
+    } catch (err) {
+        if (controller.signal.aborted) {
+            console.error('Pipeline aborted (timeout or user cancel).', err?.message || err);
+        } else {
+            console.error('Pipeline failed:', err);
+        }
+        throw err;
+    } finally {
+        clearTimeout(killTimer);
+    }
+}
+
+// ---------- Usage ----------
+(async function main() {
+    try {
+        const result = await runFullPipeline({ timeoutMs: 12000 });
+        // Use the result as needed...
+    } catch (err) {
+        // handle or ignore
+    }
+})();
+
+
+
+
+
+
+/////---------
+
+
+
+
 // Design Patterns Test Snippets
 // Test these patterns in your code editor to verify syntax highlighting and analysis
 

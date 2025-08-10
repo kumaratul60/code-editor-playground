@@ -45,8 +45,8 @@
     --console-bg: #202020;
     --console-text: #e8eaed;
     --console-border: #3c4043;
-    --console-string-color: #f28b82;
-    --console-string-quote-color: #f28b82;
+    --console-string-color: #9ccc65;
+    --console-string-quote-color: #9ccc65;
     --console-number-color: #a8c7fa;
     --console-boolean-color: #a8c7fa;
     --console-null-color: #9aa0a6;
@@ -139,8 +139,8 @@
     --console-bg: #ffffff;
     --console-text: #333333;
     --console-border: #e0e0e0;
-    --console-string-color: #c41e3a;
-    --console-string-quote-color: #c41e3a;
+    --console-string-color: #22863a;
+    --console-string-quote-color: #22863a;
     --console-number-color: #1c00cf;
     --console-boolean-color: #1c00cf;
     --console-null-color: #808080;
