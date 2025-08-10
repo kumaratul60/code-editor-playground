@@ -1,0 +1,344 @@
+.console-output {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 16px;
+    background: var(--console-bg);
+    color: var(--console-text);
+    border: 1px solid var(--console-border);
+    border-radius: 4px;
+    padding: 8px;
+    margin: 4px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.console-output:hover {
+    background: var(--console-hover-bg);
+}
+
+.console-output::selection {
+    background: var(--console-selection-bg);
+}
+
+/* Expandable Items Styling */
+.expandable-item {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.expandable-item:hover {
+    background: var(--console-hover-bg);
+    border-radius: 2px;
+}
+
+.expand-arrow {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    color: var(--console-expand-color);
+    font-size: 10px;
+    transition: transform 0.1s ease;
+    vertical-align: middle;
+}
+
+.expand-arrow.expanded {
+    transform: rotate(90deg);
+}
+
+.object-preview {
+    color: var(--console-collapsed-color);
+    font-style: italic;
+    margin-left: 4px;
+}
+
+.object-content {
+    margin-left: 16px;
+    border-left: 1px solid var(--console-border);
+    padding-left: 8px;
+    margin-top: 2px;
+}
+
+.property-name {
+    color: var(--console-property-color);
+    font-weight: normal;
+}
+
+.bracket {
+    color: var(--console-bracket-color);
+    font-weight: bold;
+}
+
+.console-text {
+    font-family: inherit;
+}
+
+/* Animation for Expand/Collapse */
+@keyframes expandIn {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+    }
+}
+
+.expanding {
+    animation: expandIn 0.15s ease-out;
+}
+
+/* Toast Notifications */
+.console-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--console-bg);
+    color: var(--console-text);
+    border: 1px solid var(--console-border);
+    padding: 12px 16px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 12px;
+    max-width: 300px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease-out;
+}
+
+.console-log-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin: 2px 0;
+    position: relative;
+    transition: background-color 0.1s ease;
+}
+
+.console-log-entry:hover {
+    background: var(--console-hover-bg);
+}
+
+.console-log-entry:hover .console-copy-btn {
+    opacity: 1;
+}
+
+/* Log Level Indicators */
+.console-log-level {
+    width: 4px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 2px 0 0 2px;
+}
+
+.console-log-level.info { background: var(--console-number-color); }
+.console-log-level.warn { background: #f59e0b; }
+.console-log-level.error { background: #ef4444; }
+.console-log-level.debug { background: var(--console-collapsed-color); }
+
+/* Timestamps */
+.console-timestamp {
+    color: var(--console-collapsed-color);
+    font-size: 10px;
+    font-family: inherit;
+    min-width: 60px;
+    margin-right: 4px;
+    user-select: none;
+}
+
+/* Copy Button */
+.console-copy-btn {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    background: var(--console-hover-bg);
+    border: 1px solid var(--console-border);
+    color: var(--console-text);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.1s ease;
+}
+
+.console-copy-btn:hover {
+    background: var(--console-selection-bg);
+    color: white;
+}
+
+/* Stack Traces */
+.console-stack-trace {
+    font-family: inherit;
+    font-size: 10px;
+    color: var(--console-collapsed-color);
+    margin-left: 16px;
+    padding: 4px 8px;
+    background: var(--console-hover-bg);
+    border-left: 2px solid var(--console-border);
+    border-radius: 0 3px 3px 0;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* Function Source Links */
+.console-source-link {
+    color: var(--console-number-color);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.console-source-link:hover {
+    color: var(--console-selection-bg);
+}
+
+/* Object/Array Badges */
+.console-type-badge {
+    background: var(--console-collapsed-color);
+    color: var(--console-bg);
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+/* Enhanced Scrollbar for Console */
+.console-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.console-output::-webkit-scrollbar-track {
+    background: var(--console-bg);
+}
+
+.console-output::-webkit-scrollbar-thumb {
+    background: var(--console-scrollbar-thumb);
+    border-radius: 4px;
+}
+
+.console-output::-webkit-scrollbar-thumb:hover {
+    background: var(--console-collapsed-color);
+}
+
+/* Console Group Styling */
+.console-group {
+    margin-left: 16px;
+    border-left: 1px solid var(--console-border);
+    padding-left: 8px;
+}
+
+.console-group-label {
+    font-weight: bold;
+    color: var(--console-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.console-group-label:hover {
+    color: var(--console-selection-bg);
+}
+
+/* Performance Timing */
+.console-timing {
+    color: var(--console-collapsed-color);
+    font-size: 10px;
+    font-style: italic;
+    margin-left: 8px;
+}
+
+/* Console Clear Animation */
+@keyframes consoleClear {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+.console-clearing {
+    animation: consoleClear 0.2s ease-out forwards;
+}
+
+/* Enhanced Error Styling */
+.console-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+
+.console-error .console-error-message {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Console Table Styling */
+.console-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+    font-size: 11px;
+}
+
+.console-table th,
+.console-table td {
+    border: 1px solid var(--console-border);
+    padding: 4px 8px;
+    text-align: left;
+}
+
+.console-table th {
+    background: var(--console-hover-bg);
+    font-weight: bold;
+    color: var(--console-text);
+}
+
+.console-table td {
+    color: var(--console-text);
+}
+
+.console-table tr:nth-child(even) {
+    background: var(--console-hover-bg);
+}
+
+/* Console Count Badge */
+.console-count-badge {
+    background: var(--console-selection-bg);
+    color: white;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}

@@ -95,8 +95,8 @@ function createUserArray(count) {
   }));
 }
 
-const users = createUserArray(5);
-console.log({users});
+const users = createUserArray(10);
+console.log(users);
 
 ```
 

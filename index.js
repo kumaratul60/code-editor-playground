@@ -44,7 +44,6 @@ function initEditor() {
     toggleRunButton(editor, runBtn);
     highlightEditorSyntax(editor, highlighted);
     toggleButtonVisibility()
-
 }
 
 function initUI() {
