@@ -33,7 +33,16 @@ export function renderValue(val, depth = 0, maxDepth = 3) {
  */
 function renderPrimitive(val, type) {
     const span = document.createElement('span');
-    const color = getTypeColor(type);
+
+    // Special handling for Error objects - show in red
+    if (val instanceof Error || (val && val.name && val.message && val.stack)) {
+    // if (val instanceof Error) {
+        span.textContent = val.toString();
+        span.style.color = 'var(--console-error-color)';
+        span.style.fontWeight = 'bold';
+        span.title = val.stack || 'Error object'; // Show stack trace on hover
+        return span;
+    }
 
     switch (type) {
         case 'string':
