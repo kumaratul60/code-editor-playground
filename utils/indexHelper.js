@@ -192,6 +192,7 @@ export function clearEditor() {
         editor.innerText = "";
         updateLineNumbers(editor, lineNumbers);
         highlightEditorSyntax(editor, highlighted);
+        toggleButtonVisibility()
     }
 }
 
@@ -200,7 +201,6 @@ export function toggleButtonVisibility() {
     // Show/hide copy and clear buttons based on content
     copyBtn.style.display = hasContent ? 'inline-block' : 'none';
     clearBtn.style.display = hasContent ? 'inline-block' : 'none';
-
 }
 
 
