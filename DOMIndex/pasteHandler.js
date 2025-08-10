@@ -1,7 +1,7 @@
 import {editor} from "./domUtils.js";
 import {
     debouncedHighlight,
-    preserveCursorPosition,
+    // preserveCursorPosition,
     scrollToCursor,
     syncLineNumbers,
     toggleButtonVisibility
