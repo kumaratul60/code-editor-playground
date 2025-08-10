@@ -378,16 +378,16 @@ function createCodeAnalysisGrid() {
         //     value: metrics.cyclomaticComplexity,
         //     color: getColor(metrics.cyclomaticComplexity, { good: 5, warn: 10 })
         // },
-        {
-            label: 'Security Issues',
-            value: metrics.securityIssues,
-            color: metrics.securityIssues > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'
-        },
-        {
-            label: 'Perf Issues',
-            value: metrics.performanceAntiPatterns,
-            color: metrics.performanceAntiPatterns > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'
-        }
+        // {
+        //     label: 'Security Issues',
+        //     value: metrics.securityIssues,
+        //     color: metrics.securityIssues > 0 ? 'var(--dev-panel-error)' : 'var(--dev-panel-success)'
+        // },
+        // {
+        //     label: 'Perf Issues',
+        //     value: metrics.performanceAntiPatterns,
+        //     color: metrics.performanceAntiPatterns > 0 ? 'var(--dev-panel-warning)' : 'var(--dev-panel-success)'
+        // }
     ];
 
     // Generate grid items HTML

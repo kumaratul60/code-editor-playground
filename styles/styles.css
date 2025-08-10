@@ -76,6 +76,15 @@ header h1 {
     overflow: hidden;
     height: auto;
     /*min-height: 100%;*/
+
+    /* SMOOTH SYNC OPTIMIZATIONS */
+    scroll-behavior: smooth;
+    /* Hardware acceleration for smooth sync during paste */
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+    transform: translateZ(0);
+    /* Optimize line number rendering during large updates */
+    contain: layout style;
 }
 
 /* Editor container (layers code and highlight) */
@@ -88,6 +97,14 @@ header h1 {
     overflow-y: auto;
     /*overflow-x: hidden;*/
     /*overflow: hidden;*/
+
+    /* SMOOTH PASTE OPTIMIZATIONS */
+    scroll-behavior: smooth;
+    /* Hardware acceleration for smooth scrolling during paste */
+    -webkit-overflow-scrolling: touch;
+    /* Optimize container rendering during large content updates */
+    will-change: scroll-position;
+    transform: translateZ(0);
 }
 
 /* ===== EDITOR LAYERS ===== */
@@ -117,6 +134,14 @@ header h1 {
     font-variant-ligatures: none;
     text-rendering: optimizeSpeed;
     box-sizing: border-box;
+
+    /* SMOOTH CURSOR & PASTE OPTIMIZATIONS */
+    scroll-behavior: smooth;
+    /* Hardware acceleration for smooth cursor movement */
+    will-change: scroll-position, contents;
+    transform: translateZ(0);
+    /* Optimize for frequent content changes during paste */
+    contain: layout style paint;
 }
 
 #highlighted-code {
@@ -135,6 +160,11 @@ header h1 {
     /* Hide scrollbars but maintain scroll functionality */
     scrollbar-width: none;
     -ms-overflow-style: none;
+
+    /* SMOOTH SYNC OPTIMIZATIONS */
+    /* Optimize rendering during large content updates */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 #highlighted-code::-webkit-scrollbar {
@@ -155,6 +185,19 @@ header h1 {
     resize: none;
     /* Ensure cursor is visible at the end */
     min-height: calc(100% + 1.5em);
+
+    /* Smooth caret transitions */
+    transition: caret-color 0.2s ease;
+    /* Optimize cursor rendering during paste operations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent cursor flickering during large pastes */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Optimize for cursor positioning */
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ===== LINE NUMBER STYLES ===== */
