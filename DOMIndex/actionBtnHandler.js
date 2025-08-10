@@ -1,10 +1,10 @@
 import {copyBtn, editor, themeToggle} from "./domUtils.js";
 import {spawnFloatingEmoji} from "../utils/commonUtils.js";
-import {checkIcon, copyIcon} from "../utils/svg.js";
+import { copyIcon} from "../utils/svg.js";
 
 export function themeToggleHandler() {
     themeToggle.addEventListener("click", () => {
-        themeToggle.classList.add("rotating");
+        // themeToggle.classList.add("rotating");
         const isLight = document.body.classList.contains("light-theme");
         document.body.classList.toggle("light-theme", !isLight);
         themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Toggle Theme";
@@ -15,23 +15,20 @@ export function themeToggleHandler() {
 export function copyBtnHandler() {
     copyBtn.addEventListener("click", () => {
         const code = editor.innerText;
+        const originalContent = copyBtn.innerHTML;
+
         try {
             navigator.clipboard.writeText(code).then(() => {
-                copyBtn.classList.add("fade-out");
-                setTimeout(() => {
-                    copyBtn.innerHTML = checkIcon;
-                    copyBtn.classList.remove("fade-out");
-                    copyBtn.classList.add("success");
+                // copyBtn.innerHTML = checkIcon;
+                copyBtn.innerHTML = "Copied";
+                copyBtn.classList.add("success");
+                // spawnFloatingEmoji("📋", copyBtn);
 
-                    // Revert back to copy icon after delay
-                    setTimeout(() => {
-                        copyBtn.classList.add("fade-out");
-                        setTimeout(() => {
-                            copyBtn.innerHTML = copyIcon;
-                            copyBtn.classList.remove("fade-out", "success");
-                        }, 250);
-                    }, 1000);
-                }, 250);
+                // Revert back to original content after 1.5 seconds
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalContent;
+                    copyBtn.classList.remove("success");
+                }, 1200);
             });
         } catch (err) {
             alert("Failed to copy code to clipboard.");

@@ -1,5 +1,5 @@
 import {toggleRunButton, updateLineNumbers} from "./commonUtils.js";
-import {editor, highlighted, lineNumbers, runBtn} from "../DOMIndex/domUtils.js";
+import {clearBtn, copyBtn, editor, highlighted, lineNumbers, runBtn} from "../DOMIndex/domUtils.js";
 import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
 
 export function focusEditorAtEnd(editor) {
@@ -193,6 +193,14 @@ export function clearEditor() {
         updateLineNumbers(editor, lineNumbers);
         highlightEditorSyntax(editor, highlighted);
     }
+}
+
+export function toggleButtonVisibility() {
+    const hasContent = editor.innerText.trim().length > 0;
+    // Show/hide copy and clear buttons based on content
+    copyBtn.style.display = hasContent ? 'inline-block' : 'none';
+    clearBtn.style.display = hasContent ? 'inline-block' : 'none';
+
 }
 
 

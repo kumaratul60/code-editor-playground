@@ -1,5 +1,11 @@
 import {editor} from "./domUtils.js";
-import {debouncedHighlight, preserveCursorPosition, scrollToCursor, syncLineNumbers} from "../utils/indexHelper.js";
+import {
+    debouncedHighlight,
+    preserveCursorPosition,
+    scrollToCursor,
+    syncLineNumbers,
+    toggleButtonVisibility
+} from "../utils/indexHelper.js";
 
 export function setupPasteHandler() {
 
@@ -26,6 +32,7 @@ export function setupPasteHandler() {
             // Immediate sync
             syncLineNumbers();
             scrollToCursor();
+            toggleButtonVisibility()
 
             // Delayed highlighting
             setTimeout(() => debouncedHighlight(), 10);

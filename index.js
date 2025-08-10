@@ -8,7 +8,7 @@ import {
     syncLineNumbers,
     debouncedHighlight,
     syncScrollPosition,
-    clearEditor
+    clearEditor, toggleButtonVisibility
 } from "./utils/indexHelper.js";
 
 import { setupSelectionHandlers } from "./DOMIndex/selectionHandlers.js";
@@ -40,10 +40,11 @@ function initEditor() {
     optimizeEditor(editor);
     focusEditorAtEnd(editor);
     scrollToCursor();
-
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
     highlightEditorSyntax(editor, highlighted);
+    toggleButtonVisibility()
+
 }
 
 function initUI() {
@@ -68,6 +69,8 @@ function bindEvents() {
         syncLineNumbers();
         scrollToCursor();
         debouncedHighlight();
+        toggleButtonVisibility()
+
     });
 
     // Paste, selection, keyboard handlers

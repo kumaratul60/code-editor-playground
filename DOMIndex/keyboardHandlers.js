@@ -1,5 +1,5 @@
 import { editor, lineNumbers, highlighted } from './domUtils.js';
-import {focusEditorAtEnd, syncLineNumbers,scrollToCursor} from "../utils/indexHelper.js";
+import {focusEditorAtEnd, syncLineNumbers, scrollToCursor, toggleButtonVisibility} from "../utils/indexHelper.js";
 import {handleEditorHelpers} from "../utils/editorAutoCompleteHelper.js";
 import {formatCode} from "../utils/formatCode.js";
 import {debouncedHighlight} from "../utils/indexHelper.js";
@@ -23,6 +23,7 @@ export function setupKeyboardHandlers() {
             }
             syncLineNumbers();
             scrollToCursor();
+            toggleButtonVisibility()
             return;
         }
 
@@ -61,6 +62,7 @@ export function setupKeyboardHandlers() {
             syncLineNumbers();
             scrollToCursor();
             debouncedHighlight();
+            toggleButtonVisibility()
             return;
         }
 
@@ -73,6 +75,7 @@ export function setupKeyboardHandlers() {
             setTimeout(() => {
                 syncLineNumbers();
                 scrollToCursor();
+                toggleButtonVisibility()
             }, 0);
         }
     });
