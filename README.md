@@ -106,7 +106,7 @@ async function fetchUserData() {
     const response = await fetch('https://jsonplaceholder.typicode.com/todos/2');
     const data = await response.json();
     
-    document.getElementById('output').innerHTML = data.title;
+    //document.getElementById('output').innerHTML = data.title;
     console.log('User loaded:', data);
     
     return data;
