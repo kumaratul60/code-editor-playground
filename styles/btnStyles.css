@@ -1,0 +1,262 @@
+.controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-end;
+    /*flex-wrap: wrap;*/
+    transition: all 0.3s ease;
+}
+
+.btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    user-select: none;
+    min-width: 120px;
+    height: 44px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Button variants */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+/* Hover effects */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn:hover::before {
+    opacity: 1;
+}
+
+/* Active state */
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Disabled state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button shine effect */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+    opacity: 0;
+}
+
+.controls svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    transition: opacity 0.25s ease;
+}
+
+.btn:hover::before {
+    left: 100%;
+    opacity: 1;
+}
+
+/* Icon styles */
+.btn svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Specific button styles */
+#theme-toggle {
+    position: relative;
+    overflow: visible;
+}
+
+#theme-toggle.rotating {
+    transform: rotate(360deg) translateY(-2px);
+}
+
+#run-btn:hover svg {
+    transform: scale(1.1) rotate(5deg);
+}
+
+#copy-btn.fade-out {
+    opacity: 0.7;
+}
+
+#copy-btn.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+#copy-btn.success svg {
+    transform: scale(1.2);
+}
+
+#clear-btn:hover {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+/* Responsive button styles */
+@media (max-width: 768px) {
+    .btn {
+        min-width: 100px;
+        padding: 10px 16px;
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .controls {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn {
+        min-width: 80px;
+        padding: 8px 12px;
+        height: 36px;
+        font-size: 12px;
+        gap: 4px;
+    }
+
+    .btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .controls {
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+}
+
+/* Floating emoji animation */
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(1.2);
+    }
+}
+
+.floating-emoji {
+    position: absolute;
+    pointer-events: none;
+    font-size: 20px;
+    animation: floatUp 1s ease-out forwards;
+    z-index: 1000;
+}
+
+/* Button loading state */
+.btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulse effect for important actions */
+.btn-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@media (max-width: 768px) {
+    /* Tablet: Stack header and controls */
+    header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        /*padding: 20px 16px;*/
+    }
+
+    .controls {
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+    }
+}

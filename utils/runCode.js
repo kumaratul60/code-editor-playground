@@ -152,7 +152,7 @@ async function executeCodeSafely(code) {
     (async function() {
       ${code}
     })().catch(err => {
-      console.error('Async execution error:', err.message);
+      // console.error('Async execution error:', err.message);
       throw err;
     });
   `;

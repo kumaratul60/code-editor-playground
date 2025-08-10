@@ -6,6 +6,8 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* ===== HEADER SECTION ===== */
@@ -26,13 +28,6 @@ header h1 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-}
-
-/* Controls bar */
-.controls {
-    display: flex;
-    gap: 14px;
-    align-items: center;
 }
 
 /* ===== MAIN LAYOUT ===== */
@@ -57,11 +52,12 @@ header h1 {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    height: 500px;
-    overflow: hidden;
+    height: 600px;
+    /*overflow: auto;*/
     border: 1px solid #444;
     background: var(--editor-bg, #232323);
     border-radius: 8px 8px 0 0;
+
 }
 
 /* Line numbers */
@@ -79,7 +75,7 @@ header h1 {
     line-height: 1.5;
     overflow: hidden;
     height: auto;
-    min-height: 100%;
+    /*min-height: 100%;*/
 }
 
 /* Editor container (layers code and highlight) */
@@ -87,11 +83,11 @@ header h1 {
     position: relative;
     flex: 1 1 0;
     min-width: 0;
-    min-height: 300px;
     display: flex;
     background: transparent;
     overflow-y: auto;
-    overflow-x: hidden;
+    /*overflow-x: hidden;*/
+    /*overflow: hidden;*/
 }
 
 /* ===== EDITOR LAYERS ===== */
@@ -108,9 +104,11 @@ header h1 {
     height: auto;
     min-height: 100%;
     max-height: none;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /*overflow: visible;*/
     margin: 0;
-    box-sizing: border-box;
+
     width: 100%;
     position: absolute;
     top: 0;
@@ -118,6 +116,7 @@ header h1 {
     /* Ensure proper text rendering */
     font-variant-ligatures: none;
     text-rendering: optimizeSpeed;
+    box-sizing: border-box;
 }
 
 #highlighted-code {
@@ -158,13 +157,30 @@ header h1 {
     min-height: calc(100% + 1.5em);
 }
 
+/* ===== LINE NUMBER STYLES ===== */
+#line-numbers span {
+    display: block;
+    padding: 0 4px;
+    text-align: right;
+    line-height: 1.5;
+    color: var(--line-number-color);
+    transition: all 0.2s ease;
+}
+
+#line-numbers span.active-line {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    font-weight: bold;
+    border-radius: 3px;
+}
+
 /* ===== OUTPUT SECTION ===== */
 .output-section {
     background: var(--output-bg, #1a1a1a);
     border: 1px solid #333;
     border-radius: 8px 8px 0 0;
     padding: 16px;
-    height: 500px;
+    height: 570px;
     overflow: auto;
     font-size: 15px;
     margin-left: 0;
@@ -175,65 +191,10 @@ header h1 {
     min-height: 300px;
     font-family: inherit;
     background: transparent;
-    margin: 0;
-    padding: 0;
+    /*margin: 0;*/
+    /*padding: 0;*/
     color: var(--text);
-}
-
-/* ===== BUTTONS ===== */
-button {
-    background: var(--btn-bg) !important;
-    color: var(--btn-text) !important;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-button:hover {
-    opacity: 0.8;
-    transform: translateY(-1px);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.controls svg {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-    transition: opacity 0.25s ease;
-}
-
-#copy-btn.fade-out svg {
-    opacity: 0;
-}
-
-#copy-btn.success svg {
-    color: green; /* optional green check */
-}
-
-/* Theme toggle animation */
-#theme-toggle {
-    transition: transform 0.5s ease, background 0.3s, color 0.3s;
-    font-size: 1.1rem;
-}
-
-#theme-toggle.rotating {
-    transform: rotate(360deg);
+    overflow-y: auto;
 }
 
 /* ===== FOOTER ===== */
@@ -266,22 +227,7 @@ footer {
     font-size: 13px;
 }
 
-/* ===== LINE NUMBER STYLES ===== */
-#line-numbers span {
-    display: block;
-    padding: 0 4px;
-    text-align: right;
-    line-height: 1.5;
-    color: var(--line-number-color);
-    transition: all 0.2s ease;
-}
 
-#line-numbers span.active-line {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    font-weight: bold;
-    border-radius: 3px;
-}
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 900px) {
