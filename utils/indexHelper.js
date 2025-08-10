@@ -189,6 +189,13 @@ export const debouncedHighlight = debounceIndexHelper(() => {
 
 export function clearEditor() {
     if (confirm("Clear the editor?")) {
+
+        // Save state before clearing for undo
+        const manager = window.undoRedoManager;
+        if (manager) {
+            manager.saveState('clear-before');
+        }
+
         // Clear editor content
         editor.innerText = "";
         updateLineNumbers(editor, lineNumbers);
