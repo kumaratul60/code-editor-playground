@@ -10,6 +10,7 @@ import {
     syncScrollPosition,
     clearEditor, toggleButtonVisibility
 } from "./utils/indexHelper.js";
+import UndoRedoManager from "./utils/undoRedoManager.js";
 
 import { setupSelectionHandlers } from "./DOMIndex/selectionHandlers.js";
 import { setupKeyboardHandlers } from "./DOMIndex/keyboardHandlers.js";
@@ -27,12 +28,16 @@ import {
 
 import "./DOMIndex/codeInsertion.js";
 
+// Global instances
+let undoRedoManager = null;
+
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
     initEditor();
     initUI();
     bindEvents();
     overrideConsole();
+    initUndoRedoManager();
 });
 
 // Initialization Functions
@@ -49,6 +54,17 @@ function initEditor() {
 function initUI() {
     // Theme toggle
     themeToggleHandler();
+}
+
+// Initialize Undo/Redo Manager
+function initUndoRedoManager() {
+    if (!undoRedoManager) {
+        undoRedoManager = new UndoRedoManager(editor);
+
+        // Make it globally accessible for debugging and other operations
+        window.undoRedoManager = undoRedoManager;
+    }
+    return undoRedoManager;
 }
 
 // Event Binding
