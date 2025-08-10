@@ -40,11 +40,20 @@ export function setupKeyboardHandlers() {
             const indentMatch = currentLine.match(/^\s*/);
             const indent = indentMatch ? indentMatch[0] : "";
             const extraIndent = /[{[(]\s*$/.test(currentLine) ? "  " : "";
-            const newLineNode = document.createTextNode("\n" + indent + extraIndent);
+
+            // Store the text in a variable
+            const newLineText = "\n" + indent + extraIndent;
+            const newLineNode = document.createTextNode(newLineText);
+
+            // Insert the newline node
             range.deleteContents();
             range.insertNode(newLineNode);
-            range.setStartAfter(newLineNode);
-            range.setEndAfter(newLineNode);
+
+            // Position cursor correctly using the variable
+            range.setStart(newLineNode, newLineText.length);
+            range.setEnd(newLineNode, newLineText.length);
+            range.collapse(true);
+
             selection.removeAllRanges();
             selection.addRange(range);
 
