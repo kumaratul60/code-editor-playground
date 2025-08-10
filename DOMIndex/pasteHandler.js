@@ -1,7 +1,7 @@
 import {editor} from "./domUtils.js";
 import {
     debouncedHighlight,
-    preserveCursorPosition,
+    // preserveCursorPosition,
     scrollToCursor,
     syncLineNumbers,
     toggleButtonVisibility
@@ -16,26 +16,48 @@ export function setupPasteHandler() {
         if (!paste) return;
 
         // Improved paste with immediate cursor positioning
-        preserveCursorPosition(() => {
-            const sel = window.getSelection();
-            if (sel.rangeCount) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(document.createTextNode(paste));
+        // preserveCursorPosition(() => {
+        //     const sel = window.getSelection();
+        //     if (sel.rangeCount) {
+        //         const range = sel.getRangeAt(0);
+        //         range.deleteContents();
+        //         range.insertNode(document.createTextNode(paste));
+        //
+        //         // Move cursor to end of pasted content
+        //         range.collapse(false);
+        //         sel.removeAllRanges();
+        //         sel.addRange(range);
+        //     }
+        //
+        //     // Immediate sync
+        //     syncLineNumbers();
+        //     scrollToCursor();
+        //     toggleButtonVisibility()
+        //
+        //     // Delayed highlighting
+        //     setTimeout(() => debouncedHighlight(), 10);
+        // }, editor);
 
-                // Move cursor to end of pasted content
-                range.collapse(false);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }
 
-            // Immediate sync
-            syncLineNumbers();
-            scrollToCursor();
-            toggleButtonVisibility()
+        // Handle paste with proper cursor positioning at end
+        const sel = window.getSelection();
+        if (sel.rangeCount) {
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(paste));
 
-            // Delayed highlighting
-            setTimeout(() => debouncedHighlight(), 10);
-        }, editor);
+            // Move cursor to end of pasted content
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+
+        // Immediate sync operations
+        syncLineNumbers();
+        scrollToCursor();
+        toggleButtonVisibility();
+
+        // Delayed highlighting to avoid interfering with cursor position
+        setTimeout(() => debouncedHighlight(), 10);
     });
 }
