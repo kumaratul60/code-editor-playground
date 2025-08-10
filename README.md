@@ -86,6 +86,20 @@ const result = numbers
 console.log({result})
 ```
 
+```js
+function createUserArray(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    name: `User ${i + 1}`,
+    role: i % 2 === 0 ? "Admin" : "Editor"
+  }));
+}
+
+const users = createUserArray(5);
+console.log({users});
+
+```
+
 ### **Async Operations Example**
 ```javascript
 async function fetchUserData() {
