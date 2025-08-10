@@ -107,7 +107,7 @@ function createPanelHTML(analysis, executionTime, metrics, hotspots, relationshi
                 <div class="dev-panel-title">
                     🚀 Developer Insights
                 </div>
-                <button class="dev-panel-close" onclick="toggleDevInsights()">×</button>
+                <button class="dev-panel-close" onclick="closeDevInsights()">×</button>
             </div>
             
           <div class="dev-panel-content">
@@ -124,68 +124,6 @@ function createPanelHTML(analysis, executionTime, metrics, hotspots, relationshi
     `;
 //  ${createOverviewSection(analysis, executionTime, metrics)}
 }
-
-function createOverviewSection(analysis, executionTime, metrics) {
-    return `
-        <div class="metric-card fade-in">
-            <div class="metric-header">
-                <div class="metric-title">Code Overview</div>
-                <div class="metric-value">${metrics.quality.score}/100</div>
-            </div>
-            <div class="complexity-grid">
-                <div class="complexity-item">
-                    <div class="complexity-number">${analysis.functions}</div>
-                    <div class="complexity-label">Functions</div>
-                </div>
-                <div class="complexity-item">
-                    <div class="complexity-number">${analysis.loops}</div>
-                    <div class="complexity-label">Loops</div>
-                </div>
-                <div class="complexity-item">
-                    <div class="complexity-number">${analysis.asyncOps}</div>
-                    <div class="complexity-label">Async Ops</div>
-                </div>
-                <div class="complexity-item">
-                    <div class="complexity-number">${executionTime.toFixed(1)}ms</div>
-                    <div class="complexity-label">Exec Time</div>
-                </div>
-            </div>
-            <div class="metric-description">
-                Overall code quality: ${metrics.quality.label}
-            </div>
-        </div>
-    `;
-}
-
-// function createComplexitySection(bigOComplexity, analysis) {
-//     return `
-//         <div class="metric-card fade-in">
-//             <div class="metric-header">
-//                 <div class="metric-title">Complexity</div>
-//                 <div class="metric-value">${bigOComplexity.time}</div>
-//             </div>
-//             <div class="progress-container">
-//                 <div class="progress-bar">
-//                     <div class="progress-fill ${getComplexityClass(bigOComplexity.time)}"
-//                          style="width: ${getComplexityPercentage(bigOComplexity.time)}%"></div>
-//                 </div>
-//             </div>
-//             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-//                 <div>
-//                     <strong>Time:</strong> ${bigOComplexity.time}<br>
-//                     <strong>Space:</strong> ${bigOComplexity.space}
-//                 </div>
-//                 <div>
-//                     <strong>Max Depth:</strong> ${bigOComplexity.maxLoopDepth}<br>
-//                     <strong>Recursion:</strong> ${bigOComplexity.recursivePatterns}
-//                 </div>
-//             </div>
-//             <div class="metric-description">
-//                 Estimated algorithmic complexity based on code structure analysis
-//             </div>
-//         </div>
-//     `;
-// }
 
 function createComplexitySection(bigOComplexity, analysis) {
     // Tooltip content for each complexity metric
@@ -477,6 +415,68 @@ function createCodeAnalysisGrid() {
     `;
 }
 
+function createOverviewSection(analysis, executionTime, metrics) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Code Overview</div>
+                <div class="metric-value">${metrics.quality.score}/100</div>
+            </div>
+            <div class="complexity-grid">
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.functions}</div>
+                    <div class="complexity-label">Functions</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.loops}</div>
+                    <div class="complexity-label">Loops</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${analysis.asyncOps}</div>
+                    <div class="complexity-label">Async Ops</div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-number">${executionTime.toFixed(1)}ms</div>
+                    <div class="complexity-label">Exec Time</div>
+                </div>
+            </div>
+            <div class="metric-description">
+                Overall code quality: ${metrics.quality.label}
+            </div>
+        </div>
+    `;
+}
+
+function createComplexitySectionOld(bigOComplexity, analysis) {
+    return `
+        <div class="metric-card fade-in">
+            <div class="metric-header">
+                <div class="metric-title">Complexity</div>
+                <div class="metric-value">${bigOComplexity.time}</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill ${getComplexityClass(bigOComplexity.time)}"
+                         style="width: ${getComplexityPercentage(bigOComplexity.time)}%"></div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <div>
+                    <strong>Time:</strong> ${bigOComplexity.time}<br>
+                    <strong>Space:</strong> ${bigOComplexity.space}
+                </div>
+                <div>
+                    <strong>Max Depth:</strong> ${bigOComplexity.maxLoopDepth}<br>
+                    <strong>Recursion:</strong> ${bigOComplexity.recursivePatterns}
+                </div>
+            </div>
+            <div class="metric-description">
+                Estimated algorithmic complexity based on code structure analysis
+            </div>
+        </div>
+    `;
+}
+
 function createMemorySection(realTimeMetrics,executionTime) {
     const memoryUsage = realTimeMetrics.peakMemory;
     const memoryMB = (memoryUsage / (1024 * 1024)).toFixed(2);
@@ -487,42 +487,14 @@ function createMemorySection(realTimeMetrics,executionTime) {
     const unifiedSteps = generateUnifiedExecutionSteps(codeText, realTimeMetrics, realExecutionTime);
 
 
-/*
- <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 12px 0; padding: 12px; background: var(--dev-panel-metric-bg); border-radius: 8px;">
-               <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-accent);">${memoryMB}MB</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Peak Memory</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-success);">${realTimeMetrics.domManipulations}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">DOM Ops</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-warning);">${realTimeMetrics.networkRequests}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Network</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: var(--dev-panel-error);">${realTimeMetrics.errorCount}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">Errors</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 18px; font-weight: bold; color: gray;">${realTimeMetrics.gcCollections}</div>
-                    <div style="font-size: 11px; opacity: 0.8;">GC</div>
-                </div>
-            </div>
- */
-
-
     return `
         <div class="metric-card fade-in">
             <div class="metric-header">
                 <div class="metric-title">Deep Analysis</div>
-<!--                <div class="metric-value">${memoryMB}MB | ${realExecutionTime.toFixed(2)}ms</div>-->
             </div>
             
             <!-- Memory Overview -->
            
-            
             <!-- Unified Real-Time Execution Flow -->
             <div style="margin: 16px 0;">
                 <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
@@ -574,9 +546,34 @@ function getCodeFromEditor() {
 }
 
 // Global function for closing panel
-window.toggleDevInsights = function() {
+function toggleDevInsights() {
     const sidebar = document.getElementById('dev-insights-sidebar');
     if (sidebar) {
-        sidebar.classList.toggle('open');
+        const panel = sidebar.querySelector('#dev-insights-panel');
+        if (panel) {
+            const isHidden = panel.style.display === 'none' || !panel.style.display;
+
+            if (isHidden) {
+                panel.style.display = 'block';
+                sidebar.classList.add('open');
+            } else {
+                closeDevInsights(); // Reuse close function
+            }
+        }
     }
-};
+}
+
+function closeDevInsights() {
+    const sidebar = document.getElementById('dev-insights-sidebar');
+    if (sidebar) {
+        const panel = sidebar.querySelector('#dev-insights-panel');
+        if (panel) {
+            panel.style.display = 'none';
+            sidebar.classList.remove('open');
+        }
+    }
+}
+
+// Make function globally available
+window.toggleDevInsights = toggleDevInsights;
+

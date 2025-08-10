@@ -194,7 +194,7 @@ header h1 {
     /*margin: 0;*/
     /*padding: 0;*/
     color: var(--text);
-    overflow-y: auto;
+    overflow: auto;
 }
 
 /* ===== FOOTER ===== */

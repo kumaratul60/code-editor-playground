@@ -189,10 +189,44 @@ export const debouncedHighlight = debounceIndexHelper(() => {
 
 export function clearEditor() {
     if (confirm("Clear the editor?")) {
+        // Clear editor content
         editor.innerText = "";
         updateLineNumbers(editor, lineNumbers);
         highlightEditorSyntax(editor, highlighted);
-        toggleButtonVisibility()
+
+        // Clear output section
+        const outputSection = document.getElementById('output');
+        if (outputSection) {
+            outputSection.innerHTML = '';
+        }
+
+        // Clear execution time
+        const execTimeElement = document.getElementById('exec-time');
+        if (execTimeElement) {
+            execTimeElement.innerHTML = '⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span>';
+        }
+
+        // Clear summary icons
+        const summaryIcons = document.getElementById('summary-icons');
+        if (summaryIcons) {
+            summaryIcons.innerHTML = '🧩 0 func | 🔁 0 loops | ⏳ 0 async';
+        }
+
+        // Remove DevInsights panel if it exists
+        const devInsightsSidebar = document.getElementById('dev-insights-sidebar');
+        if (devInsightsSidebar) {
+            devInsightsSidebar.remove();
+        }
+
+        // Clear any global execution tracking data
+        if (window.executionTracker) {
+            window.executionTracker.reset();
+        }
+
+        // Reset execution time tracking
+        window.lastExecutionTime = 0;
+
+        toggleButtonVisibility();
     }
 }
 
