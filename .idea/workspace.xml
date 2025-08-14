@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9b37fe3b-f8e5-4e9d-ab78-933e46602762" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/analytics.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/analyticsConfig.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/env.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/trackUtil.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +102,7 @@
       <workItem from="1755009961418" duration="5000" />
       <workItem from="1755014766807" duration="26000" />
       <workItem from="1755192191039" duration="2831000" />
-      <workItem from="1755195388523" duration="1864000" />
+      <workItem from="1755195388523" duration="2068000" />
     </task>
     <servers />
   </component>
