@@ -38,27 +38,22 @@ export function spawnFloatingEmoji(targetBtn, emojiChar = "☀️") {
 
 
 export function updateLineNumbers(editor, lineNumbers) {
-  // Use innerText to get what the user actually sees (handles <div>, <br>, etc.)
-  let content = editor.innerText.replace(/\u200B/g, "");
-  let lines = content.split(/\r\n|\r|\n/);
+    // Normalize text content
+    let content = editor.innerText.replace(/\u200B/g, "");
+    let lines = content.split(/\r\n|\r|\n/);
 
-  // Remove trailing empty lines (including those with just whitespace)
-  while (lines.length > 1 && lines[lines.length - 1].trim() === "") {
-    lines.pop();
-  }
+    // Remove trailing empty lines (visual parity with editor)
+    while (lines.length > 1 && lines[lines.length - 1].trim() === "") {
+        lines.pop();
+    }
 
-  // Always show at least one line number
-  const lineCount = Math.max(1, lines.length);
+    const lineCount = Math.max(1, lines.length);
 
-  // Render one <span> per line, vertical by CSS
-  lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join("");
-}
-
-export function toggleRunButton(editor, runBtn) {
-  const content = editor.textContent.replace(/\u200B/g, "").trim();
-  const isEmpty = content === "";
-  runBtn.disabled = isEmpty;
-  runBtn.title = isEmpty ? "Editor is empty" : "";
+    // Use dataset index for reliable mapping
+    lineNumbers.innerHTML = Array.from(
+        { length: lineCount },
+        (_, i) => `<span data-line="${i}">${i + 1}</span>`
+    ).join("");
 }
 
 export function highlightCurrentLine(editor, lineNumbers) {
@@ -67,55 +62,39 @@ export function highlightCurrentLine(editor, lineNumbers) {
 
     const range = selection.getRangeAt(0);
 
-    // Better cursor position calculation for layered editor
-    let lineIndex = 0;
+    // Compute cursor position as absolute text offset
+    const textBeforeCursor = getTextBeforeCursor(editor, range);
+    const lineIndex = textBeforeCursor.split(/\r\n|\r|\n/).length - 1;
 
-    try {
-        // Get the text content up to cursor position
-        const textBeforeCursor = getTextBeforeCursor(editor, range);
-
-        // Count actual line breaks in the content
-        const lines = textBeforeCursor.split(/\r\n|\r|\n/);
-        lineIndex = Math.max(0, lines.length - 1);
-
-    } catch (error) {
-        // Fallback to original method if new method fails
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(editor);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        lineIndex = preCaretRange.toString().split(/\n/).length - 1;
-    }
-
-    // Update line number highlighting
+    // Highlight exactly one line number
     lineNumbers.querySelectorAll("span").forEach((span, idx) => {
         span.classList.toggle("active-line", idx === lineIndex);
     });
 }
 
-// Helper function to get text before cursor position
+// Walk text nodes and accumulate until cursor
 function getTextBeforeCursor(editor, range) {
-    const walker = document.createTreeWalker(
-        editor,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-    );
-
-    let textContent = '';
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+    let textContent = "";
     let node;
 
-    while (node = walker.nextNode()) {
+    while ((node = walker.nextNode())) {
         if (node === range.startContainer) {
-            // Add partial text up to cursor position
             textContent += node.textContent.substring(0, range.startOffset);
             break;
         } else {
-            // Add full text content of this node
             textContent += node.textContent;
         }
     }
-
     return textContent;
+}
+
+
+export function toggleRunButton(editor, runBtn) {
+    const content = editor.textContent.replace(/\u200B/g, "").trim();
+    const isEmpty = content === "";
+    runBtn.disabled = isEmpty;
+    runBtn.title = isEmpty ? "Editor is empty" : "";
 }
 
 

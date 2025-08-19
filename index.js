@@ -11,6 +11,7 @@ import {
     clearEditor, toggleButtonVisibility
 } from "./utils/indexHelper.js";
 import UndoRedoManager from "./utils/undoRedoManager.js";
+import {setDefaultCode} from "./utils/setDefaultCode.js";
 
 import { setupSelectionHandlers } from "./DOMIndex/selectionHandlers.js";
 import { setupKeyboardHandlers } from "./DOMIndex/keyboardHandlers.js";
@@ -28,6 +29,7 @@ import {
 
 import "./DOMIndex/codeInsertion.js";
 
+
 // Global instances
 let undoRedoManager = null;
 
@@ -43,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Initialization Functions
 function initEditor() {
     optimizeEditor(editor);
+    setDefaultCode();
     focusEditorAtEnd(editor);
     scrollToCursor();
     updateLineNumbers(editor, lineNumbers);
