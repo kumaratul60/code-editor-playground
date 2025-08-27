@@ -1,6 +1,6 @@
 import { editor, lineNumbers } from './domUtils.js';
-import {highlightCurrentLine, scrollToCursor} from "../utils/cursorUtils.js";
-
+import {highlightCurrentLine} from "../utils/commonUtils.js";
+import {scrollToCursor} from "../utils/indexHelper.js";
 
 
 export function setupSelectionHandlers() {

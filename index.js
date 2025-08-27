@@ -1,10 +1,16 @@
-import {clearEditor, toggleButtonVisibility, toggleRunButton} from "./utils/commonUtils.js";
+import { toggleRunButton, updateLineNumbers } from "./utils/commonUtils.js";
 import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
 import { logOutput, runCode } from "./utils/runCode.js";
-import {optimizeEditor} from "./utils/indexHelper.js";
+import {
+    focusEditorAtEnd,
+    optimizeEditor,
+    scrollToCursor,
+    syncLineNumbers,
+    debouncedHighlight,
+    syncScrollPosition,
+    clearEditor, toggleButtonVisibility
+} from "./utils/indexHelper.js";
 import UndoRedoManager from "./utils/undoRedoManager.js";
-import {focusEditorAtEnd, scrollToCursor} from "./utils/cursorUtils.js";
-import {debouncedHighlight, syncLineNumbers, syncScrollPosition, updateLineNumbers} from "./utils/editorSync.js";
 
 import { setupSelectionHandlers } from "./DOMIndex/selectionHandlers.js";
 import { setupKeyboardHandlers } from "./DOMIndex/keyboardHandlers.js";
@@ -21,7 +27,6 @@ import {
 } from "./DOMIndex/domUtils.js";
 
 import "./DOMIndex/codeInsertion.js";
-
 
 // Global instances
 let undoRedoManager = null;
