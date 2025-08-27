@@ -1,6 +1,5 @@
 import { editor } from './domUtils.js';
-import {syncLineNumbers} from "../utils/editorSync.js";
-import {focusEditorAtEnd} from "../utils/cursorUtils.js";
+import {focusEditorAtEnd, syncLineNumbers} from "../utils/indexHelper.js";
 
 export function insertAtTop(code) {
     editor.innerText = code + "\n" + editor.innerText;

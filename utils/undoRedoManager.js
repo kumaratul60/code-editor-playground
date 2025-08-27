@@ -1,6 +1,4 @@
-import {debouncedHighlight, syncLineNumbers} from "./editorSync.js";
-import {scrollToCursor} from "./cursorUtils.js";
-import {toggleButtonVisibility} from "./commonUtils.js";
+import { syncLineNumbers, scrollToCursor, toggleButtonVisibility, debouncedHighlight } from './indexHelper.js';
 
 class UndoRedoManager {
     constructor(editor) {
