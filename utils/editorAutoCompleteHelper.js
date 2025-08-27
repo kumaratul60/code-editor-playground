@@ -1,5 +1,5 @@
-import { updateLineNumbers, } from "./commonUtils.js";
 import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
+import {updateLineNumbers} from "./editorSync.js";
 
 
 /**
