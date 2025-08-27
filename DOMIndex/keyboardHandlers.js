@@ -1,8 +1,9 @@
 import { editor, lineNumbers, highlighted } from './domUtils.js';
-import {focusEditorAtEnd, syncLineNumbers, scrollToCursor, toggleButtonVisibility} from "../utils/indexHelper.js";
 import {handleEditorHelpers} from "../utils/editorAutoCompleteHelper.js";
 import {formatCode} from "../utils/formatCode.js";
-import {debouncedHighlight} from "../utils/indexHelper.js";
+import {syncLineNumbers,debouncedHighlight} from "../utils/editorSync.js"
+import {focusEditorAtEnd, scrollToCursor} from "../utils/cursorUtils.js"
+import {toggleButtonVisibility} from "../utils/commonUtils.js"
 
 export function setupKeyboardHandlers() {
     editor.addEventListener("keydown", (e) => {

@@ -1,16 +1,5 @@
 import {copyBtn, editor, themeToggle} from "./domUtils.js";
 import {spawnFloatingEmoji} from "../utils/commonUtils.js";
-import { copyIcon} from "../utils/svg.js";
-
-// export function themeToggleHandler() {
-//     themeToggle.addEventListener("click", () => {
-//         // themeToggle.classList.add("rotating");
-//         const isLight = document.body.classList.contains("light-theme");
-//         document.body.classList.toggle("light-theme", !isLight);
-//         themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Toggle Theme";
-//         spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
-//     });
-// }
 
 export function themeToggleHandler() {
     // Set light mode as default on page load
