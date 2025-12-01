@@ -1,6 +1,6 @@
 import { toggleRunButton, updateLineNumbers } from "./utils/commonUtils.js";
 import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
-import { logOutput, runCode } from "./utils/runCode.js";
+import { logOutput, runCode, clearOutput, setConsoleAutoScroll } from "./utils/runCode.js";
 import {
     focusEditorAtEnd,
     optimizeEditor,
@@ -8,7 +8,12 @@ import {
     syncLineNumbers,
     debouncedHighlight,
     syncScrollPosition,
-    clearEditor, toggleButtonVisibility
+    clearEditor,
+    toggleButtonVisibility,
+    updateCursorMeta,
+    updateActiveLineIndicator,
+    scheduleCursorRefresh,
+    updateOutputStatus
 } from "./utils/indexHelper.js";
 import UndoRedoManager from "./utils/undoRedoManager.js";
 
@@ -48,7 +53,9 @@ function initEditor() {
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
     highlightEditorSyntax(editor, highlighted);
-    toggleButtonVisibility()
+    toggleButtonVisibility();
+    updateCursorMeta();
+    updateActiveLineIndicator();
 }
 
 function initUI() {
@@ -82,7 +89,7 @@ function bindEvents() {
     // Input changes
     editor.addEventListener("input", () => {
         syncLineNumbers();
-        scrollToCursor();
+        scheduleCursorRefresh();
         debouncedHighlight();
         toggleButtonVisibility()
 
@@ -97,6 +104,8 @@ function bindEvents() {
     runBtn.addEventListener("click", () => runCode(editor, output));
     copyBtnHandler();
     clearBtn.addEventListener("click", clearEditor);
+
+    setupConsoleControls();
 }
 
 function overrideConsole() {
@@ -105,4 +114,41 @@ function overrideConsole() {
         args.forEach(arg => logOutput(arg, output));
         originalLog.apply(console, args);
     };
+}
+
+function setupConsoleControls() {
+    const filterButtons = document.querySelectorAll('[data-console-filter]');
+    const clearConsoleBtn = document.getElementById('console-clear');
+    const autoScrollBtn = document.getElementById('console-autoscroll');
+
+    if (filterButtons.length) {
+        filterButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const selectedFilter = btn.dataset.consoleFilter || 'all';
+                output.dataset.filter = selectedFilter;
+
+                filterButtons.forEach((button) => {
+                    button.classList.toggle('active', button === btn);
+                });
+            });
+        });
+    }
+
+    if (clearConsoleBtn) {
+        clearConsoleBtn.addEventListener('click', () => {
+            clearOutput(output);
+            updateOutputStatus('idle');
+        });
+    }
+
+    if (autoScrollBtn) {
+        let isAutoScrollEnabled = true;
+        autoScrollBtn.addEventListener('click', () => {
+            isAutoScrollEnabled = !isAutoScrollEnabled;
+            autoScrollBtn.setAttribute('aria-pressed', String(isAutoScrollEnabled));
+            autoScrollBtn.textContent = isAutoScrollEnabled ? 'Auto-scroll: On' : 'Auto-scroll: Off';
+            setConsoleAutoScroll(isAutoScrollEnabled);
+        });
+        setConsoleAutoScroll(isAutoScrollEnabled);
+    }
 }

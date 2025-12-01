@@ -5,6 +5,7 @@
     justify-content: flex-end;
     /*flex-wrap: wrap;*/
     transition: all 0.3s ease;
+    margin-left: auto;
 }
 
 .btn {
@@ -27,6 +28,7 @@
     min-width: 120px;
     height: 44px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    will-change: transform, box-shadow;
 }
 
 /* Button variants */
@@ -86,12 +88,14 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    transition: transform 0.5s, opacity 0.3s;
     opacity: 0;
+    transform: translateX(-120%);
+    pointer-events: none;
 }
 
 .controls svg {
@@ -102,7 +106,7 @@
 }
 
 .btn:hover::before {
-    left: 100%;
+    transform: translateX(120%);
     opacity: 1;
 }
 
@@ -120,7 +124,7 @@
 /* Specific button styles */
 #theme-toggle {
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 #theme-toggle.rotating {

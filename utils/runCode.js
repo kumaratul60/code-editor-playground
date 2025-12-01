@@ -1,6 +1,8 @@
 import {createCopyButton, renderValue} from "./logOutputUtils.js";
 import {updateSummaryBarWithAnalysis} from "../devInsights/updateSummaryBarWithAnalysis.js";
 import {analyzeCode} from "../devInsights/analyzedCode.js";
+import {updateOutputStatus} from "./indexHelper.js";
+import {getEditorPlainText} from "./commonUtils.js";
 
 const EXECUTION_TIMEOUT = 5000; // 5 seconds
 
@@ -61,9 +63,9 @@ function setupConsoleOverrides(output) {
         logOutput(args, output, delta, type);
     };
 
-    console.log = (...args) => logWithTimestamp(args, output, "log");
-    console.error = (...args) => logWithTimestamp(args, output, "error");
-    console.warn = (...args) => logWithTimestamp(args, output, "warn");
+    console.log = (...args) => logWithTimestamp(args, "log");
+    console.error = (...args) => logWithTimestamp(args, "error");
+    console.warn = (...args) => logWithTimestamp(args, "warn");
     console.info = (...args) => logWithTimestamp(args, "info");
     console.debug = (...args) => logWithTimestamp(args, "debug");
     console.trace = (...args) => logWithTimestamp(args, "trace");
@@ -77,10 +79,10 @@ function setupConsoleOverrides(output) {
         const start = timeLabels[label];
         if (start) {
             const duration = (end - start).toFixed(3);
-            logWithTimestamp([`${label}: ${duration} ms`], output, "log");
+            logWithTimestamp([`${label}: ${duration} ms`], "log");
             delete timeLabels[label];
         } else {
-            logWithTimestamp([`${label}: no such label`], output, "log");
+            logWithTimestamp([`${label}: no such label`], "log");
         }
     };
 
@@ -90,7 +92,7 @@ function setupConsoleOverrides(output) {
 
         if (Array.isArray(data)) {
             if (data.length === 0) {
-                logWithTimestamp(['[empty table]'], output, "log");
+                logWithTimestamp(['[empty table]'], "log");
                 return;
             }
             keys = columns || Object.keys(data[0]);
@@ -98,7 +100,7 @@ function setupConsoleOverrides(output) {
             keys = columns || Object.keys(data);
             data = [data];
         } else {
-            logWithTimestamp([String(data)], output, "log");
+            logWithTimestamp([String(data)], "log");
             return;
         }
 
@@ -119,7 +121,7 @@ function setupConsoleOverrides(output) {
         });
 
         html += '</table>';
-        logWithTimestamp([html], output, "log");
+        logWithTimestamp([html], "log");
     };
 
     return originalConsole;
@@ -195,14 +197,21 @@ function handleExecutionError(err, startTime, code, output) {
 
 
 export async function runCode(editor, output) {
+    const source = getEditorPlainText(editor).trim();
+    if (!source.length) {
+        updateOutputStatus('idle', 'Nothing to run');
+        return;
+    }
+
     // Initialize execution
+    updateOutputStatus('running');
     const startTime = initializeExecution(output);
 
     // Setup console overrides (self-contained timing)
     const originalConsole = setupConsoleOverrides(output);
 
     try {
-        const code = editor.innerText;
+        const code = source;
 
         if (!performSafetyChecks(code, output)) return;
 
@@ -214,8 +223,10 @@ export async function runCode(editor, output) {
         // Success path - update UI
         const analysis = analyzeCode(code);
         updateSummaryBarWithAnalysis(analysis, executionTime, code);
+        updateOutputStatus('success', `Finished in ${executionTime.toFixed(2)} ms`);
     } catch (err) {
-        handleExecutionError(err, startTime, editor.innerText, output);
+        handleExecutionError(err, startTime, source, output);
+        updateOutputStatus('error', err?.message || 'Execution failed');
     } finally {
         restoreConsole(originalConsole); // Always cleanup
     }
@@ -224,6 +235,7 @@ export async function runCode(editor, output) {
 // === LOGGING FUNCTIONS ===
 
 let cumulativeTime = 0;
+let autoScrollEnabled = true;
 
 /**
  * Logs a message to the output container with appropriate styling. This function
@@ -233,8 +245,13 @@ let cumulativeTime = 0;
 export function logOutput(message, outputEl, delta = 0, type = "log") {
     cumulativeTime += delta;
 
+    const supportedLevels = ["log", "warn", "error"];
+    const levelForFilter = supportedLevels.includes(type) ? type : "log";
+
     const logLine = document.createElement("div");
     logLine.className = `console-log console-${type}`;
+    logLine.dataset.level = levelForFilter;
+    logLine.classList.add(`log-level-${type}`);
     logLine.style.cssText = `
         display: flex;
         flex-direction: column;
@@ -243,7 +260,7 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
         border-left: 4px solid;
         border-radius: 4px;
-        box-shadow: 0 1px 3px var(--log-shadow);
+        box-shadow: none;
         transition: all 0.2s ease;
     `;
 
@@ -284,12 +301,10 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
     // Add hover effect
     logLine.addEventListener('mouseenter', () => {
         logLine.style.transform = 'translateX(2px)';
-        logLine.style.boxShadow = '0 2px 8px var(--log-shadow)';
     });
 
     logLine.addEventListener('mouseleave', () => {
         logLine.style.transform = 'translateX(0)';
-        logLine.style.boxShadow = '0 1px 3px var(--log-shadow)';
     });
 
     // Meta timestamp with theme-aware styling
@@ -356,7 +371,9 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
     logLine.appendChild(timeMeta);
     logLine.appendChild(messageSpan);
     outputEl.appendChild(logLine);
-    outputEl.scrollTop = outputEl.scrollHeight; // Auto-scroll
+    if (autoScrollEnabled) {
+        outputEl.scrollTop = outputEl.scrollHeight;
+    }
 }
 
 /**
@@ -592,12 +609,7 @@ export function clearOutput(outputEl) {
   cumulativeTime = 0;
 }
 
-
-
-
-
-
-
-
-
+export function setConsoleAutoScroll(enabled = true) {
+  autoScrollEnabled = Boolean(enabled);
+}
 
