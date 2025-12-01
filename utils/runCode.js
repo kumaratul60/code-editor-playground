@@ -247,6 +247,7 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
 
     const supportedLevels = ["log", "warn", "error"];
     const levelForFilter = supportedLevels.includes(type) ? type : "log";
+    const items = Array.isArray(message) ? message : [message];
 
     const logLine = document.createElement("div");
     logLine.className = `console-log console-${type}`;
@@ -264,33 +265,12 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         transition: all 0.2s ease;
     `;
 
-    // Style based on log type using CSS custom properties
     const typeStyles = {
-        error: {
-            border: 'var(--log-error-border)',
-            bg: 'var(--log-error-bg)',
-            color: 'var(--log-error-text)'
-        },
-        warn: {
-            border: 'var(--log-warn-border)',
-            bg: 'var(--log-warn-bg)',
-            color: 'var(--log-warn-text)'
-        },
-        log: {
-            border: 'var(--log-info-border)',
-            bg: 'var(--log-info-bg)',
-            color: 'var(--log-info-text)'
-        },
-        info: {
-            border: 'var(--log-debug-border)',
-            bg: 'var(--log-debug-bg)',
-            color: 'var(--log-debug-text)'
-        },
-        debug: {
-            border: 'var(--log-trace-border)',
-            bg: 'var(--log-trace-bg)',
-            color: 'var(--log-trace-text)'
-        },
+        error: { border: 'var(--log-error-border)', bg: 'var(--log-error-bg)', color: 'var(--log-error-text)' },
+        warn: { border: 'var(--log-warn-border)', bg: 'var(--log-warn-bg)', color: 'var(--log-warn-text)' },
+        log: { border: 'var(--log-info-border)', bg: 'var(--log-info-bg)', color: 'var(--log-info-text)' },
+        info: { border: 'var(--log-debug-border)', bg: 'var(--log-debug-bg)', color: 'var(--log-debug-text)' },
+        debug: { border: 'var(--log-trace-border)', bg: 'var(--log-trace-bg)', color: 'var(--log-trace-text)' },
     };
 
     const style = typeStyles[type] || typeStyles.log;
@@ -298,7 +278,6 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
     logLine.style.background = style.bg;
     logLine.style.color = style.color;
 
-    // Add hover effect
     logLine.addEventListener('mouseenter', () => {
         logLine.style.transform = 'translateX(2px)';
     });
@@ -307,13 +286,21 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         logLine.style.transform = 'translateX(0)';
     });
 
-    // Meta timestamp with theme-aware styling
+    const logHeader = document.createElement('div');
+    logHeader.className = 'log-header';
+    logHeader.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 4px;
+    `;
+
     const timeMeta = document.createElement("div");
     timeMeta.className = "log-timestamp";
     timeMeta.style.cssText = `
         font-size: 0.75em;
         color: var(--log-timestamp-color);
-        margin-bottom: 4px;
         font-weight: 500;
         opacity: 0.8;
         display: flex;
@@ -321,7 +308,6 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         gap: 8px;
     `;
 
-    // Add execution time badge
     const timeText = document.createElement('span');
     timeText.textContent = `[${new Date().toLocaleTimeString()}]`;
 
@@ -342,7 +328,21 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
     timeMeta.appendChild(deltaText);
     timeMeta.appendChild(totalText);
 
-    // Render message content
+    const logActions = document.createElement('div');
+    logActions.className = 'log-actions';
+    logActions.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    `;
+
+    const serializedEntry = items.map(serializeLogValue).join(' ');
+    const copyBtn = createCopyButton(serializedEntry, 'Copy entry', '12px');
+    logActions.appendChild(copyBtn);
+
+    logHeader.appendChild(timeMeta);
+    logHeader.appendChild(logActions);
+
     const messageSpan = document.createElement("div");
     messageSpan.className = "log-message";
     messageSpan.style.cssText = `
@@ -350,15 +350,12 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         line-height: 1.4;
     `;
 
-    const items = Array.isArray(message) ? message : [message];
     items.forEach((item, index) => {
         if (typeof item === "string" && item.trim().startsWith("<table")) {
-            // Render as HTML table
             const wrapper = document.createElement("div");
             wrapper.innerHTML = item;
             messageSpan.appendChild(wrapper.firstChild);
         } else if (Array.isArray(item) && item.length > 0 && areObjectsSimilar(item)) {
-            // Enhanced array of objects display
             messageSpan.appendChild(renderArrayOfObjects(item));
         } else {
             messageSpan.appendChild(renderValue(item));
@@ -368,7 +365,7 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
         }
     });
 
-    logLine.appendChild(timeMeta);
+    logLine.appendChild(logHeader);
     logLine.appendChild(messageSpan);
     outputEl.appendChild(logLine);
     if (autoScrollEnabled) {
@@ -376,9 +373,18 @@ export function logOutput(message, outputEl, delta = 0, type = "log") {
     }
 }
 
-/**
- * Checks if array items are similar objects (for compact display)
- */
+function serializeLogValue(value) {
+    if (typeof value === 'string') return value;
+    if (value instanceof Error) {
+        return value.stack || value.message || value.toString();
+    }
+    try {
+        return JSON.stringify(value, null, 2);
+    } catch (err) {
+        return String(value);
+    }
+}
+
 function areObjectsSimilar(arr) {
     if (arr.length === 0) return false;
 

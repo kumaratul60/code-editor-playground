@@ -14,6 +14,18 @@
     -webkit-user-select: text;
 }
 
+.log-header {
+    width: 100%;
+}
+
+.log-actions .log-copy-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: inherit;
+    border-radius: 8px;
+    padding: 2px 8px;
+}
+
 .console-output:hover {
     background: var(--console-hover-bg);
 }
