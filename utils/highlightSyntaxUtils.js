@@ -1,3 +1,5 @@
+import { getEditorPlainText } from "./commonUtils.js";
+
 // ==============================
 // Syntax Highlight Pipeline
 // ==============================
@@ -156,20 +158,27 @@ function escapeHtml(text) {
 }
 
 export function highlightEditorSyntax(editor, highlighted) {
-    const code = editor.innerText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeCode = getEditorPlainText(editor)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    if (!highlighted) {
+        return;
+    }
 
     // Performance check: Show loading indicator for large content
-    if (code.length > PERFORMANCE_MODE_THRESHOLD) {
+    if (safeCode.length > PERFORMANCE_MODE_THRESHOLD) {
         highlighted.innerHTML = '<span class="loading">Highlighting large content...</span>';
 
         // Use requestAnimationFrame for non-blocking processing
         requestAnimationFrame(() => {
-            const highlightedHTML = highlightSyntax(code);
+            const highlightedHTML = highlightSyntax(safeCode);
             highlighted.innerHTML = highlightedHTML + "<br />";
         });
     } else {
         // Standard processing for normal-sized content
-        const highlightedHTML = highlightSyntax(code);
+        const highlightedHTML = highlightSyntax(safeCode);
         highlighted.innerHTML = highlightedHTML + "<br />";
     }
 }

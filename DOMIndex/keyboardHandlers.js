@@ -1,56 +1,27 @@
 import { editor, lineNumbers, highlighted } from './domUtils.js';
-import {focusEditorAtEnd, syncLineNumbers, scrollToCursor, toggleButtonVisibility} from "../utils/indexHelper.js";
+import {focusEditorAtEnd, syncLineNumbers, scrollToCursor, toggleButtonVisibility, insertTextAtSelection, scheduleCursorRefresh} from "../utils/indexHelper.js";
 import {handleEditorHelpers} from "../utils/editorAutoCompleteHelper.js";
 import {formatCode} from "../utils/formatCode.js";
 import {debouncedHighlight} from "../utils/indexHelper.js";
+import {getTextBeforeCursor} from "../utils/commonUtils.js";
 
 export function setupKeyboardHandlers() {
+    editor.addEventListener('beforeinput', (e) => {
+        if (e.inputType === 'insertParagraph' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            handleCustomEnter();
+        }
+    });
+
     editor.addEventListener("keydown", (e) => {
         if (handleEditorHelpers(e, editor, lineNumbers, highlighted)) return;
 
         if (e.key === 'Tab') {
             e.preventDefault();
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const tabText = document.createTextNode('    ');
-                range.deleteContents();
-                range.insertNode(tabText);
-                range.setStartAfter(tabText);
-                range.setEndAfter(tabText);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
+            insertTextAtSelection('    ');
             syncLineNumbers();
-            scrollToCursor();
+            scheduleCursorRefresh();
             toggleButtonVisibility()
-            return;
-        }
-
-        if (e.key === "Enter" && !e.ctrlKey) {
-            e.preventDefault();
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            const range = selection.getRangeAt(0);
-
-            let currentLine = "";
-            if (range.startContainer.nodeType === Node.TEXT_NODE) {
-                currentLine = range.startContainer.textContent.slice(0, range.startOffset);
-            }
-            const indentMatch = currentLine.match(/^\s*/);
-            const indent = indentMatch ? indentMatch[0] : "";
-            const extraIndent = /[{[(]\s*$/.test(currentLine) ? "  " : "";
-            const newLineNode = document.createTextNode("\n" + indent + extraIndent);
-            range.deleteContents();
-            range.insertNode(newLineNode);
-            range.setStartAfter(newLineNode);
-            range.setEndAfter(newLineNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
-
-            syncLineNumbers();
-            scrollToCursor();
-            debouncedHighlight();
             return;
         }
 
@@ -67,7 +38,7 @@ export function setupKeyboardHandlers() {
         }
 
         if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown'].includes(e.key)) {
-            setTimeout(scrollToCursor, 0);
+            requestAnimationFrame(scrollToCursor);
             return;
         }
 
@@ -79,4 +50,26 @@ export function setupKeyboardHandlers() {
             }, 0);
         }
     });
+}
+
+function getCurrentLineText(selection) {
+    const range = selection.getRangeAt(0);
+    const textBeforeCursor = getTextBeforeCursor(editor, range) || "";
+    const lastLineBreak = textBeforeCursor.lastIndexOf('\n');
+    return textBeforeCursor.slice(lastLineBreak + 1);
+}
+
+function handleCustomEnter() {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+
+    const currentLine = getCurrentLineText(selection);
+    const indentMatch = currentLine.match(/^\s*/);
+    const indent = indentMatch ? indentMatch[0] : "";
+    const extraIndent = /[{[(]\s*$/.test(currentLine) ? "  " : "";
+    insertTextAtSelection("\n" + indent + extraIndent);
+
+    syncLineNumbers();
+    scheduleCursorRefresh();
+    debouncedHighlight();
 }

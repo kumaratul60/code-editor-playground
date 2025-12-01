@@ -141,6 +141,34 @@
     scrollbar-color: var(--dev-panel-scrollbar-thumb) var(--dev-panel-scrollbar);
 }
 
+.complexity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.complexity-main-pills {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.complexity-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--dev-panel-border);
+    background: rgba(255,255,255,0.04);
+    font-size: 14px;
+}
+
+.complexity-pill strong {
+    font-size: 16px;
+    color: var(--dev-panel-accent);
+}
+
 .dev-panel-content::-webkit-scrollbar {
     width: 8px;
 }

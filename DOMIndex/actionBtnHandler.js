@@ -13,14 +13,17 @@ import { copyIcon} from "../utils/svg.js";
 // }
 
 export function themeToggleHandler() {
-    // Set light mode as default on page load
-    document.body.classList.add("light-theme");
-    themeToggle.textContent = "🌙 Dark Mode";
+    const applyTheme = (isLight) => {
+        document.body.classList.toggle("light-theme", isLight);
+        themeToggle.textContent = isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+    };
+
+    // Default to dark mode on load
+    applyTheme(false);
 
     themeToggle.addEventListener("click", () => {
         const isLight = document.body.classList.contains("light-theme");
-        document.body.classList.toggle("light-theme", !isLight);
-        themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+        applyTheme(!isLight);
         spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
     });
 }
@@ -48,7 +51,6 @@ export function copyBtnHandler() {
         }
     });
 }
-
 
 
 

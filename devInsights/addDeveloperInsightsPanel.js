@@ -109,7 +109,6 @@ function createPanelHTML(analysis, executionTime, metrics, hotspots, relationshi
                 </div>
                 <button class="dev-panel-close" onclick="closeDevInsights()">×</button>
             </div>
-            
           <div class="dev-panel-content">
               
                 ${createComplexitySection(bigOComplexity, analysis)}
@@ -150,9 +149,20 @@ function createComplexitySection(bigOComplexity, analysis) {
 
     return `
         <div class="metric-card fade-in">
-            <div class="metric-header">
-                <div class="metric-title">Complexity</div>
-                <div class="metric-value">${bigOComplexity.time}</div>
+            <div class="metric-header complexity-header">
+                <div class="metric-title">Time & Space Complexity</div>
+                <div class="complexity-main-pills">
+                    <div class="complexity-pill" aria-label="Time complexity">
+                        <span>Time</span>
+                        <strong>${bigOComplexity.time}</strong>
+                        ${createTooltip('Time', tooltips.time)}
+                    </div>
+                    <div class="complexity-pill" aria-label="Space complexity">
+                        <span>Space</span>
+                        <strong>${bigOComplexity.space}</strong>
+                        ${createTooltip('Space', tooltips.space)}
+                    </div>
+                </div>
             </div>
             <div class="progress-container">
                 <div class="progress-bar">
@@ -163,18 +173,6 @@ function createComplexitySection(bigOComplexity, analysis) {
             <div class="complexity-grid">
                 <div class="complexity-item">
                     <div class="complexity-label">
-                        Time: ${bigOComplexity.time}
-                        ${createTooltip('Time', tooltips.time)}
-                    </div>
-                </div>
-                <div class="complexity-item">
-                    <div class="complexity-label">
-                        Space: ${bigOComplexity.space}
-                        ${createTooltip('Space', tooltips.space)}
-                    </div>
-                </div>
-                <div class="complexity-item">
-                    <div class="complexity-label">
                         Max Depth: ${bigOComplexity.maxLoopDepth}
                         ${createTooltip('Max Depth', tooltips.maxDepth)}
                     </div>
@@ -183,6 +181,16 @@ function createComplexitySection(bigOComplexity, analysis) {
                     <div class="complexity-label">
                         Recursion: ${bigOComplexity.recursivePatterns}
                         ${createTooltip('Recursion', tooltips.recursion)}
+                    </div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Functions: ${analysis.functions || 0}
+                    </div>
+                </div>
+                <div class="complexity-item">
+                    <div class="complexity-label">
+                        Async Ops: ${analysis.asyncOps || 0}
                     </div>
                 </div>
             </div>
@@ -576,4 +584,3 @@ function closeDevInsights() {
 
 // Make function globally available
 window.toggleDevInsights = toggleDevInsights;
-

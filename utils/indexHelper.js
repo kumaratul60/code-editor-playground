@@ -1,6 +1,8 @@
-import {toggleRunButton, updateLineNumbers} from "./commonUtils.js";
+import {toggleRunButton, updateLineNumbers, getEditorPlainText} from "./commonUtils.js";
 import {clearBtn, copyBtn, editor, highlighted, lineNumbers, runBtn} from "../DOMIndex/domUtils.js";
 import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
+
+let outputStatusResetTimeout = null;
 
 export function focusEditorAtEnd(editor) {
     editor.focus();
@@ -82,6 +84,106 @@ export function preserveCursorPosition(callback,editor) {
             }
         }
     }, 0);
+}
+
+export function insertTextAtSelection(text) {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) {
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
+
+    range.setStart(textNode, textNode.length);
+    range.collapse(true);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+export function scheduleCursorRefresh() {
+    requestAnimationFrame(() => {
+        scrollToCursor();
+        updateCursorMeta();
+        updateActiveLineIndicator();
+    });
+}
+
+export function getCursorMetrics() {
+    const selection = window.getSelection();
+    const plainText = getEditorPlainText(editor);
+
+    const baseMetrics = {
+        line: 1,
+        column: 1,
+        charCount: plainText.length,
+        selectionLength: 0
+    };
+
+    if (!selection || !selection.rangeCount || document.activeElement !== editor) {
+        return baseMetrics;
+    }
+
+    const range = selection.getRangeAt(0);
+    const preRange = range.cloneRange();
+    preRange.selectNodeContents(editor);
+    preRange.setEnd(range.startContainer, range.startOffset);
+
+    const textBeforeCursor = preRange.toString().replace(/\r\n/g, "\n");
+    const lines = textBeforeCursor.split("\n");
+    const line = Math.max(1, lines.length);
+    const column = (lines[lines.length - 1] || "").length + 1;
+    const selectionLength = selection.toString().replace(/\u200B/g, "").length;
+
+    return {
+        line,
+        column,
+        charCount: plainText.length,
+        selectionLength
+    };
+}
+
+export function updateCursorMeta() {
+    const metaEl = document.getElementById('cursor-meta');
+    if (!metaEl) return;
+
+    const {line, column, charCount, selectionLength} = getCursorMetrics();
+    const selectionInfo = selectionLength ? ` | Sel ${selectionLength}` : '';
+    metaEl.textContent = `Ln ${line}, Col ${column} | ${charCount} chars${selectionInfo}`;
+}
+
+export function updateActiveLineIndicator() {
+    const indicator = document.getElementById('active-line-indicator');
+    const container = document.querySelector('.editor-container');
+    if (!indicator || !container) return;
+
+    const {line} = getCursorMetrics();
+    const computed = window.getComputedStyle(highlighted);
+    let lineHeight = parseFloat(computed.lineHeight);
+    if (Number.isNaN(lineHeight)) {
+        const fontSize = parseFloat(computed.fontSize) || 14;
+        const lineMultiplier = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--editor-line-height')) || 1.5;
+        lineHeight = fontSize * lineMultiplier;
+    }
+    lineHeight = lineHeight || 21;
+    const paddingTop = parseFloat(computed.paddingTop) || 0;
+    const scrollTop = container.scrollTop;
+    const offset = Math.max(0, paddingTop + (line - 1) * lineHeight - scrollTop);
+
+    indicator.style.opacity = document.activeElement === editor ? 1 : 0;
+    indicator.style.height = `${lineHeight}px`;
+    indicator.style.transform = `translateY(${offset}px)`;
+}
+
+export function updateOutputStatus(state = 'idle', label) {
+    if (outputStatusResetTimeout) {
+        clearTimeout(outputStatusResetTimeout);
+        outputStatusResetTimeout = null;
+    }
 }
 
 
@@ -170,6 +272,8 @@ export function debounceIndexHelper(func, wait) {
 export function syncLineNumbers() {
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
+    updateCursorMeta();
+    updateActiveLineIndicator();
     syncScrollPosition();
 }
 
@@ -178,6 +282,7 @@ export function syncScrollPosition() {
     highlighted.scrollTop = container.scrollTop;
     highlighted.scrollLeft = container.scrollLeft;
     lineNumbers.scrollTop = container.scrollTop;
+    updateActiveLineIndicator();
 }
 
 export const debouncedHighlight = debounceIndexHelper(() => {
@@ -199,7 +304,10 @@ export function clearEditor() {
         // Clear editor content
         editor.innerText = "";
         updateLineNumbers(editor, lineNumbers);
+        toggleRunButton(editor, runBtn);
         highlightEditorSyntax(editor, highlighted);
+        updateCursorMeta();
+        updateActiveLineIndicator();
 
         // Clear output section
         const outputSection = document.getElementById('output');
@@ -234,15 +342,13 @@ export function clearEditor() {
         window.lastExecutionTime = 0;
 
         toggleButtonVisibility();
+        updateOutputStatus('idle');
     }
 }
 
 export function toggleButtonVisibility() {
-    const hasContent = editor.innerText.trim().length > 0;
+    const hasContent = getEditorPlainText(editor).trim().length > 0;
     // Show/hide copy and clear buttons based on content
     copyBtn.style.display = hasContent ? 'inline-block' : 'none';
     clearBtn.style.display = hasContent ? 'inline-block' : 'none';
 }
-
-
-

@@ -3,8 +3,9 @@
     gap: 12px;
     align-items: center;
     justify-content: flex-end;
-    /*flex-wrap: wrap;*/
     transition: all 0.3s ease;
+    margin-left: auto;
+    padding: 8px 14px;
 }
 
 .btn {
@@ -16,9 +17,10 @@
     padding: 12px 20px;
     font-family: inherit;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     text-decoration: none;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -26,7 +28,10 @@
     user-select: none;
     min-width: 120px;
     height: 44px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+    will-change: transform, box-shadow;
+    text-transform: uppercase;
+    background-size: 200% 200%;
 }
 
 /* Button variants */
@@ -53,7 +58,8 @@
 /* Hover effects */
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 .btn:hover::before {
@@ -63,7 +69,7 @@
 /* Active state */
 .btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Disabled state */
@@ -86,11 +92,28 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    transition: transform 0.5s, opacity 0.3s;
+    opacity: 0;
+    transform: translateX(-120%);
+    pointer-events: none;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 7px;
+    background: rgba(0, 0, 0, 0.15);
+    mix-blend-mode: soft-light;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.btn:hover::after {
     opacity: 0;
 }
 
@@ -102,8 +125,13 @@
 }
 
 .btn:hover::before {
-    left: 100%;
+    transform: translateX(120%);
     opacity: 1;
+}
+
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 12px 25px rgba(0,0,0,0.35);
 }
 
 /* Icon styles */
@@ -120,7 +148,7 @@
 /* Specific button styles */
 #theme-toggle {
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 #theme-toggle.rotating {

@@ -37,25 +37,32 @@ export function spawnFloatingEmoji(targetBtn, emojiChar = "☀️") {
 }
 
 
+export function getEditorPlainText(editor) {
+  if (!editor) return "";
+
+  return editor.textContent
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/\u00A0/g, " ")
+      .replace(/\u200B/g, "");
+}
+
 export function updateLineNumbers(editor, lineNumbers) {
-  // Use innerText to get what the user actually sees (handles <div>, <br>, etc.)
-  let content = editor.innerText.replace(/\u200B/g, "");
-  let lines = content.split(/\r\n|\r|\n/);
-
-  // Remove trailing empty lines (including those with just whitespace)
-  while (lines.length > 1 && lines[lines.length - 1].trim() === "") {
-    lines.pop();
-  }
-
-  // Always show at least one line number
+  const content = getEditorPlainText(editor);
+  const lines = content.split(/\n/);
   const lineCount = Math.max(1, lines.length);
 
-  // Render one <span> per line, vertical by CSS
+  const previousCount = Number((lineNumbers && lineNumbers.dataset && lineNumbers.dataset.count) || 0);
+  if (previousCount === lineCount) {
+    return;
+  }
+
+  lineNumbers.dataset.count = String(lineCount);
   lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join("");
 }
 
 export function toggleRunButton(editor, runBtn) {
-  const content = editor.textContent.replace(/\u200B/g, "").trim();
+  const content = getEditorPlainText(editor).trim();
   const isEmpty = content === "";
   runBtn.disabled = isEmpty;
   runBtn.title = isEmpty ? "Editor is empty" : "";
@@ -93,7 +100,7 @@ export function highlightCurrentLine(editor, lineNumbers) {
 }
 
 // Helper function to get text before cursor position
-function getTextBeforeCursor(editor, range) {
+export function getTextBeforeCursor(editor, range) {
     const walker = document.createTreeWalker(
         editor,
         NodeFilter.SHOW_TEXT,
@@ -126,6 +133,3 @@ export function debounceUtils(fn, delay) {
     timer = setTimeout(() => fn.apply(this, args), delay);
   };
 }
-
-
-

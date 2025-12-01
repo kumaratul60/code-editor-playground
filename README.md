@@ -16,9 +16,11 @@ A **pure vanilla JavaScript** code editor with advanced developer insights, real
 - **Modern ES6+**: Clean, readable JavaScript using latest standards
 
 ### 🔧 **Advanced Code Editor**
-- **Real-time Syntax Highlighting**: Dynamic JavaScript syntax highlighting
-- **Line Numbers**: Professional line numbering with scroll synchronization
-- **Smart Indentation**: Automatic code formatting and indentation
+- **Real-time Syntax Highlighting**: Dynamic JavaScript syntax highlighting with bracket depth coloring
+- **Active-Line Awareness**: Line numbers, highlight layer, and footer HUD stay synced with the caret
+- **Smart Indentation & Formatting**: Built-in formatter (no CDN) plus auto-indentation on Enter/Tab
+- **Execution Console**: Glassmorphism console with live status pill (`Ready → Running → Finished/Error`)
+- **Console Toolbar**: Inline filters (All/Logs/Warnings/Errors), auto-scroll toggle, and quick clear action
 - **Multi-theme Support**: Light and dark themes with smooth transitions
 - **Responsive Design**: Works perfectly on desktop and mobile devices
 
@@ -55,7 +57,8 @@ Our crown jewel - a comprehensive developer insights panel that provides:
 ### 🎨 **Professional Design**
 - **Modern UI**: Clean, minimalist design with professional typography
 - **Theme System**: Comprehensive light/dark mode with CSS variables
-- **Responsive Layout**: Mobile-first design that works on all screen sizes
+- **Status HUD**: Footer displays execution summary, caret line/column, selection length, and total chars
+- **Deep Insights**: Dev panel emphasizes time/space complexity, code structure, and execution flow in one scrollable view
 - **Smooth Animations**: Subtle transitions and fade-in effects
 - **Enterprise-Grade Styling**: Professional color schemes and spacing
 
@@ -67,11 +70,31 @@ Our crown jewel - a comprehensive developer insights panel that provides:
 - **Vanilla JavaScript**: Pure ES6+ with no external dependencies
 - **DOM APIs**: Direct manipulation for optimal performance
 
+### **Folder Guide**
+- `DOMIndex/` — DOM bindings (handlers, action buttons, code insertion helpers)
+- `styles/` — Themeable CSS modules (base layout, buttons, syntax, console, DevInsights)
+- `utils/` — Editor engines (syntax highlighting, formatting, undo/redo, insights analyzers)
+- `devInsights/` — Execution analyzer logic and summary bar integrations
+
+> **Flow Tip:** DOM events are wired in `index.js`, routed through `DOMIndex/*` handlers, then delegated to `utils/*` helpers. This keeps rendering (DOMIndex) separate from logic (utils) and analysis (devInsights).
+
 ## 🚀 **Getting Started**
 
 1. **Clone or Download** the repository
 2. **Open `index.html`** in any modern web browser
 3. **Start Coding** - No installation, setup, or dependencies required!
+
+### Keyboard Shortcuts
+- `Tab` — Inserts spaces (4) without blurring focus
+- `Enter` — Auto-indents current scope, mirrors VS Code behavior
+- `Ctrl + Enter` — Formats the current buffer using the built-in formatter
+- `Ctrl + C / Ctrl + V` — Native copy/paste with sanitised content
+
+### Reading the UI
+- **Header Controls**: Theme toggle, Run, Copy, Clear (copy/clear auto-hide on empty buffer)
+- **Console Panel**: Upper-right badge shows execution state; hover log entries for expanded tables
+- **Summary Bar**: Execution time, code stats, caret meta (line/column/selection)
+- **DevInsights Toggle**: Floating button (bottom-right) opens the deep analysis sidebar
 
 ## 💡 **Example Code to Test**
 
@@ -176,6 +199,8 @@ parallelCalls();
 - **Performance Warnings**: Color-coded alerts for potential issues
 - **Optimization Tips**: Actionable recommendations for code improvement
 
+> **Tip:** Leave the DevInsights panel open while running snippets to watch the execution stepper, memory badges, and pattern tables update live.
+
 ## 🌟 **Why This Editor?**
 
 ### **For Developers:**
@@ -198,6 +223,9 @@ parallelCalls();
 
 - ✅ **Chrome/Chromium** (Recommended)
 - ✅ **Firefox**
+- ✅ **Edge / Safari** (latest versions)
+
+> Note: Because the editor is completely offline-ready, none of the core features rely on CDNs or external package downloads.
 - ✅ **Safari**
 - ✅ **Edge**
 
