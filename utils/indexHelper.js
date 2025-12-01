@@ -180,35 +180,10 @@ export function updateActiveLineIndicator() {
 }
 
 export function updateOutputStatus(state = 'idle', label) {
-    const statusEl = document.getElementById('output-status');
-    if (!statusEl) return;
-
     if (outputStatusResetTimeout) {
         clearTimeout(outputStatusResetTimeout);
         outputStatusResetTimeout = null;
     }
-
-    const labels = {
-        idle: 'Ready',
-        running: 'Running...',
-        success: 'Completed',
-        error: 'Error'
-    };
-
-    statusEl.dataset.state = state;
-    statusEl.textContent = label || labels[state] || labels.idle;
-
-    if (state === 'running' || state === 'error') {
-        return;
-    }
-
-    outputStatusResetTimeout = setTimeout(() => {
-        const el = document.getElementById('output-status');
-        if (el) {
-            el.dataset.state = 'idle';
-            el.textContent = labels.idle;
-        }
-    }, 2500);
 }
 
 

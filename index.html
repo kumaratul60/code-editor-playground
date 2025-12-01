@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>JavaScript Playground</title>
+    <title>JavaScript Online Compiler</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <link rel="icon" href="/favicon.png" type="image/png" />
@@ -18,7 +18,7 @@
   </head>
   <body class="dark-theme">
     <header>
-      <h1>JavaScript Playground</h1>
+      <h2>JavaScript Online Compiler</h2>
         <nav class="controls" aria-label="Editor Controls">
             <button id="theme-toggle" class="btn btn-secondary" aria-label="Toggle Theme">
                 🌗 Theme
@@ -63,7 +63,7 @@
               role="textbox"
               aria-label="JavaScript code editor"
               aria-multiline="true"
-              data-placeholder="Type JavaScript or HTML/CSS here..."
+              data-placeholder="Type JavaScript or Fetch API calls here..."
             ></div>
           </div>
         </div>
@@ -71,20 +71,16 @@
       <!--  <div class="vertical-divider"></div>-->
       <section class="output-section" aria-label="Output">
           <div class="panel-header">
-              <div class="panel-title-group">
-                  <span class="panel-title">Console</span>
-                  <span id="output-status" class="panel-status" data-state="idle">Ready</span>
-              </div>
-              <div class="panel-actions" aria-label="Console controls">
-                  <div class="panel-filter-group" role="group" aria-label="Filter console output">
-                      <button class="panel-chip active" data-console-filter="all" type="button">All</button>
-                      <button class="panel-chip" data-console-filter="log" type="button">Logs</button>
-                      <button class="panel-chip" data-console-filter="warn" type="button">Warnings</button>
-                      <button class="panel-chip" data-console-filter="error" type="button">Errors</button>
-                  </div>
-                  <button id="console-autoscroll" class="panel-chip panel-chip-toggle" type="button" aria-pressed="true">Auto-scroll: On</button>
-                  <button id="console-clear" class="panel-chip panel-chip-danger" type="button" aria-label="Clear console">Clear</button>
-              </div>
+            <div class="panel-actions" aria-label="Console controls">
+                <div class="panel-filter-group" role="group" aria-label="Filter console output">
+                    <button class="panel-chip" data-console-filter="all" type="button">All</button>
+                    <button class="panel-chip" data-console-filter="log" type="button">Logs</button>
+                    <button class="panel-chip" data-console-filter="warn" type="button">Warnings</button>
+                    <button class="panel-chip" data-console-filter="error" type="button">Errors</button>
+                </div>
+                <button id="console-autoscroll" class="panel-chip panel-chip-toggle" type="button" aria-pressed="true">Auto-scroll: On</button>
+                <button id="console-clear" class="panel-chip panel-chip-danger" type="button" aria-label="Clear console">Clear</button>
+            </div>
           </div>
           <div id="output" data-filter="all" aria-live="polite"></div>
       </section>
