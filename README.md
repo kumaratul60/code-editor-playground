@@ -71,12 +71,15 @@ Our crown jewel - a comprehensive developer insights panel that provides:
 - **DOM APIs**: Direct manipulation for optimal performance
 
 ### **Folder Guide**
-- `DOMIndex/` — DOM bindings (handlers, action buttons, code insertion helpers)
-- `styles/` — Themeable CSS modules (base layout, buttons, syntax, console, DevInsights)
-- `utils/` — Editor engines (syntax highlighting, formatting, undo/redo, insights analyzers)
-- `devInsights/` — Execution analyzer logic and summary bar integrations
+- `src/app/` — Entry point (`main.js`) that wires the editor, console, and Dev Insights bootstrap
+- `src/components/editor/` — Editor-facing components (DOM bindings, keyboard/paste handlers, action buttons)
+- `src/shared/` — Core engines such as syntax highlighting, formatting, undo/redo, runtime execution helpers
+- `src/features/dev-insights/` — Advanced analyzer logic, panels, detection helpers, and summary-bar integrations
+- `src/styles/` — Themeable CSS modules (base layout, buttons, syntax, console, Dev Insights)
 
-> **Flow Tip:** DOM events are wired in `index.js`, routed through `DOMIndex/*` handlers, then delegated to `utils/*` helpers. This keeps rendering (DOMIndex) separate from logic (utils) and analysis (devInsights).
+> **Flow Tip:** Events originate in `src/app/main.js`, are routed through `src/components/editor/*` handlers, and defer to `src/shared/*` helpers. Dev analyses live in `src/features/dev-insights/*`, keeping rendering, logic, and insights cleanly separated.
+
+> **Import Aliases:** The project uses browser import maps so you can reference modules like `@shared/...`, `@editor/...`, and `@features/...` without brittle relative paths.
 
 ## 🚀 **Getting Started**
 

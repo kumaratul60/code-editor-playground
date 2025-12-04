@@ -1,5 +1,5 @@
 import { updateLineNumbers, } from "./commonUtils.js";
-import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
+import {scheduleHighlightRefresh} from "./editor/indexHelper.js";
 
 
 /**
@@ -23,8 +23,7 @@ export function handleEditorHelpers(e, editor, lineNumbers, highlighted) {
                     const maxOffset = targetNode.nodeType === Node.TEXT_NODE ?
                         targetNode.textContent.length :
                         targetNode.childNodes.length;
-                    const safeOffset = Math.max(0, Math.min(offset, maxOffset));
-                    return safeOffset;
+                    return Math.max(0, Math.min(offset, maxOffset));
                 } catch (error) {
                     console.warn('Range offset calculation error:', error);
                     return 0;
@@ -51,7 +50,7 @@ export function handleEditorHelpers(e, editor, lineNumbers, highlighted) {
 
                 requestAnimationFrame(() => {
                     updateLineNumbers(editor, lineNumbers);
-                    highlightEditorSyntax(editor, highlighted);
+                    scheduleHighlightRefresh({immediate: true});
                 });
                 return true;
             }
@@ -76,7 +75,7 @@ export function handleEditorHelpers(e, editor, lineNumbers, highlighted) {
 
                 requestAnimationFrame(() => {
                     updateLineNumbers(editor, lineNumbers);
-                    highlightEditorSyntax(editor, highlighted);
+                    scheduleHighlightRefresh({immediate: true});
                 });
                 return true;
             }
@@ -102,11 +101,10 @@ export function handleEditorHelpers(e, editor, lineNumbers, highlighted) {
 
                 requestAnimationFrame(() => {
                     updateLineNumbers(editor, lineNumbers);
-                    highlightEditorSyntax(editor, highlighted);
+                    scheduleHighlightRefresh({immediate: true});
                 });
                 return true;
             }
         }
     }
 }
-

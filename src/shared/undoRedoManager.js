@@ -1,4 +1,4 @@
-import { syncLineNumbers, scrollToCursor, toggleButtonVisibility, debouncedHighlight } from './indexHelper.js';
+import { syncLineNumbers, scrollToCursor, toggleButtonVisibility, scheduleHighlightRefresh } from './editor/indexHelper.js';
 
 class UndoRedoManager {
     constructor(editor) {
@@ -54,7 +54,7 @@ class UndoRedoManager {
             syncLineNumbers();
             scrollToCursor();
             toggleButtonVisibility();
-            debouncedHighlight();
+            scheduleHighlightRefresh({immediate: true});
             this.isUndoRedoOperation = false;
         }, 10);
     }

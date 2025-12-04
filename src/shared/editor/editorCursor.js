@@ -1,20 +1,18 @@
-import {toggleRunButton, updateLineNumbers, getEditorPlainText} from "./commonUtils.js";
-import {clearBtn, copyBtn, editor, highlighted, lineNumbers, runBtn} from "../DOMIndex/domUtils.js";
-import {highlightEditorSyntax} from "./highlightSyntaxUtils.js";
+import { editor, highlighted } from "@editor/domUtils.js";
+import { getEditorPlainText } from "../commonUtils.js";
 
-let outputStatusResetTimeout = null;
-
-export function focusEditorAtEnd(editor) {
-    editor.focus();
+export function focusEditorAtEnd(targetEditor) {
+    const editable = targetEditor || editor;
+    editable.focus();
     const range = document.createRange();
-    range.selectNodeContents(editor);
+    range.selectNodeContents(editable);
     range.collapse(false);
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
 }
 
-export function preserveCursorPosition(callback,editor) {
+export function preserveCursorPosition(callback, targetEditor = editor) {
     const selection = window.getSelection();
     if (!selection.rangeCount) {
         callback();
@@ -25,10 +23,9 @@ export function preserveCursorPosition(callback,editor) {
     const startContainer = range.startContainer;
     const startOffset = range.startOffset;
 
-    // Calculate text offset from start of editor
     let textOffset = 0;
     const walker = document.createTreeWalker(
-        editor,
+        targetEditor,
         NodeFilter.SHOW_TEXT,
         null,
         false
@@ -43,13 +40,11 @@ export function preserveCursorPosition(callback,editor) {
         textOffset += node.textContent.length;
     }
 
-    // Execute the callback
     callback();
 
-    // Restore cursor position
     setTimeout(() => {
         const newWalker = document.createTreeWalker(
-            editor,
+            targetEditor,
             NodeFilter.SHOW_TEXT,
             null,
             false
@@ -74,13 +69,13 @@ export function preserveCursorPosition(callback,editor) {
             const newSelection = window.getSelection();
 
             try {
-                newRange.setStart(targetNode, Math.min(targetOffset, targetNode.textContent.length));
-                newRange.setEnd(targetNode, Math.min(targetOffset, targetNode.textContent.length));
+                const clampedOffset = Math.min(targetOffset, targetNode.textContent.length);
+                newRange.setStart(targetNode, clampedOffset);
+                newRange.setEnd(targetNode, clampedOffset);
                 newSelection.removeAllRanges();
                 newSelection.addRange(newRange);
-            } catch (e) {
-                // Fallback: focus at end
-                focusEditorAtEnd();
+            } catch (error) {
+                focusEditorAtEnd(targetEditor);
             }
         }
     }, 0);
@@ -174,41 +169,11 @@ export function updateActiveLineIndicator() {
     const scrollTop = container.scrollTop;
     const offset = Math.max(0, paddingTop + (line - 1) * lineHeight - scrollTop);
 
-    indicator.style.opacity = document.activeElement === editor ? 1 : 0;
+    indicator.style.opacity = document.activeElement === editor ? '1' : '0';
     indicator.style.height = `${lineHeight}px`;
     indicator.style.transform = `translateY(${offset}px)`;
 }
 
-export function updateOutputStatus(state = 'idle', label) {
-    if (outputStatusResetTimeout) {
-        clearTimeout(outputStatusResetTimeout);
-        outputStatusResetTimeout = null;
-    }
-}
-
-
-// === Performance & UX Optimizations ===
-export function optimizeEditor(editor) {
-    // Disable spellcheck and grammar checking for code editing
-    editor.setAttribute('spellcheck', 'false');
-    editor.setAttribute('autocomplete', 'off');
-    editor.setAttribute('autocorrect', 'off');
-    editor.setAttribute('autocapitalize', 'off');
-    editor.setAttribute('data-gramm', 'false'); // Disable Grammarly
-    editor.setAttribute('data-gramm_editor', 'false'); // Disable Grammarly editor
-    editor.setAttribute('data-enable-grammarly', 'false'); // Additional Grammarly disable
-
-    // Improve text selection and editing behavior
-    editor.style.userSelect = 'text';
-    editor.style.whiteSpace = 'pre-wrap';
-    editor.style.wordBreak = 'keep-all';
-    editor.style.overflowWrap = 'normal';
-
-    // Disable browser text suggestions
-    editor.contentEditable = 'plaintext-only';
-}
-
-// === Scroll to Cursor Function ===
 export function scrollToCursor() {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -223,7 +188,6 @@ export function scrollToCursor() {
     const scrollTop = container.scrollTop;
     const scrollLeft = container.scrollLeft;
 
-    // Calculate cursor position relative to container
     const cursorTop = rect.top - containerRect.top + scrollTop;
     const cursorLeft = rect.left - containerRect.left + scrollLeft;
 
@@ -232,7 +196,6 @@ export function scrollToCursor() {
     const viewportLeft = scrollLeft;
     const viewportRight = scrollLeft + containerRect.width;
 
-    // Auto-scroll if cursor is outside viewport
     let newScrollTop = scrollTop;
     let newScrollLeft = scrollLeft;
 
@@ -255,100 +218,4 @@ export function scrollToCursor() {
             behavior: 'smooth'
         });
     }
-}
-
-export function debounceIndexHelper(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-export function syncLineNumbers() {
-    updateLineNumbers(editor, lineNumbers);
-    toggleRunButton(editor, runBtn);
-    updateCursorMeta();
-    updateActiveLineIndicator();
-    syncScrollPosition();
-}
-
-export function syncScrollPosition() {
-    const container = document.querySelector('.editor-container');
-    highlighted.scrollTop = container.scrollTop;
-    highlighted.scrollLeft = container.scrollLeft;
-    lineNumbers.scrollTop = container.scrollTop;
-    updateActiveLineIndicator();
-}
-
-export const debouncedHighlight = debounceIndexHelper(() => {
-    preserveCursorPosition(() => {
-        highlightEditorSyntax(editor, highlighted);
-    }, editor);
-}, 50);
-
-
-export function clearEditor() {
-    if (confirm("Clear the editor?")) {
-
-        // Save state before clearing for undo
-        const manager = window.undoRedoManager;
-        if (manager) {
-            manager.saveState('clear-before');
-        }
-
-        // Clear editor content
-        editor.innerText = "";
-        updateLineNumbers(editor, lineNumbers);
-        toggleRunButton(editor, runBtn);
-        highlightEditorSyntax(editor, highlighted);
-        updateCursorMeta();
-        updateActiveLineIndicator();
-
-        // Clear output section
-        const outputSection = document.getElementById('output');
-        if (outputSection) {
-            outputSection.innerHTML = '';
-        }
-
-        // Clear execution time
-        const execTimeElement = document.getElementById('exec-time');
-        if (execTimeElement) {
-            execTimeElement.innerHTML = '⏱️ Total Time: <span style="color: #a6e22e">0.00 ms</span>';
-        }
-
-        // Clear summary icons
-        const summaryIcons = document.getElementById('summary-icons');
-        if (summaryIcons) {
-            summaryIcons.innerHTML = '🧩 0 func | 🔁 0 loops | ⏳ 0 async';
-        }
-
-        // Remove DevInsights panel if it exists
-        const devInsightsSidebar = document.getElementById('dev-insights-sidebar');
-        if (devInsightsSidebar) {
-            devInsightsSidebar.remove();
-        }
-
-        // Clear any global execution tracking data
-        if (window.executionTracker) {
-            window.executionTracker.reset();
-        }
-
-        // Reset execution time tracking
-        window.lastExecutionTime = 0;
-
-        toggleButtonVisibility();
-        updateOutputStatus('idle');
-    }
-}
-
-export function toggleButtonVisibility() {
-    const hasContent = getEditorPlainText(editor).trim().length > 0;
-    // Show/hide copy and clear buttons based on content
-    copyBtn.style.display = hasContent ? 'inline-block' : 'none';
-    clearBtn.style.display = hasContent ? 'inline-block' : 'none';
 }

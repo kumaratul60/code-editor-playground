@@ -1,6 +1,6 @@
 import {copyBtn, editor, themeToggle} from "./domUtils.js";
-import {spawnFloatingEmoji} from "../utils/commonUtils.js";
-import { copyIcon} from "../utils/svg.js";
+import {spawnFloatingEmoji} from "@shared/commonUtils.js";
+import { copyIcon} from "@shared/svg.js";
 
 // export function themeToggleHandler() {
 //     themeToggle.addEventListener("click", () => {
@@ -51,6 +51,4 @@ export function copyBtnHandler() {
         }
     });
 }
-
-
 

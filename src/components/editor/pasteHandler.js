@@ -1,11 +1,11 @@
 import {editor} from "./domUtils.js";
 import {
-    debouncedHighlight,
     // preserveCursorPosition,
     scrollToCursor,
     syncLineNumbers,
-    toggleButtonVisibility
-} from "../utils/indexHelper.js";
+    toggleButtonVisibility,
+    scheduleHighlightRefresh
+} from "@shared/editor/indexHelper.js";
 
 export function setupPasteHandler() {
 
@@ -20,30 +20,6 @@ export function setupPasteHandler() {
         if (manager) {
             manager.saveState('paste-before');
         }
-
-        // Improved paste with immediate cursor positioning
-        // preserveCursorPosition(() => {
-        //     const sel = window.getSelection();
-        //     if (sel.rangeCount) {
-        //         const range = sel.getRangeAt(0);
-        //         range.deleteContents();
-        //         range.insertNode(document.createTextNode(paste));
-        //
-        //         // Move cursor to end of pasted content
-        //         range.collapse(false);
-        //         sel.removeAllRanges();
-        //         sel.addRange(range);
-        //     }
-        //
-        //     // Immediate sync
-        //     syncLineNumbers();
-        //     scrollToCursor();
-        //     toggleButtonVisibility()
-        //
-        //     // Delayed highlighting
-        //     setTimeout(() => debouncedHighlight(), 10);
-        // }, editor);
-
 
         // Handle paste with proper cursor positioning at end
         const sel = window.getSelection();
@@ -62,21 +38,11 @@ export function setupPasteHandler() {
         syncLineNumbers();
         scrollToCursor();
         toggleButtonVisibility();
+        scheduleHighlightRefresh({immediate: true});
 
-        // Delayed highlighting to avoid interfering with cursor position
-        setTimeout(() => debouncedHighlight(), 10);
-
-        // Delayed highlighting to avoid interfering with cursor position
-        setTimeout(() => {
-            debouncedHighlight();
-
-            // Save state after paste operation is complete
-            if (manager) {
-                setTimeout(() => {
-                    manager.saveState('paste-after');
-                }, 20);
-            }
-        }, 10);
+        if (manager) {
+            setTimeout(() => manager.saveState('paste-after'), 20);
+        }
     });
 
     // Add input event listener to track regular typing for undo/redo

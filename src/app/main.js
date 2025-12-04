@@ -1,26 +1,26 @@
-import { toggleRunButton, updateLineNumbers } from "./utils/commonUtils.js";
-import { highlightEditorSyntax } from "./utils/highlightSyntaxUtils.js";
-import { logOutput, runCode, clearOutput, setConsoleAutoScroll } from "./utils/runCode.js";
+import { toggleRunButton, updateLineNumbers } from "@shared/commonUtils.js";
+import { highlightEditorSyntax } from "@shared/highlightSyntaxUtils.js";
+import { logOutput, runCode, clearOutput, setConsoleAutoScroll } from "@shared/runtime/index.js";
 import {
     focusEditorAtEnd,
     optimizeEditor,
     scrollToCursor,
     syncLineNumbers,
-    debouncedHighlight,
     syncScrollPosition,
     clearEditor,
     toggleButtonVisibility,
     updateCursorMeta,
     updateActiveLineIndicator,
     scheduleCursorRefresh,
-    updateOutputStatus
-} from "./utils/indexHelper.js";
-import UndoRedoManager from "./utils/undoRedoManager.js";
+    updateOutputStatus,
+    scheduleHighlightRefresh
+} from "@shared/editor/indexHelper.js";
+import UndoRedoManager from "@shared/undoRedoManager.js";
 
-import { setupSelectionHandlers } from "./DOMIndex/selectionHandlers.js";
-import { setupKeyboardHandlers } from "./DOMIndex/keyboardHandlers.js";
-import { setupPasteHandler } from "./DOMIndex/pasteHandler.js";
-import { copyBtnHandler, themeToggleHandler } from "./DOMIndex/actionBtnHandler.js";
+import { setupSelectionHandlers } from "@editor/selectionHandlers.js";
+import { setupKeyboardHandlers } from "@editor/keyboardHandlers.js";
+import { setupPasteHandler } from "@editor/pasteHandler.js";
+import { copyBtnHandler, themeToggleHandler } from "@editor/actionBtnHandler.js";
 
 import {
     editor,
@@ -29,9 +29,9 @@ import {
     runBtn,
     output,
     clearBtn
-} from "./DOMIndex/domUtils.js";
+} from "@editor/domUtils.js";
 
-import "./DOMIndex/codeInsertion.js";
+import "@editor/codeInsertion.js";
 
 // Global instances
 let undoRedoManager = null;
@@ -87,10 +87,19 @@ function bindEvents() {
         });
 
     // Input changes
-    editor.addEventListener("input", () => {
+    editor.addEventListener("input", (event) => {
+        const forceImmediateHighlight = [
+            'deleteContentBackward',
+            'deleteContentForward',
+            'insertFromPaste',
+            'deleteByCut',
+            'insertLineBreak',
+            'insertParagraph'
+        ].includes(event.inputType);
+
         syncLineNumbers();
         scheduleCursorRefresh();
-        debouncedHighlight();
+        scheduleHighlightRefresh({immediate: forceImmediateHighlight});
         toggleButtonVisibility()
 
     });
@@ -124,8 +133,7 @@ function setupConsoleControls() {
     if (filterButtons.length) {
         filterButtons.forEach((btn) => {
             btn.addEventListener('click', () => {
-                const selectedFilter = btn.dataset.consoleFilter || 'all';
-                output.dataset.filter = selectedFilter;
+                output.dataset.filter = btn.dataset.consoleFilter || 'all';
 
                 filterButtons.forEach((button) => {
                     button.classList.toggle('active', button === btn);

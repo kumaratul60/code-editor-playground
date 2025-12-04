@@ -1,9 +1,16 @@
 import { editor, lineNumbers, highlighted } from './domUtils.js';
-import {focusEditorAtEnd, syncLineNumbers, scrollToCursor, toggleButtonVisibility, insertTextAtSelection, scheduleCursorRefresh} from "../utils/indexHelper.js";
-import {handleEditorHelpers} from "../utils/editorAutoCompleteHelper.js";
-import {formatCode} from "../utils/formatCode.js";
-import {debouncedHighlight} from "../utils/indexHelper.js";
-import {getTextBeforeCursor} from "../utils/commonUtils.js";
+import {
+    focusEditorAtEnd,
+    syncLineNumbers,
+    scrollToCursor,
+    toggleButtonVisibility,
+    insertTextAtSelection,
+    scheduleCursorRefresh,
+    scheduleHighlightRefresh
+} from "@shared/editor/indexHelper.js";
+import {handleEditorHelpers} from "@shared/editorAutoCompleteHelper.js";
+import {formatCode} from "@shared/formatCode.js";
+import {getTextBeforeCursor} from "@shared/commonUtils.js";
 
 export function setupKeyboardHandlers() {
     editor.addEventListener('beforeinput', (e) => {
@@ -21,19 +28,19 @@ export function setupKeyboardHandlers() {
             insertTextAtSelection('    ');
             syncLineNumbers();
             scheduleCursorRefresh();
-            toggleButtonVisibility()
+            toggleButtonVisibility();
+            scheduleHighlightRefresh({immediate: true});
             return;
         }
 
         if (e.key === "Enter" && e.ctrlKey) {
             e.preventDefault();
-            const formatted = formatCode(editor.textContent);
-            editor.innerText = formatted;
+            editor.innerText = formatCode(editor.textContent);
             focusEditorAtEnd(editor);
             syncLineNumbers();
             scrollToCursor();
-            debouncedHighlight();
-            toggleButtonVisibility()
+            scheduleHighlightRefresh({immediate: true});
+            toggleButtonVisibility();
             return;
         }
 
@@ -46,7 +53,8 @@ export function setupKeyboardHandlers() {
             setTimeout(() => {
                 syncLineNumbers();
                 scrollToCursor();
-                toggleButtonVisibility()
+                toggleButtonVisibility();
+                scheduleHighlightRefresh({immediate: true});
             }, 0);
         }
     });
@@ -71,5 +79,5 @@ function handleCustomEnter() {
 
     syncLineNumbers();
     scheduleCursorRefresh();
-    debouncedHighlight();
+    scheduleHighlightRefresh({immediate: true});
 }
