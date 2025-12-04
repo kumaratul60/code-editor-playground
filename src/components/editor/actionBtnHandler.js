@@ -1,0 +1,54 @@
+import {copyBtn, editor, themeToggle} from "./domUtils.js";
+import {spawnFloatingEmoji} from "@shared/commonUtils.js";
+import { copyIcon} from "@shared/svg.js";
+
+// export function themeToggleHandler() {
+//     themeToggle.addEventListener("click", () => {
+//         // themeToggle.classList.add("rotating");
+//         const isLight = document.body.classList.contains("light-theme");
+//         document.body.classList.toggle("light-theme", !isLight);
+//         themeToggle.textContent = !isLight ? "🌙 Dark Mode" : "☀️ Toggle Theme";
+//         spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
+//     });
+// }
+
+export function themeToggleHandler() {
+    const applyTheme = (isLight) => {
+        document.body.classList.toggle("light-theme", isLight);
+        themeToggle.textContent = isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+    };
+
+    // Default to dark mode on load
+    applyTheme(false);
+
+    themeToggle.addEventListener("click", () => {
+        const isLight = document.body.classList.contains("light-theme");
+        applyTheme(!isLight);
+        spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
+    });
+}
+
+export function copyBtnHandler() {
+    copyBtn.addEventListener("click", () => {
+        const code = editor.innerText;
+        const originalContent = copyBtn.innerHTML;
+
+        try {
+            navigator.clipboard.writeText(code).then(() => {
+                // copyBtn.innerHTML = checkIcon;
+                copyBtn.innerHTML = "Copied";
+                copyBtn.classList.add("success");
+                // spawnFloatingEmoji("📋", copyBtn);
+
+                // Revert back to original content after 1.5 seconds
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalContent;
+                    copyBtn.classList.remove("success");
+                }, 1200);
+            });
+        } catch (err) {
+            alert("Failed to copy code to clipboard.");
+        }
+    });
+}
+

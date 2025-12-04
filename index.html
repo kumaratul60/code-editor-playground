@@ -7,14 +7,25 @@
 
     <link rel="icon" href="/favicon.png" type="image/png" />
 
-      <link rel="stylesheet" href="styles/styles.css" />
-      <link rel="stylesheet" href="styles/themes.css" />
-      <link rel="stylesheet" href="styles/syntax.css" />
-      <link rel="stylesheet" href="styles/btnStyles.css" />
-      <link rel="stylesheet" href="styles/consoleTheme.css">
-      <link rel="stylesheet" href="styles/dev-insights-panel.css" />
+      <link rel="stylesheet" href="./src/styles/styles.css" />
+      <link rel="stylesheet" href="./src/styles/themes.css" />
+      <link rel="stylesheet" href="./src/styles/syntax.css" />
+      <link rel="stylesheet" href="./src/styles/btnStyles.css" />
+      <link rel="stylesheet" href="./src/styles/consoleTheme.css">
+      <link rel="stylesheet" href="./src/styles/dev-insights-panel.css" />
 
-    <script defer type="module" src="index.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@app/": "./src/app/",
+          "@components/": "./src/components/",
+          "@editor/": "./src/components/editor/",
+          "@shared/": "./src/shared/",
+          "@features/": "./src/features/"
+        }
+      }
+    </script>
+    <script defer type="module" src="src/app/main.js"></script>
   </head>
   <body class="dark-theme">
     <header>
