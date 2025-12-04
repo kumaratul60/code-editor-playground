@@ -25,17 +25,3 @@ export function getPerformanceRating(executionTime) {
         };
     }
 }
-
-
-
-function getPerformanceRatingTest(executionTime) {
-    if (executionTime < 50) {
-        return { label: "Excellent", icon: "⚡" };
-    } else if (executionTime < 100) {
-        return { label: "Good", icon: "✅" };
-    } else if (executionTime < 300) {
-        return { label: "Fair", icon: "⚠️" };
-    } else {
-        return { label: "Needs Optimization", icon: "🐢" };
-    }
-}
