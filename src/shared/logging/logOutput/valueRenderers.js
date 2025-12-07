@@ -285,18 +285,3 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
-
-function getTypeColor(type) {
-    const colors = {
-        number: 'var(--console-number-color)',
-        string: 'var(--console-string-color)',
-        boolean: 'var(--console-boolean-color)',
-        undefined: 'var(--console-undefined-color)',
-        function: 'var(--console-function-color)',
-        object: 'var(--console-object-color)',
-        bigint: 'var(--console-number-color)',
-        symbol: 'var(--console-symbol-color)',
-        default: 'var(--console-default-color)',
-    };
-    return colors[type] || colors.default;
-}

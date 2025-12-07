@@ -1,5 +1,6 @@
 import { editor, highlighted } from "@editor/domUtils.js";
 import { getEditorPlainText } from "../commonUtils.js";
+import { updateSelectionOverlay } from "./selectionOverlay.js";
 
 export function focusEditorAtEnd(targetEditor) {
     const editable = targetEditor || editor;
@@ -105,6 +106,7 @@ export function scheduleCursorRefresh() {
         scrollToCursor();
         updateCursorMeta();
         updateActiveLineIndicator();
+        updateSelectionOverlay();
     });
 }
 
@@ -188,34 +190,26 @@ export function scrollToCursor() {
     const scrollTop = container.scrollTop;
     const scrollLeft = container.scrollLeft;
 
-    const cursorTop = rect.top - containerRect.top + scrollTop;
-    const cursorLeft = rect.left - containerRect.left + scrollLeft;
+    let nextScrollTop = scrollTop;
+    let nextScrollLeft = scrollLeft;
 
-    const viewportTop = scrollTop;
-    const viewportBottom = scrollTop + containerRect.height;
-    const viewportLeft = scrollLeft;
-    const viewportRight = scrollLeft + containerRect.width;
-
-    let newScrollTop = scrollTop;
-    let newScrollLeft = scrollLeft;
-
-    if (cursorTop < viewportTop + 50) {
-        newScrollTop = Math.max(0, cursorTop - 50);
-    } else if (cursorTop > viewportBottom - 50) {
-        newScrollTop = cursorTop - containerRect.height + 100;
+    if (rect.top < containerRect.top) {
+        nextScrollTop += rect.top - containerRect.top;
+    } else if (rect.bottom > containerRect.bottom) {
+        nextScrollTop += rect.bottom - containerRect.bottom;
     }
 
-    if (cursorLeft < viewportLeft + 50) {
-        newScrollLeft = Math.max(0, cursorLeft - 50);
-    } else if (cursorLeft > viewportRight - 50) {
-        newScrollLeft = cursorLeft - containerRect.width + 100;
+    if (rect.left < containerRect.left) {
+        nextScrollLeft += rect.left - containerRect.left;
+    } else if (rect.right > containerRect.right) {
+        nextScrollLeft += rect.right - containerRect.right;
     }
 
-    if (newScrollTop !== scrollTop || newScrollLeft !== scrollLeft) {
+    if (nextScrollTop !== scrollTop || nextScrollLeft !== scrollLeft) {
         container.scrollTo({
-            top: newScrollTop,
-            left: newScrollLeft,
-            behavior: 'smooth'
+            top: nextScrollTop,
+            left: nextScrollLeft,
+            behavior: 'auto'
         });
     }
 }

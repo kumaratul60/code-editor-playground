@@ -11,6 +11,7 @@ import {
 import {handleEditorHelpers} from "@shared/editorAutoCompleteHelper.js";
 import {formatCode} from "@shared/formatCode.js";
 import {getTextBeforeCursor} from "@shared/commonUtils.js";
+import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 
 export function setupKeyboardHandlers() {
     editor.addEventListener('beforeinput', (e) => {
@@ -41,6 +42,8 @@ export function setupKeyboardHandlers() {
             scrollToCursor();
             scheduleHighlightRefresh({immediate: true});
             toggleButtonVisibility();
+            const tracker = ensureExecutionTracker();
+            tracker?.recordUIAction('format-code');
             return;
         }
 

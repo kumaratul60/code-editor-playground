@@ -3,6 +3,7 @@
     --editor-line-height: 1.5;
     --editor-padding: 12px;
     --active-line-bg: rgba(255, 255, 255, 0.06);
+    --selection-bg: rgba(140, 180, 255, 0.25);
     --panel-header-bg: rgba(255, 255, 255, 0.02);
     --panel-border: rgba(255, 255, 255, 0.1);
     --panel-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
@@ -116,8 +117,7 @@ header h2 {
     display: flex;
     background: transparent;
     overflow-y: auto;
-    /*overflow-x: hidden;*/
-    /*overflow: hidden;*/
+    overflow-x: auto;
 }
 
 /* ===== EDITOR LAYERS ===== */
@@ -129,14 +129,13 @@ header h2 {
     padding: var(--editor-padding);
     background: transparent;
     outline: none;
-    white-space: pre-wrap;
-    word-break: break-word;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
     height: auto;
     min-height: 100%;
     max-height: none;
-    overflow-y: auto;
-    overflow-x: hidden;
-    /*overflow: visible;*/
+    overflow: visible;
     margin: 0;
 
     width: 100%;
@@ -155,7 +154,7 @@ header h2 {
     z-index: 1;
     pointer-events: none;
     color: var(--text);
-    overflow: hidden;
+    overflow: visible;
     /* Ensure background layer doesn't interfere with cursor */
     user-select: none;
     -webkit-user-select: none;
@@ -173,11 +172,48 @@ header h2 {
     display: none;
 }
 
-#code-text {
+#selection-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
     z-index: 2;
+    display: none;
+}
+
+#selection-overlay.is-active {
+    display: block;
+}
+
+#selection-overlay .selection-block {
+    position: absolute;
+    background: var(--selection-bg);
+    border-radius: 3px;
+}
+
+#selection-overlay .cursor-block {
+    position: absolute;
+    width: 2px;
+    min-width: 2px;
+    background: var(--caret, #ffffff);
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(97, 218, 251, 0.45);
+    animation: caretPulse 1s steps(2, start) infinite;
+}
+
+@keyframes caretPulse {
+    0%, 45% {
+        opacity: 0;
+    }
+    50%, 100% {
+        opacity: 1;
+    }
+}
+
+#code-text {
+    z-index: 3;
     color: transparent;
     caret-color: var(--caret, var(--text));
-    overflow: hidden;
+    overflow: visible;
     pointer-events: auto;
     user-select: text;
     -webkit-user-select: text;

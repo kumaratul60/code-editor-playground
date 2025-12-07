@@ -1,10 +1,14 @@
 import { logOutput } from "./logging.js";
+import { ensureExecutionTracker } from "./executionTracker.js";
 
 export function setupConsoleOverrides(output) {
     const originalConsole = {
         log: console.log,
         error: console.error,
         warn: console.warn,
+        info: console.info,
+        debug: console.debug,
+        trace: console.trace,
         table: console.table,
         time: console.time,
         timeEnd: console.timeEnd
@@ -18,6 +22,10 @@ export function setupConsoleOverrides(output) {
         const delta = now - sessionLogTime;
         sessionLogTime = now;
         logOutput(args, output, delta, type);
+        const tracker = ensureExecutionTracker();
+        if (tracker) {
+            tracker.recordLog(type, args);
+        }
     };
 
     console.log = (...args) => logWithTimestamp(args, "log");
@@ -88,6 +96,9 @@ export function restoreConsole(originalConsole) {
     console.log = originalConsole.log;
     console.error = originalConsole.error;
     console.warn = originalConsole.warn;
+    console.info = originalConsole.info;
+    console.debug = originalConsole.debug;
+    console.trace = originalConsole.trace;
     console.table = originalConsole.table;
     console.time = originalConsole.time;
     console.timeEnd = originalConsole.timeEnd;

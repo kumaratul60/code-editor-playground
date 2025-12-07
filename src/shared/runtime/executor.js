@@ -6,6 +6,8 @@ import { EXECUTION_TIMEOUT } from "./constants.js";
 import { clearOutput, logOutput } from "./logging.js";
 import { setupConsoleOverrides, restoreConsole } from "./consoleOverrides.js";
 import { performSafetyChecks } from "./safety.js";
+import { ensureExecutionTracker } from "./executionTracker.js";
+import { instrumentRuntime } from "./instrumentation.js";
 
 function initializeExecution(output) {
     clearOutput(output);
@@ -55,25 +57,46 @@ export async function runCode(editor, output) {
 
     updateOutputStatus('running');
     const startTime = initializeExecution(output);
+    const tracker = ensureExecutionTracker();
+    if (tracker) {
+        tracker.beginRun(source);
+    }
+    const restoreRuntimeInstrumentation = instrumentRuntime();
     const originalConsole = setupConsoleOverrides(output);
+
+    let executionTime = 0;
+    let runFailed = false;
 
     try {
         const code = source;
 
-        if (!performSafetyChecks(code, output)) return;
+        if (!performSafetyChecks(code, output)) {
+            runFailed = true;
+            executionTime = performance.now() - startTime;
+            return;
+        }
 
         await executeCodeSafely(code);
 
-        const executionTime = performance.now() - startTime;
+        executionTime = performance.now() - startTime;
         window.lastExecutionTime = executionTime;
 
         const analysis = analyzeCode(code);
         updateSummaryBarWithAnalysis(analysis, executionTime, code);
         updateOutputStatus('success', `Finished in ${executionTime.toFixed(2)} ms`);
     } catch (err) {
+        runFailed = true;
+        executionTime = performance.now() - startTime;
+        if (tracker) {
+            tracker.recordError(err);
+        }
         handleExecutionError(err, startTime, source, output);
         updateOutputStatus('error', err?.message || 'Execution failed');
     } finally {
+        if (tracker) {
+            tracker.finishRun(executionTime, { failed: runFailed });
+        }
         restoreConsole(originalConsole);
+        restoreRuntimeInstrumentation();
     }
 }

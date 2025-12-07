@@ -1,6 +1,7 @@
 import { toggleRunButton, updateLineNumbers } from "@shared/commonUtils.js";
 import { highlightEditorSyntax } from "@shared/highlightSyntaxUtils.js";
 import { logOutput, runCode, clearOutput, setConsoleAutoScroll } from "@shared/runtime/index.js";
+import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 import {
     focusEditorAtEnd,
     optimizeEditor,
@@ -38,6 +39,7 @@ let undoRedoManager = null;
 
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
+    ensureExecutionTracker();
     initEditor();
     initUI();
     bindEvents();
@@ -98,9 +100,9 @@ function bindEvents() {
         ].includes(event.inputType);
 
         syncLineNumbers();
-        scheduleCursorRefresh();
-        scheduleHighlightRefresh({immediate: forceImmediateHighlight});
-        toggleButtonVisibility()
+    scheduleCursorRefresh();
+    scheduleHighlightRefresh({immediate: forceImmediateHighlight});
+        toggleButtonVisibility();
 
     });
 
@@ -110,7 +112,11 @@ function bindEvents() {
     setupKeyboardHandlers();
 
     // Buttons
-    runBtn.addEventListener("click", () => runCode(editor, output));
+    runBtn.addEventListener("click", () => {
+        const tracker = ensureExecutionTracker();
+        tracker?.recordUIAction('run-code');
+        runCode(editor, output);
+    });
     copyBtnHandler();
     clearBtn.addEventListener("click", clearEditor);
 
@@ -156,6 +162,8 @@ function setupConsoleControls() {
             autoScrollBtn.setAttribute('aria-pressed', String(isAutoScrollEnabled));
             autoScrollBtn.textContent = isAutoScrollEnabled ? 'Auto-scroll: On' : 'Auto-scroll: Off';
             setConsoleAutoScroll(isAutoScrollEnabled);
+            const tracker = ensureExecutionTracker();
+            tracker?.recordUIAction('toggle-autoscroll');
         });
         setConsoleAutoScroll(isAutoScrollEnabled);
     }

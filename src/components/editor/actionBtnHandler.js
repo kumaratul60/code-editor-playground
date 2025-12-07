@@ -1,6 +1,6 @@
-import {copyBtn, editor, themeToggle} from "./domUtils.js";
-import {spawnFloatingEmoji} from "@shared/commonUtils.js";
-import { copyIcon} from "@shared/svg.js";
+import { copyBtn, editor, themeToggle } from "./domUtils.js";
+import { spawnFloatingEmoji } from "@shared/commonUtils.js";
+import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 
 // export function themeToggleHandler() {
 //     themeToggle.addEventListener("click", () => {
@@ -25,6 +25,8 @@ export function themeToggleHandler() {
         const isLight = document.body.classList.contains("light-theme");
         applyTheme(!isLight);
         spawnFloatingEmoji(themeToggle, !isLight ? "🌞" : "🌚");
+        const tracker = ensureExecutionTracker();
+        tracker?.recordUIAction('toggle-theme');
     });
 }
 
@@ -38,6 +40,8 @@ export function copyBtnHandler() {
                 // copyBtn.innerHTML = checkIcon;
                 copyBtn.innerHTML = "Copied";
                 copyBtn.classList.add("success");
+                const tracker = ensureExecutionTracker();
+                tracker?.recordUIAction('copy-code');
                 // spawnFloatingEmoji("📋", copyBtn);
 
                 // Revert back to original content after 1.5 seconds
@@ -51,4 +55,3 @@ export function copyBtnHandler() {
         }
     });
 }
-

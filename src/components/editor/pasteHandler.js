@@ -1,11 +1,13 @@
-import {editor} from "./domUtils.js";
+import { editor } from "./domUtils.js";
 import {
     // preserveCursorPosition,
     scrollToCursor,
     syncLineNumbers,
     toggleButtonVisibility,
-    scheduleHighlightRefresh
+    scheduleHighlightRefresh,
+    clearSelectionOverlay
 } from "@shared/editor/indexHelper.js";
+import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 
 export function setupPasteHandler() {
 
@@ -38,7 +40,11 @@ export function setupPasteHandler() {
         syncLineNumbers();
         scrollToCursor();
         toggleButtonVisibility();
+        clearSelectionOverlay();
         scheduleHighlightRefresh({immediate: true});
+
+        const tracker = ensureExecutionTracker();
+        tracker?.recordUIAction('paste');
 
         if (manager) {
             setTimeout(() => manager.saveState('paste-after'), 20);

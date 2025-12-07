@@ -1,6 +1,12 @@
 import { editor, lineNumbers } from './domUtils.js';
 import {highlightCurrentLine} from "@shared/commonUtils.js";
-import {scrollToCursor, updateCursorMeta, updateActiveLineIndicator} from "@shared/editor/indexHelper.js";
+import {
+    scrollToCursor,
+    updateCursorMeta,
+    updateActiveLineIndicator,
+    updateSelectionOverlay,
+    clearSelectionOverlay
+} from "@shared/editor/indexHelper.js";
 
 
 export function setupSelectionHandlers() {
@@ -11,6 +17,7 @@ export function setupSelectionHandlers() {
                 highlightCurrentLine(editor, lineNumbers);
                 updateCursorMeta();
                 updateActiveLineIndicator();
+                updateSelectionOverlay();
             });
         }
     });
@@ -20,6 +27,11 @@ export function setupSelectionHandlers() {
             highlightCurrentLine(editor, lineNumbers);
             updateCursorMeta();
             updateActiveLineIndicator();
+            updateSelectionOverlay();
         }, 0);
+    });
+
+    editor.addEventListener('blur', () => {
+        clearSelectionOverlay();
     });
 }

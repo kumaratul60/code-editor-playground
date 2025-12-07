@@ -6,6 +6,8 @@ import {
     updateCursorMeta,
     updateActiveLineIndicator
 } from "./editorCursor.js";
+import { updateSelectionOverlay, clearSelectionOverlay } from "./selectionOverlay.js";
+import { ensureExecutionTracker } from "../runtime/executionTracker.js";
 
 let outputStatusResetTimeout = null;
 let highlightRefreshTimeout = null;
@@ -20,8 +22,8 @@ export function optimizeEditor(targetEditor = editor) {
     targetEditor.setAttribute('data-enable-grammarly', 'false');
 
     targetEditor.style.userSelect = 'text';
-    targetEditor.style.whiteSpace = 'pre-wrap';
-    targetEditor.style.wordBreak = 'keep-all';
+    targetEditor.style.whiteSpace = 'pre';
+    targetEditor.style.wordBreak = 'normal';
     targetEditor.style.overflowWrap = 'normal';
     targetEditor.contentEditable = 'plaintext-only';
 }
@@ -40,6 +42,7 @@ export function syncScrollPosition() {
     highlighted.scrollLeft = container.scrollLeft;
     lineNumbers.scrollTop = container.scrollTop;
     updateActiveLineIndicator();
+    updateSelectionOverlay();
 }
 
 function renderHighlightLayer() {
@@ -120,15 +123,15 @@ export function clearEditor() {
         devInsightsSidebar.remove();
     }
 
-    if ('executionTracker' in window) {
-        const tracker = window.executionTracker;
-        if (tracker && typeof tracker.reset === 'function') {
-            tracker.reset();
-        }
+    const tracker = ensureExecutionTracker();
+    if (tracker) {
+        tracker.recordUIAction('clear-editor');
+        tracker.resetRunState();
     }
 
     window.lastExecutionTime = 0;
 
     toggleButtonVisibility();
     updateOutputStatus('idle');
+    clearSelectionOverlay();
 }

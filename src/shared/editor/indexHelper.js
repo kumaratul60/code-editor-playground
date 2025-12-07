@@ -18,3 +18,8 @@ export {
     toggleButtonVisibility,
     clearEditor
 } from './editorState.js';
+
+export {
+    updateSelectionOverlay,
+    clearSelectionOverlay
+} from './selectionOverlay.js';
