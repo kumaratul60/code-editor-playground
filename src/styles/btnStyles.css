@@ -1,11 +1,11 @@
 .controls {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     justify-content: flex-end;
     transition: all 0.3s ease;
     margin-left: auto;
-    padding: 8px 14px;
+    padding: 6px 10px;
 }
 
 .btn {
@@ -13,22 +13,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 20px;
+    gap: 6px;
+    padding: 8px 14px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.02em;
     text-decoration: none;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     user-select: none;
-    min-width: 120px;
-    height: 44px;
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+    min-width: 90px;
+    height: 36px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     will-change: transform, box-shadow;
     text-transform: uppercase;
     background-size: 200% 200%;
@@ -160,8 +160,20 @@
 }
 
 #copy-btn,
-#clear-btn {
-    display: none;
+#clear-btn,
+#header-clear-btn {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#copy-btn.visible,
+#clear-btn.visible,
+#header-clear-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
 }
 
 #copy-btn.fade-out {
@@ -178,6 +190,58 @@
 
 #clear-btn:hover {
     background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+/* ===== ICON-ONLY BUTTON STYLES ===== */
+.btn-icon {
+    min-width: 40px !important;
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.btn-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Visual separator */
+.btn-separator {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 0 4px;
+}
+
+/* Enhanced hover for icon buttons */
+.btn-icon:hover {
+    transform: translateY(-3px) scale(1.08);
+}
+
+/* Pulse for Run button */
+.btn-icon.btn-primary {
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+    50% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.6); }
+}
+
+/* Theme toggle rotation */
+.btn-icon#theme-toggle {
+    font-size: 20px;
+}
+
+.btn-icon#theme-toggle:hover {
+    transform: translateY(-3px) scale(1.08) rotate(15deg);
+}
+
+/* Run button styling */
+.btn-icon#run-btn {
+    font-size: 16px;
 }
 
 /* Responsive button styles */

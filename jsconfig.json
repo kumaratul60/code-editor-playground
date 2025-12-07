@@ -3,6 +3,8 @@
     "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "node",
+    "lib": ["ES2015", "DOM"],
+    "target": "ES2015",
     "paths": {
       "@app/*": ["src/app/*"],
       "@components/*": ["src/components/*"],

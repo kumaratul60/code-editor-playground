@@ -2,7 +2,8 @@ import { toggleRunButton, updateLineNumbers, getEditorPlainText } from "../commo
 import { clearBtn, copyBtn, editor, highlighted, lineNumbers, runBtn } from "@editor/domUtils.js";
 import { highlightEditorSyntax } from "../highlightSyntaxUtils.js";
 import {
-    updateCursorMeta
+    updateCursorMeta,
+    updateActiveLineIndicator
 } from "./editorCursor.js";
 import { clearSelectionOverlay } from "./selectionOverlay.js";
 import { ensureExecutionTracker } from "../runtime/executionTracker.js";
@@ -104,8 +105,14 @@ export function updateOutputStatus(state = 'idle', label) {
 
 export function toggleButtonVisibility() {
     const hasContent = getEditorPlainText(editor).trim().length > 0;
-    copyBtn.style.display = hasContent ? 'inline-block' : 'none';
-    clearBtn.style.display = hasContent ? 'inline-block' : 'none';
+    
+    if (hasContent) {
+        copyBtn.classList.add('visible');
+        clearBtn.classList.add('visible');
+    } else {
+        copyBtn.classList.remove('visible');
+        clearBtn.classList.remove('visible');
+    }
 }
 
 export function clearEditor(force = false) {
@@ -143,6 +150,11 @@ export function clearEditor(force = false) {
     const devInsightsSidebar = document.getElementById('dev-insights-sidebar');
     if (devInsightsSidebar) {
         devInsightsSidebar.remove();
+    }
+
+    const devInsightsBulb = document.getElementById('dev-insights-toggle-btn');
+    if (devInsightsBulb) {
+        devInsightsBulb.remove();
     }
 
     const tracker = ensureExecutionTracker();

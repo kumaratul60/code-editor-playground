@@ -255,6 +255,9 @@ header h2 {
     content: attr(data-placeholder);
     color: rgba(255, 255, 255, 0.3);
     pointer-events: none;
+    position: absolute;
+    top: var(--editor-padding);
+    left: var(--editor-padding);
 }
 
 #active-line-indicator {
