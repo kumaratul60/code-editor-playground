@@ -1,0 +1,44 @@
+/* ===== syntax.css ===== */
+
+.keyword {
+  color: var(--token-keyword);
+  font-weight: bold;
+}
+.string {
+  color: var(--token-string);
+}
+.comment {
+  color: var(--token-comment);
+  font-style: italic;
+}
+.literal {
+  color: var(--token-var);
+}
+.function {
+  color: var(--token-func);
+}
+.regex {
+  color: var(--token-string);
+}
+.template-expr {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--token-var);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+.bracket-depth-1 {
+  color: #ff6b6b;
+}
+.bracket-depth-2 {
+  color: #f8c471;
+}
+.bracket-depth-3 {
+  color: #5dade2;
+}
+.bracket-depth-4 {
+  color: #58d68d;
+}
+.bracket-depth-5 {
+  color: #af7ac5;
+}

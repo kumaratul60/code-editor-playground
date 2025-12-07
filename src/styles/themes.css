@@ -1,0 +1,217 @@
+/* Default Dark Theme */
+:root {
+    /* Base Colors */
+    --bg: #1C2130;
+    --text: #E8ECF3;
+    --editor-bg: #1C2130;
+    --output-bg: #1C2130;
+    --btn-bg: #232836;
+    --btn-text: #E8ECF3;
+    --caret: #38E8C6;
+    --header-bg: #232836;
+    --header-text: #E8ECF3;
+    --footer-bg: #232836;
+    --footer-text: #E8ECF3;
+    --line-number-bg: #1C2130;
+    --line-number-color: #A8B0C3;
+    --line-number-border: #2B3143;
+
+    /* Semantic Colors defined by User */
+    --bg-alt: #232836;
+    --panel: #1F2535;
+    --text-primary: #E8ECF3;
+    --text-secondary: #A8B0C3;
+    --accent: #38E8C6;
+    --accent-hover: #67FFF2;
+    --accent-muted: rgba(56, 232, 198, 0.15);
+    --border: #2B3143;
+
+    /* Code Syntax Tokens */
+    --token-keyword: #82A0FF;
+    --token-string: #F2C94C;
+    --token-func: #38E8C6;
+    --token-var: #FF86B7;
+    --token-comment: #5C6370;
+
+    /* Dev Panel Colors - Dark Theme */
+    --dev-panel-bg: #1F2535;
+    --dev-panel-bg-secondary: #1F2535;
+    --dev-panel-bg-tertiary: #232836;
+    --dev-panel-text: #E8ECF3;
+    --dev-panel-text-secondary: #A8B0C3;
+    --dev-panel-border: #2B3143;
+    --dev-panel-border-light: #384050;
+    --dev-panel-accent: #38E8C6;
+    --dev-panel-accent-hover: #67FFF2;
+    --dev-panel-secondary: #f6c343;
+    --dev-panel-success: #4ade80;
+    --dev-panel-warning: #f59e0b;
+    --dev-panel-error: #ef4444;
+    --dev-panel-info: #3b82f6;
+    --dev-panel-card-bg: rgba(31, 37, 53, 0.9);
+    --dev-panel-card-border: #2B3143;
+    --dev-panel-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --dev-panel-scrollbar: #2B3143;
+    --dev-panel-scrollbar-thumb: #384050;
+    --dev-panel-metric-bg: rgba(56, 232, 198, 0.1);
+    --dev-panel-metric-border: rgba(56, 232, 198, 0.3);
+    --dev-panel-hover: rgba(56, 232, 198, 0.05);
+    --dev-panel-active: rgba(56, 232, 198, 0.2);
+
+    /* Console Colors for Dark Theme */
+    --console-bg: #1C2130;
+    --console-text: #E8ECF3;
+    --console-border: #2B3143;
+    --console-string-color: #F2C94C;
+    --console-string-quote-color: #F2C94C;
+    --console-number-color: #FF86B7;
+    --console-boolean-color: #FF86B7;
+    --console-null-color: #A8B0C3;
+    --console-undefined-color: #A8B0C3;
+    --console-function-color: #38E8C6;
+    --console-object-color: #E8ECF3;
+    --console-symbol-color: #FF86B7;
+    --console-default-color: #E8ECF3;
+    --console-collapsed-color: #A8B0C3;
+    --console-property-color: #82A0FF;
+    --console-bracket-color: #E8ECF3;
+    --console-expand-color: #E8ECF3;
+    --console-hover-bg: #232836;
+    --console-selection-bg: rgba(56, 232, 198, 0.25);
+    --console-selection-text: #E8ECF3;
+    --console-selection-border: #38E8C6;
+    --console-scrollbar: #1F2535;
+    --console-scrollbar-thumb: #2B3143;
+
+    /* Log Output Colors for Dark Theme */
+    --log-error-border: #ef4444;
+    --log-error-bg: rgba(239, 68, 68, 0.1);
+    --log-error-text: #ef4444;
+    --log-warn-border: #f59e0b;
+    --log-warn-bg: rgba(245, 158, 11, 0.1);
+    --log-warn-text: #f59e0b;
+    --log-info-border: #38E8C6;
+    --log-info-bg: rgba(56, 232, 198, 0.05);
+    --log-info-text: #38E8C6;
+    --log-debug-border: #82A0FF;
+    --log-debug-bg: rgba(130, 160, 255, 0.05);
+    --log-debug-text: #82A0FF;
+    --log-trace-border: #A8B0C3;
+    --log-trace-bg: rgba(168, 176, 195, 0.05);
+    --log-trace-text: #A8B0C3;
+    --log-timestamp-color: #5C6370;
+    --log-shadow: rgba(0,0,0,0.2);
+    --log-table-border: #2B3143;
+    --log-table-bg: #1F2535;
+    --log-table-header-bg: #232836;
+    --log-table-header-text: #38E8C6;
+    --log-expand-hint: #5C6370;
+}
+
+
+/* Light Theme */
+.light-theme {
+    /* Base Colors */
+    --bg: #ffffff;
+    --text: #333;
+    --editor-bg: #f0f0f0;
+    --output-bg: #f5f5f5;
+    --btn-bg: #ddd;
+    --btn-text: #000;
+    --caret: #222;
+    --header-bg: #f7f7f7;
+    --header-text: #222;
+    --footer-bg: #f0f0f0;
+    --footer-text: #222;
+    --line-number-bg: #f4f4f4;
+    --line-number-color: #aaa;
+    --line-number-border: #ddd;
+
+    /* Dev Panel Colors - Light Theme */
+    --dev-panel-bg: #ffffff;
+    --dev-panel-bg-secondary: #f5f5f5;
+    --dev-panel-bg-tertiary: #e5e5e5;
+    --dev-panel-text: #1f2937;
+    --dev-panel-text-secondary: #6b7280;
+    --dev-panel-border: #d1d5db;
+    --dev-panel-border-light: #e5e7eb;
+    --dev-panel-accent: #0ea5e9;
+    --dev-panel-accent-hover: #0c8fd6;
+    --dev-panel-secondary: #f59e0b;
+    --dev-panel-success: #10b981;
+    --dev-panel-warning: #f59e0b;
+    --dev-panel-error: #ef4444;
+    --dev-panel-info: #3b82f6;
+    --dev-panel-card-bg: rgba(255, 255, 255, 0.9);
+    --dev-panel-card-border: rgba(0, 0, 0, 0.1);
+    --dev-panel-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --dev-panel-scrollbar: #e5e7eb;
+    --dev-panel-scrollbar-thumb: #9ca3af;
+    --dev-panel-metric-bg: rgba(14, 165, 233, 0.1);
+    --dev-panel-metric-border: rgba(14, 165, 233, 0.3);
+    --dev-panel-hover: rgba(0, 0, 0, 0.05);
+    --dev-panel-active: rgba(14, 165, 233, 0.2);
+
+    /* Console Colors for Light Theme */
+    --console-bg: #ffffff;
+    --console-text: #333333;
+    --console-border: #e0e0e0;
+    --console-string-color: #22863a;
+    --console-string-quote-color: #22863a;
+    --console-number-color: #1c00cf;
+    --console-boolean-color: #1c00cf;
+    --console-null-color: #808080;
+    --console-undefined-color: #808080;
+    --console-function-color: #000000;
+    --console-object-color: #000000;
+    --console-symbol-color: #1c00cf;
+    --console-default-color: #333333;
+    --console-collapsed-color: #808080;
+    --console-property-color: #881391;
+    --console-bracket-color: #333333;
+    --console-expand-color: #333333;
+    --console-hover-bg: #f5f5f5;
+    --console-selection-bg: #e3f2fd;
+    --console-selection-text: #1c00cf;
+    --console-selection-border: #1c00cf;
+    --console-scrollbar: #e5e7eb;
+    --console-scrollbar-thumb: #9ca3af;
+
+    /* Log Output Colors for Light Theme */
+    --log-error-border: #dc2626;
+    --log-error-bg: #fef2f2;
+    --log-error-text: #dc2626;
+    --log-warn-border: #d97706;
+    --log-warn-bg: #fffbeb;
+    --log-warn-text: #d97706;
+    --log-info-border: #0891b2;
+    --log-info-bg: #f0f9ff;
+    --log-info-text: #0891b2;
+    --log-debug-border: #2563eb;
+    --log-debug-bg: #eff6ff;
+    --log-debug-text: #2563eb;
+    --log-trace-border: #7c3aed;
+    --log-trace-bg: #f5f3ff;
+    --log-trace-text: #7c3aed;
+    --log-timestamp-color: #6b7280;
+    --log-shadow: rgba(0,0,0,0.1);
+    --log-table-border: #e5e7eb;
+    --log-table-bg: #ffffff;
+    --log-table-header-bg: #f9fafb;
+    --log-table-header-text: #0891b2;
+    --log-expand-hint: #6b7280;
+
+
+    /* Code Syntax Tokens - Light Theme */
+    --token-keyword: #2980b9;
+    --token-string: #d4ac0d;
+    --token-func: #8e44ad;
+    --token-var: #27ae60;
+    --token-comment: #7f8c8d;
+}
+
+#theme-toggle {
+  transition: transform 0.5s ease, background 0.3s, color 0.3s;
+  font-size: 1.1rem;
+}
+
