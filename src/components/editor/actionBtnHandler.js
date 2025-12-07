@@ -30,19 +30,43 @@ export function themeToggleHandler() {
     });
 }
 
+// Simple code formatter
+function formatCode(code) {
+    try {
+        // Basic formatting: proper indentation and spacing
+        let formatted = code;
+        
+        // Remove extra blank lines
+        formatted = formatted.replace(/\n\s*\n\s*\n/g, '\n\n');
+        
+        // Add space after keywords
+        formatted = formatted.replace(/\b(if|for|while|function|const|let|var|return|catch|switch)\(/g, '$1 (');
+        
+        // Add space around operators
+        formatted = formatted.replace(/([^\s])([=+\-*/<>!&|]{1,3})([^\s=])/g, '$1 $2 $3');
+        
+        // Fix double spaces
+        formatted = formatted.replace(/  +/g, ' ');
+        
+        return formatted.trim();
+    } catch (err) {
+        console.warn('Formatting failed, copying original code:', err);
+        return code;
+    }
+}
+
 export function copyBtnHandler() {
     copyBtn.addEventListener("click", () => {
         const code = editor.innerText;
+        const formattedCode = formatCode(code);
         const originalContent = copyBtn.innerHTML;
 
         try {
-            navigator.clipboard.writeText(code).then(() => {
-                // copyBtn.innerHTML = checkIcon;
-                copyBtn.innerHTML = "Copied";
+            navigator.clipboard.writeText(formattedCode).then(() => {
+                copyBtn.innerHTML = "✓ Formatted & Copied";
                 copyBtn.classList.add("success");
                 const tracker = ensureExecutionTracker();
                 tracker?.recordUIAction('copy-code');
-                // spawnFloatingEmoji("📋", copyBtn);
 
                 // Revert back to original content after 1.5 seconds
                 setTimeout(() => {
