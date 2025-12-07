@@ -80,7 +80,10 @@ function handleCustomEnter() {
     const extraIndent = /[{[(]\s*$/.test(currentLine) ? "  " : "";
     insertTextAtSelection("\n" + indent + extraIndent);
 
-    syncLineNumbers();
-    scheduleCursorRefresh();
-    scheduleHighlightRefresh({immediate: true});
+    // Defer sync to allow DOM to normalize (fixes extra line number glitch)
+    setTimeout(() => {
+        syncLineNumbers();
+        scheduleCursorRefresh();
+        scheduleHighlightRefresh({immediate: true});
+    }, 0);
 }

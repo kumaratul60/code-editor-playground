@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>JavaScript Online Compiler</title>
+    <title>Write. Run. Iterate.</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="icon" href="/favicon.ico" type="image/png" />
 
       <link rel="stylesheet" href="./src/styles/styles.css" />
       <link rel="stylesheet" href="./src/styles/themes.css" />
@@ -47,7 +47,7 @@
                 </svg>
                 Copy
             </button>
-            <button id="clear-btn" class="btn btn-warning" aria-label="Clear Code" title="Clear">
+            <button id="header-clear-btn" class="btn btn-warning" aria-label="Clear Code" title="Clear">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                      class="icon icon-clear" viewBox="0 0 24 24">
                     <path d="M18.3 5.71a1 1 0 0 0-1.41
@@ -81,20 +81,9 @@
           </div>
         </div>
       </section>
-      <!--  <div class="vertical-divider"></div>-->
+      <div class="vertical-divider"></div>
       <section class="output-section" aria-label="Output">
-          <div class="panel-header">
-            <div class="panel-actions" aria-label="Console controls">
-                <div class="panel-filter-group" role="group" aria-label="Filter console output">
-                    <button class="panel-chip" data-console-filter="all" type="button">All</button>
-                    <button class="panel-chip" data-console-filter="log" type="button">Logs</button>
-                    <button class="panel-chip" data-console-filter="warn" type="button">Warnings</button>
-                    <button class="panel-chip" data-console-filter="error" type="button">Errors</button>
-                </div>
-                <button id="console-autoscroll" class="panel-chip panel-chip-toggle" type="button" aria-pressed="true">Auto-scroll: On</button>
-                <button id="console-clear" class="panel-chip panel-chip-danger" type="button" aria-label="Clear console">Clear</button>
-            </div>
-          </div>
+          <button id="console-clear-btn" class="panel-chip panel-chip-danger" title="Clear Console" style="display: none;">Clear</button>
           <div id="output" data-filter="all" aria-live="polite"></div>
       </section>
     </main>

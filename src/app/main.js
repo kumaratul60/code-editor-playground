@@ -29,7 +29,8 @@ import {
     highlighted,
     runBtn,
     output,
-    clearBtn
+    clearBtn,
+    initDomElements
 } from "@editor/domUtils.js";
 
 import "@editor/codeInsertion.js";
@@ -39,6 +40,7 @@ let undoRedoManager = null;
 
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
+    initDomElements();
     ensureExecutionTracker();
     initEditor();
     initUI();
@@ -82,10 +84,23 @@ function bindEvents() {
     document.querySelector(".editor-container")
         .addEventListener("scroll", syncScrollPosition);
 
-    // Focus editor on click
-    document.querySelector(".editor-section")
-        .addEventListener("click", () => {
-            if (document.activeElement !== editor) editor.focus();
+    // Focus editor on click in the container (empty space)
+    document.querySelector(".editor-container")
+        .addEventListener("click", (e) => {
+            if (e.target !== editor) {
+                // Prevent default header jump
+                editor.focus({ preventScroll: true });
+                
+                // If clicked below content, ensure cursor goes to end
+                // We let default browser behavior handle text selection if clicked ON text
+                // But for background clicks, focus is essential
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
         });
 
     // Input changes
@@ -118,7 +133,43 @@ function bindEvents() {
         runCode(editor, output);
     });
     copyBtnHandler();
-    clearBtn.addEventListener("click", clearEditor);
+    
+    // Header Clear Button: Clear Editor AND Output
+    if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            // 1. Clear Output FIRST (Guaranteed clear)
+            const outElement = document.getElementById("output");
+            if (outElement) {
+                outElement.innerHTML = "";
+            }
+            
+            // Update UI for output immediately
+            updateOutputStatus('idle');
+            if (window.updateConsoleClearBtn) window.updateConsoleClearBtn();
+
+            // 2. Clear Editor (Safeguarded)
+            try {
+                if (typeof clearEditor === 'function') {
+                    clearEditor(true);
+                } else {
+                    if (editor) editor.textContent = "";
+                }
+                
+                // Redundant check: if clearEditor didn't wipe text for some reason
+                if (editor && editor.textContent !== "") {
+                    editor.textContent = "";
+                    editor.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            } catch (e) {
+                console.error("Error clearing editor:", e);
+                // Fallback force clear if error occurred
+                if (editor) {
+                    editor.textContent = "";
+                    editor.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        });
+    }
 
     setupConsoleControls();
 }
@@ -128,43 +179,33 @@ function overrideConsole() {
     console.log = (...args) => {
         args.forEach(arg => logOutput(arg, output));
         originalLog.apply(console, args);
+        // Update button visibility after log
+        if (window.updateConsoleClearBtn) window.updateConsoleClearBtn();
     };
 }
 
 function setupConsoleControls() {
-    const filterButtons = document.querySelectorAll('[data-console-filter]');
-    const clearConsoleBtn = document.getElementById('console-clear');
-    const autoScrollBtn = document.getElementById('console-autoscroll');
+    // Console Clear Button: Clear Output ONLY
+    const consoleClearBtn = document.getElementById('console-clear-btn');
+    
+    // Toggle visibility helper
+    const updateClearBtnVisibility = () => {
+        if (consoleClearBtn) {
+            consoleClearBtn.style.display = output.children.length > 0 ? 'inline-flex' : 'none';
+        }
+    };
 
-    if (filterButtons.length) {
-        filterButtons.forEach((btn) => {
-            btn.addEventListener('click', () => {
-                output.dataset.filter = btn.dataset.consoleFilter || 'all';
-
-                filterButtons.forEach((button) => {
-                    button.classList.toggle('active', button === btn);
-                });
-            });
-        });
-    }
-
-    if (clearConsoleBtn) {
-        clearConsoleBtn.addEventListener('click', () => {
+    if (consoleClearBtn) {
+        consoleClearBtn.addEventListener('click', () => {
             clearOutput(output);
             updateOutputStatus('idle');
+            updateClearBtnVisibility();
         });
     }
-
-    if (autoScrollBtn) {
-        let isAutoScrollEnabled = true;
-        autoScrollBtn.addEventListener('click', () => {
-            isAutoScrollEnabled = !isAutoScrollEnabled;
-            autoScrollBtn.setAttribute('aria-pressed', String(isAutoScrollEnabled));
-            autoScrollBtn.textContent = isAutoScrollEnabled ? 'Auto-scroll: On' : 'Auto-scroll: Off';
-            setConsoleAutoScroll(isAutoScrollEnabled);
-            const tracker = ensureExecutionTracker();
-            tracker?.recordUIAction('toggle-autoscroll');
-        });
-        setConsoleAutoScroll(isAutoScrollEnabled);
-    }
+    
+    // Expose for overrideConsole to call
+    window.updateConsoleClearBtn = updateClearBtnVisibility;
+    
+    // Initial check
+    updateClearBtnVisibility();
 }

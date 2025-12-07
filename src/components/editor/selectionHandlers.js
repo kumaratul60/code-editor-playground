@@ -3,7 +3,6 @@ import {highlightCurrentLine} from "@shared/commonUtils.js";
 import {
     scrollToCursor,
     updateCursorMeta,
-    updateActiveLineIndicator,
     updateSelectionOverlay,
     clearSelectionOverlay
 } from "@shared/editor/indexHelper.js";
@@ -16,7 +15,6 @@ export function setupSelectionHandlers() {
                 scrollToCursor();
                 highlightCurrentLine(editor, lineNumbers);
                 updateCursorMeta();
-                updateActiveLineIndicator();
                 updateSelectionOverlay();
             });
         }
@@ -26,7 +24,6 @@ export function setupSelectionHandlers() {
         setTimeout(() => {
             highlightCurrentLine(editor, lineNumbers);
             updateCursorMeta();
-            updateActiveLineIndicator();
             updateSelectionOverlay();
         }, 0);
     });

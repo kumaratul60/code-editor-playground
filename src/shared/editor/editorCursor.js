@@ -168,8 +168,9 @@ export function updateActiveLineIndicator() {
     }
     lineHeight = lineHeight || 21;
     const paddingTop = parseFloat(computed.paddingTop) || 0;
-    const scrollTop = container.scrollTop;
-    const offset = Math.max(0, paddingTop + (line - 1) * lineHeight - scrollTop);
+    // Since the indicator is strictly positioned within the scrolling content (grid layout),
+    // we do NOT subtract scrollTop. It tracks with the content naturally.
+    const offset = Math.max(0, paddingTop + (line - 1) * lineHeight);
 
     indicator.style.opacity = document.activeElement === editor ? '1' : '0';
     indicator.style.height = `${lineHeight}px`;
@@ -181,6 +182,18 @@ export function scrollToCursor() {
     if (!selection.rangeCount) return;
 
     const range = selection.getRangeAt(0);
+    
+    // Skip auto-scroll for large selections (e.g., Ctrl+A)
+    // If the selection is not collapsed and spans significant content, don't scroll
+    if (!range.collapsed) {
+        const selectedText = range.toString();
+        const totalText = editor?.textContent || '';
+        // If more than 50% of content is selected, skip scrolling
+        if (selectedText.length > totalText.length * 0.5) {
+            return;
+        }
+    }
+    
     const rect = range.getBoundingClientRect();
     const container = document.querySelector('.editor-container');
 

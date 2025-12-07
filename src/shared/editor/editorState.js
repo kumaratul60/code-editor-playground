@@ -2,11 +2,9 @@ import { toggleRunButton, updateLineNumbers, getEditorPlainText } from "../commo
 import { clearBtn, copyBtn, editor, highlighted, lineNumbers, runBtn } from "@editor/domUtils.js";
 import { highlightEditorSyntax } from "../highlightSyntaxUtils.js";
 import {
-    preserveCursorPosition,
-    updateCursorMeta,
-    updateActiveLineIndicator
+    updateCursorMeta
 } from "./editorCursor.js";
-import { updateSelectionOverlay, clearSelectionOverlay } from "./selectionOverlay.js";
+import { clearSelectionOverlay } from "./selectionOverlay.js";
 import { ensureExecutionTracker } from "../runtime/executionTracker.js";
 
 let outputStatusResetTimeout = null;
@@ -22,9 +20,9 @@ export function optimizeEditor(targetEditor = editor) {
     targetEditor.setAttribute('data-enable-grammarly', 'false');
 
     targetEditor.style.userSelect = 'text';
-    targetEditor.style.whiteSpace = 'pre';
-    targetEditor.style.wordBreak = 'normal';
-    targetEditor.style.overflowWrap = 'normal';
+    targetEditor.style.whiteSpace = 'pre-wrap';
+    targetEditor.style.wordBreak = 'break-word';
+    targetEditor.style.overflowWrap = 'break-word';
     targetEditor.contentEditable = 'plaintext-only';
 }
 
@@ -32,23 +30,22 @@ export function syncLineNumbers() {
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
     updateCursorMeta();
-    updateActiveLineIndicator();
     syncScrollPosition();
 }
 
 export function syncScrollPosition() {
     const container = document.querySelector('.editor-container');
-    highlighted.scrollTop = container.scrollTop;
-    highlighted.scrollLeft = container.scrollLeft;
-    lineNumbers.scrollTop = container.scrollTop;
-    updateActiveLineIndicator();
-    updateSelectionOverlay();
+    // Only need to sync line numbers as other layers are in the same grid cell
+    // and scroll naturally with the container
+    if (lineNumbers && container) {
+        lineNumbers.scrollTop = container.scrollTop;
+    }
 }
 
 function renderHighlightLayer() {
-    preserveCursorPosition(() => {
-        highlightEditorSyntax(editor, highlighted);
-    }, editor);
+    // Only updates the separate highlight layer, no need to preserve cursor
+    // or block the editor operation.
+    highlightEditorSyntax(editor, highlighted);
 }
 
 export function scheduleHighlightRefresh(options = {}) {
@@ -78,6 +75,31 @@ export function updateOutputStatus(state = 'idle', label) {
         clearTimeout(outputStatusResetTimeout);
         outputStatusResetTimeout = null;
     }
+
+    const statusEl = document.querySelector('.panel-status');
+    if (!statusEl) return;
+
+    statusEl.setAttribute('data-state', state);
+
+    if (label) {
+        statusEl.textContent = label;
+    } else {
+        const defaultLabels = {
+            idle: 'IDLE',
+            running: 'RUNNING...',
+            success: 'SUCCESS',
+            error: 'ERROR'
+        };
+        statusEl.textContent = defaultLabels[state] || 'IDLE';
+    }
+
+    if (state === 'success' || state === 'error') {
+        outputStatusResetTimeout = setTimeout(() => {
+            statusEl.setAttribute('data-state', 'idle');
+            statusEl.textContent = 'IDLE';
+            outputStatusResetTimeout = null;
+        }, 3000);
+    }
 }
 
 export function toggleButtonVisibility() {
@@ -86,8 +108,8 @@ export function toggleButtonVisibility() {
     clearBtn.style.display = hasContent ? 'inline-block' : 'none';
 }
 
-export function clearEditor() {
-    if (!confirm("Clear the editor?")) {
+export function clearEditor(force = false) {
+    if (!force && !confirm("Clear the editor?")) {
         return;
     }
 
@@ -96,7 +118,7 @@ export function clearEditor() {
         manager.saveState('clear-before');
     }
 
-    editor.innerText = "";
+    editor.textContent = "";
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
     highlightEditorSyntax(editor, highlighted);

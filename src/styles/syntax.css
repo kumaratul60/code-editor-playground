@@ -1,28 +1,28 @@
 /* ===== syntax.css ===== */
 
 .keyword {
-  color: #2980b9;
+  color: var(--token-keyword);
   font-weight: bold;
 }
 .string {
-  color: #d4ac0d;
+  color: var(--token-string);
 }
 .comment {
-  color: #7f8c8d;
+  color: var(--token-comment);
   font-style: italic;
 }
 .literal {
-  color: #27ae60;
+  color: var(--token-var);
 }
 .function {
-  color: #8e44ad;
+  color: var(--token-func);
 }
 .regex {
-  color: #e67e22;
+  color: var(--token-string);
 }
 .template-expr {
-  background: #f0f0f0;
-  color: #d35400;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--token-var);
   border-radius: 3px;
   padding: 0 2px;
 }
