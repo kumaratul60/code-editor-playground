@@ -43,10 +43,24 @@ export function syncScrollPosition() {
     }
 }
 
+let lastHighlightedCode = null;
+
 function renderHighlightLayer() {
-    // Only updates the separate highlight layer, no need to preserve cursor
-    // or block the editor operation.
+    const currentCode = getEditorPlainText(editor);
+    
+    // Safety check to ensure we always have content if editor has content
+    // This helps prevent "black screen" issues where the highlight layer stays empty
+    if (!currentCode && editor.textContent) {
+        highlightEditorSyntax(editor, highlighted);
+        return;
+    }
+
+    if (currentCode === lastHighlightedCode) {
+        return; 
+    }
+    
     highlightEditorSyntax(editor, highlighted);
+    lastHighlightedCode = currentCode;
 }
 
 export function scheduleHighlightRefresh(options = {}) {

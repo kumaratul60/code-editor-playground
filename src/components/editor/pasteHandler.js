@@ -1,6 +1,6 @@
 import { editor } from "./domUtils.js";
 import {
-    // preserveCursorPosition,
+    insertTextAtSelection,
     scrollToCursor,
     syncLineNumbers,
     toggleButtonVisibility,
@@ -13,41 +13,38 @@ export function setupPasteHandler() {
 
     editor.addEventListener('paste', (e) => {
         e.preventDefault();
-        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const text = (e.clipboardData || window.clipboardData).getData('text');
 
-        if (!paste) return;
+        if (!text) return;
 
-        // Get the undo/redo manager instance and save state before paste
+        // Save state before paste
         const manager = window.undoRedoManager;
-        if (manager) {
-            manager.saveState('paste-before');
-        }
+        if (manager) manager.saveState('paste-before');
 
-        // Handle paste with proper cursor positioning at end
-        const sel = window.getSelection();
-        if (sel.rangeCount) {
-            const range = sel.getRangeAt(0);
-            range.deleteContents();
-            range.insertNode(document.createTextNode(paste));
+        // Use internal utility (avoids deprecated execCommand)
+        insertTextAtSelection(text);
 
-            // Move cursor to end of pasted content
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
+        // Notify other components about the change via input event
+        const inputEvent = new InputEvent('input', {
+            bubbles: true,
+            cancelable: true,
+            inputType: 'insertFromPaste',
+            data: text
+        });
+        editor.dispatchEvent(inputEvent);
 
-        // Immediate sync operations
+        // Immediate sync to ensure visual consistency
         syncLineNumbers();
-        scrollToCursor();
+        scheduleCursorRefresh ? scheduleCursorRefresh() : scrollToCursor();
+        scheduleHighlightRefresh({immediate: true});
         toggleButtonVisibility();
         clearSelectionOverlay();
-        scheduleHighlightRefresh({immediate: true});
 
         const tracker = ensureExecutionTracker();
         tracker?.recordUIAction('paste');
 
         if (manager) {
-            setTimeout(() => manager.saveState('paste-after'), 20);
+            setTimeout(() => manager.saveState('paste-after'), 100);
         }
     });
 

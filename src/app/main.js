@@ -115,10 +115,9 @@ function bindEvents() {
         ].includes(event.inputType);
 
         syncLineNumbers();
-    scheduleCursorRefresh();
-    scheduleHighlightRefresh({immediate: forceImmediateHighlight});
+        scheduleCursorRefresh();
+        scheduleHighlightRefresh({immediate: forceImmediateHighlight});
         toggleButtonVisibility();
-
     });
 
     // Paste, selection, keyboard handlers

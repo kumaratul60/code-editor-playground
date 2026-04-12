@@ -44,24 +44,24 @@ Perfect for:
 
 We tested the top JavaScript online editors to see how they compare. Here's what we found:
 
-| Feature                      | **This Editor** | Programiz  | CodeChef   | OneCompiler | CodePen    | JSFiddle   | NextLeap   |
-| ---------------------------- | --------------- | ---------- | ---------- | ----------- | ---------- | ---------- | ---------- |
-| **Real fetch() API Calls**   | ✅ **Works!**   | ❌ Blocked | ❌ Blocked | ❌ Blocked  | ❌ Blocked | ❌ Blocked | ❌ Blocked |
-| **Async/Await Support**      | ✅ Full         | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited  | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited |
-| **Network Requests**         | ✅ Unlimited    | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
-| **Developer Insights**       | ✅ Rich Features  | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
-| **Performance Analysis**     | ✅ Real-time    | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
-| **Security Scanner**         | ✅ Built-in     | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
-| **Code Complexity Analysis** | ✅ Big O        | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
-| **Hot Path Visualization**   | ✅ Yes          | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
-| **Smart Suggestions**        | ✅ AI-like      | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
-| **Dependency Graph**         | ✅ Yes          | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
-| **Memory Profiling**         | ✅ Real-time    | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
-| **No Account Required**      | ✅ Yes          | ✅ Yes     | ⚠️ Limited | ✅ Yes      | ⚠️ Limited | ⚠️ Limited | ✅ Yes     |
-| **Offline Support**          | ✅ Full\*       | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
-| **Load Time**                | ✅ Instant      | ⚠️ Slow    | ⚠️ Slow    | ⚠️ Slow     | ⚠️ Slow    | ⚠️ Slow    | ⚠️ Slow    |
-| **File Size**                | ✅ <1MB         | ❌ Heavy   | ❌ Heavy   | ❌ Heavy    | ❌ Heavy   | ❌ Heavy   | ❌ Heavy   |
-| **Dependencies**             | ✅ Zero         | ❌ Many    | ❌ Many    | ❌ Many     | ❌ Many    | ❌ Many    | ❌ Many    |
+| Feature                      | **This Editor**  | Programiz  | CodeChef   | OneCompiler | CodePen    | JSFiddle   | NextLeap   |
+| ---------------------------- | ---------------- | ---------- | ---------- | ----------- | ---------- | ---------- | ---------- |
+| **Real fetch() API Calls**   | ✅ **Works!**    | ❌ Blocked | ❌ Blocked | ❌ Blocked  | ❌ Blocked | ❌ Blocked | ❌ Blocked |
+| **Async/Await Support**      | ✅ Full          | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited  | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited |
+| **Network Requests**         | ✅ Unlimited     | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
+| **Developer Insights**       | ✅ Rich Features | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
+| **Performance Analysis**     | ✅ Real-time     | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
+| **Security Scanner**         | ✅ Built-in      | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
+| **Code Complexity Analysis** | ✅ Big O         | ❌ None    | ❌ None    | ❌ None     | ❌ None    | ❌ None    | ❌ None    |
+| **Hot Path Visualization**   | ✅ Yes           | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
+| **Smart Suggestions**        | ✅ AI-like       | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
+| **Dependency Graph**         | ✅ Yes           | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
+| **Memory Profiling**         | ✅ Real-time     | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
+| **No Account Required**      | ✅ Yes           | ✅ Yes     | ⚠️ Limited | ✅ Yes      | ⚠️ Limited | ⚠️ Limited | ✅ Yes     |
+| **Offline Support**          | ✅ Full\*        | ❌ No      | ❌ No      | ❌ No       | ❌ No      | ❌ No      | ❌ No      |
+| **Load Time**                | ✅ Instant       | ⚠️ Slow    | ⚠️ Slow    | ⚠️ Slow     | ⚠️ Slow    | ⚠️ Slow    | ⚠️ Slow    |
+| **File Size**                | ✅ <1MB          | ❌ Heavy   | ❌ Heavy   | ❌ Heavy    | ❌ Heavy   | ❌ Heavy   | ❌ Heavy   |
+| **Dependencies**             | ✅ Zero          | ❌ Many    | ❌ Many    | ❌ Many     | ❌ Many    | ❌ Many    | ❌ Many    |
 
 **\*Offline Support**: The editor works completely offline - open `index.html` directly from disk, no server needed. All features work except fetch() API calls (which obviously require internet to reach external APIs).
 
@@ -142,10 +142,10 @@ Memory Usage: 0.45 MB / 5 MB ✅
    Risk: Potential SSRF or data leakage
 ```
 
-#### **Hot Paths Visualization** 🔥
+#### **Hot Paths Visualization**
 
 ```
-🔥 Hot Paths
+Hot Paths
 Network Requests    85% (3200ms) ████████████████████
 DOM Operations      10% (380ms)  ████
 Computation          5% (190ms)  ██
@@ -210,10 +210,10 @@ getGitHubUser("github");
 async function sequentialCalls() {
   console.time("Sequential");
   const user1 = await fetch(
-    "https://jsonplaceholder.typicode.com/users/1"
+    "https://jsonplaceholder.typicode.com/users/1",
   ).then((r) => r.json());
   const user2 = await fetch(
-    "https://jsonplaceholder.typicode.com/users/2"
+    "https://jsonplaceholder.typicode.com/users/2",
   ).then((r) => r.json());
   console.timeEnd("Sequential");
   console.log("Users:", user1.name, user2.name);
@@ -352,7 +352,7 @@ Visual representation of your code's architecture
 
 Scans for common security issues
 
-#### 6. **Hot Paths** 🔥
+#### 6. **Hot Paths**
 
 Visual breakdown of where time is spent
 
@@ -434,7 +434,6 @@ src/
 - 📊 Performance profiler
 - 🔒 Security scanner
 
-
 ## 📝 License
 
 Open source - Use freely, modify, and distribute!
@@ -451,7 +450,6 @@ We welcome contributions! Please maintain the **no-dependency philosophy**.
 - No external libraries or frameworks
 - Clean, readable code
 - Comprehensive comments
-
 
 <div align="center">
 

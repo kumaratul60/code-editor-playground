@@ -147,14 +147,16 @@ export function updateLineNumbers(editor, lineNumbers) {
            
            if (height > 0) {
               existingSpans[lineIdx].style.height = `${height}px`;
-              existingSpans[lineIdx].style.lineHeight = 'normal'; // Allow standard layout inside
-              existingSpans[lineIdx].style.display = 'flex'; // Ensure height is respected
-              existingSpans[lineIdx].style.alignItems = 'center'; // Center text vertically? Or top? Usually top aligns.
-              existingSpans[lineIdx].style.justifyContent = 'flex-end'; // Right align numbers
-              // Reset line-height to match font if needed, but height handles spacing
+              existingSpans[lineIdx].style.lineHeight = 'normal';
+              existingSpans[lineIdx].style.display = 'flex';
+              existingSpans[lineIdx].style.justifyContent = 'flex-end';
            } else {
-               // Empty line or fail
-               existingSpans[lineIdx].style.height = ''; 
+               // Fallback: If measurement fails (e.g. during a fast paste),
+               // use the computed line height of the editor to avoid invisible numbers
+               const style = window.getComputedStyle(editor);
+               const fontSize = parseFloat(style.fontSize) || 14;
+               const lineHeight = parseFloat(style.lineHeight) || (fontSize * 1.5);
+               existingSpans[lineIdx].style.height = `${lineHeight}px`;
            }
 
             // Sync state for next loop

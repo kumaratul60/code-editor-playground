@@ -86,7 +86,7 @@ export function createHotPathsSection(runtimeMetrics, executionTime) {
     return `
         <div class="metric-card fade-in">
             <div class="metric-header">
-                <div class="metric-title">🔥 Hot Paths</div>
+                <div class="metric-title"> Hot Paths</div>
             </div>
             <div style="padding: 12px;">
                 ${paths.map(path => {
