@@ -44,9 +44,7 @@ export function clearSelectionOverlay() {
 
 export function updateSelectionOverlay() {
     if (!selectionOverlay) return;
-    const container = getContainer();
-    if (!container) return;
-
+    
     const selectionInfo = getSelectionGeometry();
     if (!selectionInfo) {
         clearSelectionOverlay();
@@ -54,14 +52,16 @@ export function updateSelectionOverlay() {
     }
 
     const { rects, isCollapsed } = selectionInfo;
-    const containerRect = container.getBoundingClientRect();
+    const editorRect = editor.getBoundingClientRect();
     const fragment = document.createDocumentFragment();
 
     rects.forEach(rect => {
         const block = document.createElement('div');
         block.className = isCollapsed ? 'cursor-block' : 'selection-block';
-        const top = rect.top - containerRect.top + container.scrollTop;
-        const left = rect.left - containerRect.left + container.scrollLeft;
+        
+        // Position relative to the editor element itself
+        const top = rect.top - editorRect.top;
+        const left = rect.left - editorRect.left;
 
         block.style.top = `${top}px`;
         block.style.left = `${left}px`;
