@@ -1,4 +1,17 @@
 /**
+ * Detect current OS from user agent
+ */
+export function getOSInfo() {
+    const ua = window.navigator.userAgent;
+    if (ua.indexOf("Win") !== -1) return "Windows";
+    if (ua.indexOf("Mac") !== -1) return "macOS";
+    if (ua.indexOf("Linux") !== -1) return "Linux";
+    if (ua.indexOf("Android") !== -1) return "Android";
+    if (ua.indexOf("like Mac") !== -1) return "iOS";
+    return "Unknown OS";
+}
+
+/**
  * Robustify content extraction from the editor.
  * Unified source of truth for text and line counting.
  */

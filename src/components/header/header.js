@@ -2,6 +2,7 @@ import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 import { runCode } from "@shared/runtime/index.js";
 import { copyBtnHandler } from "@editor/actionBtnHandler.js";
 import { clearEditor, updateOutputStatus } from "@shared/editor/indexHelper.js";
+import { toggleRunButton } from "@shared/commonUtils.js";
 
 /**
  * Initialize all header functionality
@@ -91,6 +92,10 @@ function setupClearButton(clearBtn, editor) {
                 editor.textContent = "";
                 editor.dispatchEvent(new Event('input', { bubbles: true }));
             }
+            
+            // Re-sync run button state
+            const rb = document.getElementById("run-btn");
+            if (rb) toggleRunButton(editor, rb);
         } catch (e) {
             console.error("Error clearing editor:", e);
         }

@@ -189,9 +189,9 @@ export function createSmartSuggestionsSection(code, analysis) {
     return `
         <div class="metric-card fade-in">
             <div class="metric-header">
-                <div class="metric-title">💡 Smart Suggestions</div>
+                <div class="metric-title">Smart Suggestions</div>
             </div>
-            <ul style="margin: 12px 0; padding-left: 28px; font-size: 13px; line-height: 1.8;">
+            <ul style="margin: 12px 0; padding-left: 28px; font-size: 12px; line-height: 1.6; opacity: 0.9;">
                 ${suggestions.map(s => `<li>${s}</li>`).join('')}
             </ul>
         </div>

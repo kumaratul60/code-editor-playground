@@ -1,0 +1,23 @@
+/**
+ * Centralized Z-Index Management
+ * Higher numbers overlay lower numbers.
+ */
+:root {
+    --z-base: 1;
+    --z-editor-highlight: 1;
+    --z-editor-selection: 2;
+    --z-editor-text: 3;
+    
+    --z-gutter: 10;
+    --z-console-controls: 10;
+    
+    --z-header: 100;
+    --z-footer: 1000;
+    
+    --z-tooltip: 1100;
+    
+    /* Dev Insights Feature */
+    --z-dev-sidebar: 9999;
+    --z-dev-panel: 10000;
+    --z-dev-toggle: 10001;
+}

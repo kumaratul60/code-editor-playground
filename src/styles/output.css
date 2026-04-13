@@ -51,6 +51,31 @@
     top: 12px;
     right: 16px;
     z-index: 10;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ff9f9f;
+    background: rgba(229, 62, 62, 0.1);
+    border: 1px solid rgba(229, 62, 62, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+#console-clear-btn:hover {
+    background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+    transform: translateY(-1px);
+}
+
+#console-clear-btn:active {
+    transform: translateY(0);
 }
 
 /* Panel chips and status */

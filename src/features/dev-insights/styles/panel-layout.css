@@ -1,0 +1,85 @@
+#dev-insights-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 0;
+    z-index: var(--z-dev-sidebar);
+    pointer-events: none; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#dev-insights-toggle-btn {
+    position: fixed;
+    right: 2px;
+    bottom: 52px;
+    width: 44px;
+    height: 44px;
+    background: var(--dev-panel-accent);
+    color: var(--dev-panel-bg);
+    cursor: pointer;
+    font-size: 26px;
+    outline: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px var(--dev-panel-shadow);
+    z-index: var(--z-dev-toggle);
+    pointer-events: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--dev-panel-border);
+}
+
+#dev-insights-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 340px;
+    height: 89vh;
+    background: var(--dev-panel-bg);
+    color: var(--dev-panel-text);
+    font-size: 14px;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    box-shadow: -4px 0 20px var(--dev-panel-shadow);
+    border-left: 1px solid var(--dev-panel-border);
+    padding: 0;
+    overflow-y: auto;
+    z-index: var(--z-dev-panel);
+    pointer-events: auto;
+    backdrop-filter: blur(20px);
+}
+
+#dev-insights-sidebar.open #dev-insights-panel {
+    display: flex;
+    flex-direction: column;
+    animation: slideInDev 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#dev-insights-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px var(--dev-panel-shadow);
+    background: var(--dev-panel-secondary);
+}
+
+#dev-insights-panel::-webkit-scrollbar {
+    width: 6px;
+    background: rgba(0,0,0,0.1);
+}
+#dev-insights-panel::-webkit-scrollbar-thumb {
+    background: var(--dev-panel-border);
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    #dev-insights-panel {
+        width: 100vw;
+        right: 0;
+    }
+    #dev-insights-toggle-btn {
+        right: 20px;
+        bottom: 80px;
+    }
+}

@@ -1,5 +1,3 @@
-/* src/styles/header.css */
-
 /* ===== HEADER SECTION ===== */
 header {
   display: flex;
@@ -7,13 +5,13 @@ header {
   align-items: center;
   padding: 10px 24px;
   background: var(--header-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   color: var(--header-text);
   border-bottom: 1px solid var(--border);
   z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 header h2 {
@@ -34,6 +32,7 @@ header h2 {
   align-items: center;
   gap: 8px;
 }
+
 /* Theme Toggle Button */
 .theme-toggle-btn {
   position: relative;

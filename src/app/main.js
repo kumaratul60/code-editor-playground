@@ -20,6 +20,8 @@ import { setupSelectionHandlers } from "@editor/selectionHandlers.js";
 import { setupKeyboardHandlers } from "@editor/keyboardHandlers.js";
 import { setupPasteHandler } from "@editor/pasteHandler.js";
 import { initHeader } from "@header/header.js";
+import { addDeveloperInsightsPanel } from "@features/dev-insights/addDeveloperInsightsPanel.js";
+import { analyzeCode } from "@features/dev-insights/analyzedCode.js";
 
 import {
     editor,
@@ -112,6 +114,7 @@ function bindEvents() {
         scheduleCursorRefresh();
         scheduleHighlightRefresh({immediate: forceImmediateHighlight});
         toggleButtonVisibility();
+        toggleRunButton(editor, runBtn);
     });
 
     // Paste, selection, keyboard handlers

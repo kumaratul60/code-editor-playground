@@ -1,9 +1,5 @@
 import { editor, selectionOverlay } from "@editor/domUtils.js";
 
-function getContainer() {
-    return document.querySelector('.editor-container');
-}
-
 function getSelectionGeometry() {
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || document.activeElement !== editor) {

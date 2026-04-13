@@ -1,8 +1,8 @@
 import { getStepStatusColor, generateUnifiedExecutionSteps } from "@features/dev-insights/detectionLogicHelper.js";
-import { analyzeCodePatterns } from "@features/dev-insights/detection/codeAnalyzer.js";
 import { createCodeStructureVisualization } from "@features/dev-insights/createCodeStructureVisualization.js";
 import { createExecutionTimeVisualization } from "@features/dev-insights/createExecutionTimeVisualization.js";
 import { getCodeFromEditor } from "@features/dev-insights/panel/panelControls.js";
+import { getOSInfo } from "@shared/commonUtils.js";
 import {
     createPerformanceWarningsSection,
     createSecurityScannerSection,
@@ -28,32 +28,68 @@ export function createPanelHTML(
 ) {
     return `
         <button id="dev-insights-toggle-btn" title="Toggle Developer Insights">
-            💡
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; stroke: var(--dev-panel-bg); fill: rgba(255,255,255,0.2);">
+                <path d="M9 18h6m-6 4h6m-7.5-10a5 5 0 1 1 9 0c0 2.5-2 3.5-2 5H8.5c0-1.5-2-2.5-2-5z"></path>
+            </svg>
         </button>
         
         <div id="dev-insights-panel">
             <div class="dev-panel-header">
                 <div class="dev-panel-title">
-                    🚀 Developer Insights
+                    Developer Insights
                 </div>
-                <button class="dev-panel-close" onclick="closeDevInsights()">×</button>
+                <button class="dev-panel-close">×</button>
             </div>
           <div class="dev-panel-content">
               
-                ${createComplexitySection(bigOComplexity, analysis)}
-                ${createCodeStructureVisualization(analysis, relationships)}
-                ${createDeepCodeAnalysisSection(scoreMetrics, runtimeMetrics, executionTime, efficiency, analysis, codeText)}
-                ${createPerformanceWarningsSection(codeText, runtimeMetrics)}
-                ${createSecurityScannerSection(codeText)}
-                ${createHotPathsSection(runtimeMetrics, executionTime)}
-                ${createMemoryProfilingSection(runtimeMetrics)}
-                ${createAPICallSummarySection(runtimeMetrics)}
-                ${createSmartSuggestionsSection(codeText, analysis)}
-                ${createDependencyGraphSection(codeText)}
-                ${createPerformanceBudgetSection(executionTime, runtimeMetrics)}
-                ${createExecutionTimeVisualization(hotspots)}
-                ${createExecutionFeedbackSection(runtimeMetrics, executionTime, runtimeTimeline, codeText)}
+                <div class="section-group">
+                    <div class="section-group-title">Environment</div>
+                    ${createEnvironmentSection(runtimeMetrics)}
+                </div>
+
+                <div class="section-group">
+                    <div class="section-group-title">Core Analysis</div>
+                    ${createComplexitySection(bigOComplexity, analysis)}
+                    ${createCodeStructureVisualization(analysis, relationships)}
+                    ${createDeepCodeAnalysisSection(scoreMetrics, runtimeMetrics, executionTime, efficiency, analysis, codeText)}
+                </div>
+
+                <div class="section-group">
+                    <div class="section-group-title">Runtime Performance</div>
+                    ${createPerformanceBudgetSection(executionTime, runtimeMetrics)}
+                    ${createAPICallSummarySection(runtimeMetrics)}
+                    ${createMemoryProfilingSection(runtimeMetrics)}
+                    ${createHotPathsSection(runtimeMetrics, executionTime)}
+                    ${createExecutionTimeVisualization(hotspots)}
+                    ${createExecutionFeedbackSection(runtimeMetrics, executionTime, runtimeTimeline, codeText)}
+                </div>
+
+                <div class="section-group">
+                    <div class="section-group-title">Security & Scanning</div>
+                    ${createSecurityScannerSection(codeText)}
+                    ${createPerformanceWarningsSection(codeText, runtimeMetrics)}
+                    ${createSmartSuggestionsSection(codeText, analysis)}
+                    ${createDependencyGraphSection(codeText)}
+                </div>
                 
+            </div>
+        </div>
+    `;
+}
+
+export function createEnvironmentSection(runtimeMetrics) {
+    const os = getOSInfo();
+    const heapUsed = runtimeMetrics.memory?.delta ? formatMb(runtimeMetrics.memory.delta) : '0 MB';
+
+    return `
+        <div class="metric-card fade-in" style="padding: 10px; display: flex; justify-content: space-between; font-size: 12px; border-style: dashed; opacity: 0.9;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 9px; text-transform: uppercase; color: var(--dev-panel-text-secondary); letter-spacing: 0.05em;">OS</span>
+                <span style="font-weight: 600; color: var(--dev-panel-accent);">${os}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
+                <span style="font-size: 9px; text-transform: uppercase; color: var(--dev-panel-text-secondary); letter-spacing: 0.05em;">Heap Used</span>
+                <span style="font-weight: 600; color: var(--dev-panel-secondary);">${heapUsed}</span>
             </div>
         </div>
     `;
@@ -61,19 +97,14 @@ export function createPanelHTML(
 
 export function createComplexitySection(bigOComplexity, analysis) {
     return `
-        <div class="metric-card fade-in">
-            <div class="metric-header complexity-header">
-                <div class="metric-title">Time & Space Complexity</div>
-                <div class="complexity-main-pills">
-                    <div class="complexity-pill" aria-label="Time complexity">
-                        <span>Time</span>
-                        <strong>${bigOComplexity.time}</strong>
-                    </div>
-                    <div class="complexity-pill" aria-label="Space complexity">
-                        <span>Space</span>
-                        <strong>${bigOComplexity.space}</strong>
-                    </div>
-                </div>
+        <div class="metric-card fade-in" style="padding: 10px; display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 9px; text-transform: uppercase; color: var(--dev-panel-text-secondary); letter-spacing: 0.05em;">Time Complexity</span>
+                <span style="font-weight: 600; color: var(--dev-panel-accent);">${bigOComplexity.time}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
+                <span style="font-size: 9px; text-transform: uppercase; color: var(--dev-panel-text-secondary); letter-spacing: 0.05em;">Space Complexity</span>
+                <span style="font-weight: 600; color: var(--dev-panel-accent);">${bigOComplexity.space}</span>
             </div>
         </div>
     `;
@@ -87,25 +118,21 @@ export function createDeepCodeAnalysisSection(
     analysis = {},
     codeText = ""
 ) {
-    const logVolume = totalLogEntries(runtimeMetrics.logs || {});
-    const performanceLabel = scoreMetrics.performance?.label || 'Balanced';
-    const stabilityLabel = scoreMetrics.stability?.label || 'Stable';
-    const memoryDelta = formatMb(runtimeMetrics.memory?.delta);
+    const safeCodeText = typeof codeText === 'string' ? codeText : "";
 
     // Code Analysis Metrics
     const metrics = {
-        consoleCount: (codeText.match(/console\.(log|error|warn|info|debug|table|group|time)/g) || []).length,
-        functions: analysis.functions?.total || 0,
-        closures: analysis.functions?.closures || 0,
-        higherOrderFunctions: analysis.functions?.higherOrder || 0,
-        throwStatements: (codeText.match(/throw\s+/g) || []).length,
-        globalVars: (codeText.match(/^(\s*|;)\s*(var|let|const)\s+[a-zA-Z_$][\w$]*\s*[=;]/gm) || []).length,
-        loopTypes: analysis.loops?.total || 0,
-        asyncPatterns: analysis.asyncPatterns?.total || 0,
-        codeSmells: analysis.codeSmells?.total || 0,
-        domOperations: analysis.domPatterns?.total || 0
-    };
-
+            consoleCount: (safeCodeText.match(/console\.(log|error|warn|info|debug|table|group|time)/g) || []).length,
+            functions: analysis.functions?.total || 0,
+            closures: analysis.functions?.closures || 0,
+            higherOrderFunctions: analysis.functions?.higherOrder || 0,
+            throwStatements: (safeCodeText.match(/throw\s+/g) || []).length,
+            globalVars: (safeCodeText.match(/^(\s*|;)\s*(var|let|const)\s+[a-zA-Z_$][\w$]*\s*[=;]/gm) || []).length,
+            loopTypes: analysis.loops?.total || 0,
+            asyncPatterns: analysis.asyncPatterns?.total || 0,
+            codeSmells: analysis.codeSmells?.total || 0,
+            domOperations: analysis.domPatterns?.total || 0
+        };
     const getColor = (value, thresholds = { good: 0, warn: 1, error: 5 }) => {
         if (value <= thresholds.good) return 'var(--dev-panel-success)';
         if (value <= thresholds.warn) return 'var(--dev-panel-warning)';
@@ -126,8 +153,6 @@ export function createDeepCodeAnalysisSection(
         { label: 'Code Smells', value: metrics.codeSmells, color: getColor(metrics.codeSmells, { good: 0, warn: 1 }) }
     ].filter(item => item.value > 0); // Hide zero values
 
-    const suggestions = buildProductivitySuggestions(analysis, codeText);
-
     return `
         <div class="metric-card fade-in">
             <div class="metric-header">
@@ -136,7 +161,7 @@ export function createDeepCodeAnalysisSection(
             
             <!-- Code Patterns Grid -->
             <div style="margin: 16px 0;">
-                <div style="font-weight: 600; font-size: 13px; margin-bottom: 10px; color: var(--dev-panel-accent);">📊 Code Patterns</div>
+                <div style="font-weight: 600; font-size: 13px; margin-bottom: 10px; color: var(--dev-panel-accent);">Code Patterns</div>
                 <div class="complexity-grid" style="
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
@@ -156,32 +181,8 @@ export function createDeepCodeAnalysisSection(
                 </div>
             </div>
 
-            <!-- Productivity Insights -->
-            <div style="margin: 16px 0;">
-                <div style="font-weight: 600; font-size: 13px; margin-bottom: 10px; color: var(--dev-panel-accent);">💡 Productivity Insights</div>
-                <ul style="margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; color: var(--dev-panel-text);">
-                    ${suggestions.map(item => `<li>${item}</li>`).join('')}
-                </ul>
-            </div>
         </div>
     `;
-}
-
-function buildProductivitySuggestions(analysis = {}, codeText = "") {
-    const tips = [];
-    if (analysis.functions > 12) {
-        tips.push('Break modules into smaller files – function count is trending high.');
-    }
-    if (analysis.loops > analysis.functions * 1.5) {
-        tips.push('Consider array helpers (map/filter) to reduce manual loops.');
-    }
-    if (analysis.asyncOps > 0 && !/try\s*\{[\s\S]*await/.test(codeText)) {
-        tips.push('Wrap awaited calls in try/catch to keep authoring friction low.');
-    }
-    if (!tips.length) {
-        tips.push('Structure looks balanced. Keep iterating with confidence.');
-    }
-    return tips.slice(0, 3);
 }
 
 function renderTimeline(timeline = []) {
@@ -191,14 +192,14 @@ function renderTimeline(timeline = []) {
 
     const getEventIcon = (type) => {
         const icons = {
-            'run-start': '🚀',
-            'network': '🌐',
-            'async': '⏰',
-            'dom': '📝',
-            'error': '❌',
-            'log': '📋'
+            'run-start': '→',
+            'network': 'net',
+            'async': 'tim',
+            'dom': 'dom',
+            'error': 'err',
+            'log': 'log'
         };
-        return icons[type] || '📌';
+        return icons[type] || '•';
     };
 
     return timeline.slice(-8).map((event, index) => {
@@ -249,10 +250,6 @@ function formatTimelineDetail(event = {}) {
     return JSON.stringify(event.detail).slice(0, 60);
 }
 
-function totalLogEntries(logs = {}) {
-    return Object.values(logs).reduce((sum, value) => sum + Number(value || 0), 0);
-}
-
 function sumObject(obj = {}) {
     return Object.values(obj).reduce((sum, value) => sum + Number(value || 0), 0);
 }
@@ -260,23 +257,7 @@ function sumObject(obj = {}) {
 function formatMb(bytes = 0) {
     if (!bytes) return 'steady';
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
 
-function asyncSummary(asyncOps = {}) {
-    const timeout = asyncOps.timeout || 0;
-    const promise = asyncOps.promise || 0;
-    if (!timeout && !promise) return 'Idle';
-    return `${promise} promise · ${timeout} timers`;
-}
-
-function networkBreakdown(network = {}) {
-    const total = network.total || 0;
-    const fetchCount = network.fetch || 0;
-    const xhrCount = network.xhr || 0;
-    return {
-        count: total,
-        detail: total ? `${fetchCount} fetch · ${xhrCount} xhr` : 'No requests'
-    };
 }
 
 export function createExecutionFeedbackSection(runtimeMetrics, executionTime, runtimeTimeline = [], codeText = getCodeFromEditor()) {
@@ -290,7 +271,7 @@ export function createExecutionFeedbackSection(runtimeMetrics, executionTime, ru
             </div>
             <div style="margin: 16px 0;">
                 <div style="font-weight: bold; color: var(--dev-panel-accent); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <span style="display: flex; align-items: center; gap: 8px;">⚡ Execution Flow</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">Execution Flow</span>
                     <span style="font-size: 12px; color: var(--dev-panel-secondary);">Total: ${realExecutionTime.toFixed(2)}ms</span>
                 </div>
                 <div class="execution-flow">
@@ -314,7 +295,7 @@ export function createExecutionFeedbackSection(runtimeMetrics, executionTime, ru
             </div>
             <div style="margin: 16px 0;">
                 <div style="font-weight: bold; color: var(--dev-panel-info); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
-                    🛰️ Runtime Timeline
+                    Runtime Timeline
                 </div>
                 <div style="font-size: 11px; opacity: 0.7; margin-bottom: 8px;">
                     Chronological events from code execution. Session run counts how many times you've run code in this browser session.
