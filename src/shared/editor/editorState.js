@@ -31,17 +31,9 @@ export function syncLineNumbers() {
     updateLineNumbers(editor, lineNumbers);
     toggleRunButton(editor, runBtn);
     updateCursorMeta();
-    syncScrollPosition();
 }
 
-export function syncScrollPosition() {
-    const container = document.querySelector('.editor-container');
-    // Only need to sync line numbers as other layers are in the same grid cell
-    // and scroll naturally with the container
-    if (lineNumbers && container) {
-        lineNumbers.scrollTop = container.scrollTop;
-    }
-}
+
 
 let lastHighlightedCode = null;
 

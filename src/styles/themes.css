@@ -210,8 +210,27 @@
     --token-comment: #7f8c8d;
 }
 
-#theme-toggle {
-  transition: transform 0.5s ease, background 0.3s, color 0.3s;
-  font-size: 1.1rem;
+/* Light Theme Enhancements */
+.light-theme {
+    /* Base Colors */
+    --bg: #f8fafc;
+    --text: #1e293b;
+    --editor-bg: #ffffff;
+    --output-bg: #f1f5f9;
+    --btn-bg: #e2e8f0;
+    --btn-text: #475569;
+    --caret: #0ea5e9;
+    --header-bg: rgba(255, 255, 255, 0.8);
+    --header-text: #0f172a;
+    --footer-bg: #ffffff;
+    --footer-text: #475569;
+    --line-number-bg: #f8fafc;
+    --line-number-color: #94a3b8;
+    --line-number-border: #e2e8f0;
+    --border: #e2e8f0;
+    --bg-alt: #f1f5f9;
+    --accent: #0ea5e9;
+    --accent-hover: #0284c7;
+    --accent-muted: rgba(14, 165, 233, 0.1);
 }
 

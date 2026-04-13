@@ -24,19 +24,7 @@ export function setupPasteHandler() {
         // Use internal utility (avoids deprecated execCommand)
         insertTextAtSelection(text);
 
-        // Notify other components about the change via input event
-        const inputEvent = new InputEvent('input', {
-            bubbles: true,
-            cancelable: true,
-            inputType: 'insertFromPaste',
-            data: text
-        });
-        editor.dispatchEvent(inputEvent);
-
-        // Immediate sync to ensure visual consistency
-        syncLineNumbers();
-        scheduleCursorRefresh ? scheduleCursorRefresh() : scrollToCursor();
-        scheduleHighlightRefresh({immediate: true});
+        // UI Helpers
         toggleButtonVisibility();
         clearSelectionOverlay();
 

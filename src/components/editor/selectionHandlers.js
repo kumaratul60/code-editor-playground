@@ -1,5 +1,4 @@
 import { editor, lineNumbers } from './domUtils.js';
-import {highlightCurrentLine} from "@shared/commonUtils.js";
 import {
     scrollToCursor,
     updateCursorMeta,
@@ -13,7 +12,6 @@ export function setupSelectionHandlers() {
         if (document.activeElement === editor) {
             requestAnimationFrame(() => {
                 scrollToCursor();
-                highlightCurrentLine(editor, lineNumbers);
                 updateCursorMeta();
                 updateSelectionOverlay();
             });
@@ -22,7 +20,6 @@ export function setupSelectionHandlers() {
 
     editor.addEventListener("click", () => {
         setTimeout(() => {
-            highlightCurrentLine(editor, lineNumbers);
             updateCursorMeta();
             updateSelectionOverlay();
         }, 0);

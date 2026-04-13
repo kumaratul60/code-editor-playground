@@ -8,6 +8,7 @@
     <link rel="icon" href="/favicon.ico" type="image/png" />
 
       <link rel="stylesheet" href="./src/styles/styles.css" />
+      <link rel="stylesheet" href="./src/styles/header.css" />
       <link rel="stylesheet" href="./src/styles/themes.css" />
       <link rel="stylesheet" href="./src/styles/syntax.css" />
       <link rel="stylesheet" href="./src/styles/btnStyles.css" />
@@ -20,6 +21,7 @@
         "imports": {
           "@app/": "./src/app/",
           "@components/": "./src/components/",
+          "@header/": "./src/components/header/",
           "@editor/": "./src/components/editor/",
           "@shared/": "./src/shared/",
           "@features/": "./src/features/"
@@ -31,47 +33,64 @@
   <body class="dark-theme">
     <header>
       <h2>JavaScript Online Compiler</h2>
-        <nav class="controls" aria-label="Editor Controls">
-            <button id="theme-toggle" class="btn btn-icon btn-secondary" aria-label="Toggle Theme" title="Toggle Theme">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
-            </button>
-            <div class="btn-separator"></div>
-            <button id="run-btn" class="btn btn-icon btn-primary" aria-label="Run Code" title="Run Code (Ctrl+Enter)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5.14v14l11-7-11-7z"/>
-                </svg>
-            </button>
-            <button id="copy-btn" class="btn btn-icon btn-success" aria-label="Copy Code" title="Copy Code">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4H8c-1.1 0-1.99.9-1.99 2L6 21c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V11l-6-6zM8 21V7h6v5h5v9H8z"/>
-                </svg>
-            </button>
-            <button id="header-clear-btn" class="btn btn-icon btn-warning" aria-label="Clear Code" title="Clear All">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
-            </button>
-        </nav>
+      <nav class="controls" aria-label="Editor Controls">
+        <button id="theme-toggle" class="btn btn-icon theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Theme">
+          <div class="toggle-icon-wrapper">
+            <!-- Sun Icon -->
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <!-- Moon Icon -->
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </div>
+        </button>
+        <div class="btn-separator"></div>
+        <button id="run-btn" class="btn btn-icon btn-primary" aria-label="Run Code" title="Run Code (Ctrl+Enter)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5.14v14l11-7-11-7z"/>
+          </svg>
+        </button>
+        <button id="copy-btn" class="btn btn-icon btn-success" aria-label="Copy Code" title="Copy Code">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm-1 4H8c-1.1 0-1.99.9-1.99 2L6 21c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V11l-6-6zM8 21V7h6v5h5v9H8z"/>
+          </svg>
+        </button>
+        <button id="header-clear-btn" class="btn btn-icon btn-warning" aria-label="Clear Code" title="Clear All">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </nav>
     </header>
     <main class="playground-wrapper">
       <section class="editor-section">
         <div class="editor-wrapper">
-          <div id="line-numbers"></div>
           <div class="editor-container">
-            <div id="active-line-indicator" aria-hidden="true"></div>
-            <pre id="highlighted-code"></pre>
-            <div id="selection-overlay" aria-hidden="true"></div>
-            <div
-              id="code-text"
-              contenteditable="true"
-              tabindex="0"
-              role="textbox"
-              aria-label="JavaScript code editor"
-              aria-multiline="true"
-              data-placeholder="Type JavaScript or Fetch API calls here..."
-            ></div>
+            <div id="line-numbers"></div>
+            <div class="editor-content-layers">
+              <div id="active-line-indicator" aria-hidden="true"></div>
+              <pre id="highlighted-code"></pre>
+              <div id="selection-overlay" aria-hidden="true"></div>
+              <div
+                id="code-text"
+                contenteditable="true"
+                tabindex="0"
+                role="textbox"
+                aria-label="JavaScript code editor"
+                aria-multiline="true"
+                data-placeholder="Type JavaScript or Fetch API calls here..."
+              ></div>
+            </div>
           </div>
         </div>
       </section>

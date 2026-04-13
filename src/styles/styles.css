@@ -32,28 +32,6 @@ body {
   overflow: hidden;
 }
 
-/* ===== HEADER SECTION ===== */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px 12px 16px;
-  background: var(--header-bg);
-  color: var(--header-text);
-  border-bottom: 1px solid #222;
-}
-
-header h2 {
-  font-size: 1.5rem;
-  margin: 0;
-  flex: 1 1 auto;
-  background: linear-gradient(to right, #ff8a00, #e52e71);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
 /* ===== MAIN LAYOUT ===== */
 .playground-wrapper {
   flex: 1; 
@@ -76,34 +54,64 @@ header h2 {
 
 /* ===== EDITOR SECTION ===== */
 .editor-wrapper {
-  display: grid;
-  grid-template-columns: min-content 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
   flex: 1; /* Fill available height in flex container */
   border: none;
-  background: var(--editor-bg, #1c1c1c);
+  background: var(--editor-bg);
   border-radius: 8px 8px 0 0;
   box-shadow: none;
+  overflow: hidden;
+}
+
+/* Editor container (layers code and highlight) */
+.editor-container {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow: auto; 
+    position: relative;
+    isolation: isolate;
+    cursor: text;
 }
 
 /* Line numbers */
 #line-numbers {
+  position: sticky;
+  left: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  background: transparent;
+  background: var(--editor-bg); 
   color: var(--line-number-color);
-  padding: var(--editor-padding) 8px var(--editor-padding) 0;
+  padding: var(--editor-padding) 12px var(--editor-padding) 8px;
   user-select: none;
-  min-width: 36px;
-  border-right: none; /* Removed border */
+  min-width: 40px;
+  border-right: 1px solid var(--border);
   font-size: 14px;
   line-height: var(--editor-line-height);
-  overflow: hidden; /* Scroll is synced via JS */
-  height: 100%;
+  overflow: visible; 
   box-sizing: border-box;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+#line-numbers span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#line-numbers span.active-line {
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--accent-muted);
+  border-radius: 4px 0 0 4px;
 }
 
 #line-numbers::-webkit-scrollbar {
@@ -113,43 +121,19 @@ header h2 {
   scrollbar-width: none;
 }
 
-/* Editor container (layers code and highlight) */
-.editor-container {
+/* Container for all editor layers sitting next to the gutter */
+.editor-content-layers {
+    flex: 1; 
     display: grid;
-    flex: 1 1 0;
-    min-width: 0;
-    overflow: auto; /* Shows scrollbar only when needed */
+    grid-template-columns: 100%;
     position: relative;
-    /* Create stacking context */
-    isolation: isolate;
-    cursor: text;
-    scroll-behavior: smooth; 
+    min-width: 0;
 }
 
-/* Custom Scrollbar for Editor */
-.editor-container::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-.editor-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 6px;
-}
-
-.editor-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-.editor-container {
-    scrollbar-width: auto;
-    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
-}
-
-/* Ensure all layers sit on top of each other in the first grid cell */
-.editor-container > * {
+.editor-content-layers > * {
     grid-area: 1 / 1;
-    width: 100%; /* Ensure they fill the track */
-    min-height: 100%; /* Fill viewport if empty */
+    width: 100%;
+    min-height: 100%;
     box-sizing: border-box;
 }
 
@@ -158,13 +142,16 @@ header h2 {
 #highlighted-code {
     font-family: inherit;
     font-size: 14px;
-    padding: var(--editor-padding);
+    padding: var(--editor-padding) 20px;
     background: transparent;
     outline: none;
-    white-space: pre-wrap;
+    white-space: pre-wrap; 
     word-break: break-word;
-    overflow-wrap: break-word; /* Ensure long words break */
+    overflow-wrap: break-word;
     margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: var(--editor-line-height);
     
     /* Font rendering */
     font-variant-ligatures: normal;
@@ -178,12 +165,7 @@ header h2 {
     /* Ensure it doesn't block interactions */
     pointer-events: none;
     color: var(--text);
-    /* Allow it to grow naturally with the grid/content */
-    width: 100%;
-    min-width: 100%;
-    min-height: 100%;
-    overflow: visible;
-    height: 100%; /* Stretch to fill the grid track sized by code-text */
+    overflow: hidden;
 }
 
 #selection-overlay {
@@ -233,7 +215,7 @@ header h2 {
     z-index: 3;
     color: transparent;
     background: transparent;
-    caret-color: #ffffff;
+    caret-color: var(--caret, #ffffff);
     /* Allow typing */
     pointer-events: auto;
     user-select: text;
@@ -247,17 +229,23 @@ header h2 {
     width: 100%;
     min-width: 100%;
     overflow: visible;
-    padding-bottom: 40px; /* Extra space to see last line clearly */
+    padding-bottom: 0; 
     height: auto;
+}
+
+#code-text:focus::before {
+    content: none;
 }
 
 #code-text:empty::before {
     content: attr(data-placeholder);
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--text-secondary);
+    opacity: 0.4;
     pointer-events: none;
     position: absolute;
     top: var(--editor-padding);
-    left: var(--editor-padding);
+    left: 20px;
+    font-style: italic;
 }
 
 #active-line-indicator {
@@ -289,8 +277,10 @@ header h2 {
 }
 
 #line-numbers span.active-line {
-  color: var(--text);
-  font-weight: bold;
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--accent-muted);
+  border-radius: 4px 0 0 4px;
 }
 
 /* Vertical Divider */
@@ -447,8 +437,9 @@ header h2 {
 }
 
 #output:empty::before {
-  content: "Console output will appear here";
-  color: rgba(255, 255, 255, 0.35);
+  content: "Console output will appear here...";
+  color: var(--text-secondary);
+  opacity: 0.4;
   font-style: italic;
 }
 
@@ -484,6 +475,8 @@ footer {
   bottom: 0;
   left: 0;
   z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 #summary-bar {
@@ -495,7 +488,8 @@ footer {
   color: var(--footer-text);
   padding: 8px 32px;
   font-size: 14px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border);
+  opacity: 0.95;
 }
 
 #exec-time {

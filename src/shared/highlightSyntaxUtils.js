@@ -4,35 +4,36 @@ import { getEditorPlainText } from "./commonUtils.js";
 // Syntax Highlight Pipeline
 // ==============================
 
-// Performance constants
-const MAX_HIGHLIGHT_SIZE = 50000; // Max characters to highlight (50KB)
-const PERFORMANCE_MODE_THRESHOLD = 20000; // Switch to performance mode above this size
+const MAX_HIGHLIGHT_SIZE = 50000;
+const PERFORMANCE_MODE_THRESHOLD = 20000;
 
 export function highlightSyntax(code) {
-    // Performance optimization: Skip highlighting for extremely large content
     if (code.length > MAX_HIGHLIGHT_SIZE) {
-        return escapeHtml(code); // Just escape HTML, no highlighting
+        return escapeHtml(code);
     }
 
-    placeholders = []; // reset before each run
+    placeholders = [];
     placeholderIndex = 0;
 
-    // Performance mode for large content
     if (code.length > PERFORMANCE_MODE_THRESHOLD) {
         return highlightSyntaxPerformanceMode(code);
     }
 
-    // Standard highlighting for normal-sized content
-    code = extractStrings(code); // Template literals + strings
+    // Step 1: Extract and placeholder items that shouldn't be touched by keyword highlighting
+    code = extractStrings(code);
     code = extractComments(code);
     code = highlightRegexLiterals(code);
+    
+    // Step 2: Highlight core language features
     code = highlightKeywords(code);
     code = highlightLiterals(code);
     code = highlightGlobals(code);
     code = highlightFunctionCalls(code);
+    
+    // Step 3: Bracket highlighting - done on character level but aware of existing spans
     code = highlightBrackets(code);
 
-    // Restore placeholders
+    // Step 4: Restore placeholders
     for (const { token, html } of placeholders) {
         code = code.replace(token, html);
     }
@@ -49,25 +50,20 @@ const makePlaceholder = (type, content) => {
   return token;
 };
 
-// const extractStrings = (input) =>
-//   input.replace(/(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g, (match) => makePlaceholder("string", match));
-
 const extractStrings = (input) =>
     input
         .replace(/`(?:\\[\s\S]|[^\\`])*`/g, (match) => {
-          // Handle `${...}` interpolations - Fixed to prevent recursion
           const inner = match.replace(/\$\{([^}]*)\}/g, (_, expr) => {
-            // Simple highlighting without recursion to prevent text duplication
             const simpleHighlighted = expr
                 .replace(/\b(let|const|var|function|return|if|else|for|while|class|async|await|true|false|null|undefined)\b/g, '<span class="keyword">$1</span>')
                 .replace(/\b\d+(?:\.\d+)?\b/g, '<span class="number">$&</span>')
                 .replace(/(['"`])(?:\\.|(?!\1)[^\\\n])*\1/g, '<span class="string">$&</span>')
             return `\${<span class="template-expr">${simpleHighlighted}</span>}`;
           });
-
           return makePlaceholder("string", inner);
         })
         .replace(/(['"])(?:\\.|(?!\1)[^\\\n])*\1/g, (match) => makePlaceholder("string", match));
+
 const extractComments = (input) =>
   input.replace(/\/\/[^\n]*/g, (match) => makePlaceholder("comment", match));
 
@@ -101,12 +97,25 @@ const highlightBrackets = (input) => {
   const closers = ")]}";
   const pairs = { "(": ")", "[": "]", "{": "}" };
   const stack = [];
-  const chars = input.split("");
+  
+  // We splitter only non-span parts preferably, but for simplicity here 
+  // we ensure we don't break existing span tags
+  const chars = [];
+  let inTag = false;
+  let currentTag = "";
+  
+  for(let i=0; i<input.length; i++) {
+    if (input[i] === '<') { inTag = true; currentTag += '<'; }
+    else if (input[i] === '>') { inTag = false; currentTag += '>'; chars.push({v: currentTag, t: true}); currentTag = ""; }
+    else if (inTag) { currentTag += input[i]; }
+    else { chars.push({v: input[i], t: false}); }
+  }
 
   const tagWrap = (ch, level) => `<span class="bracket-depth-${(level % 5) + 1}">${ch}</span>`;
 
   for (let i = 0; i < chars.length; i++) {
-    const ch = chars[i];
+    if (chars[i].t) continue;
+    const ch = chars[i].v;
 
     if (openers.includes(ch)) {
       stack.push({ char: ch, index: i });
@@ -114,71 +123,46 @@ const highlightBrackets = (input) => {
       const last = stack.pop();
       if (last && pairs[last.char] === ch) {
         const level = stack.length;
-        chars[last.index] = tagWrap(chars[last.index], level);
-        chars[i] = tagWrap(chars[i], level);
+        chars[last.index].v = tagWrap(chars[last.index].v, level);
+        chars[i].v = tagWrap(chars[i].v, level);
       }
     }
   }
 
-  return chars.join("");
+  return chars.map(c => c.v).join("");
 };
 
-// Performance mode with simplified highlighting
 function highlightSyntaxPerformanceMode(code) {
-    // Only highlight the most essential elements for performance
     code = escapeHtml(code);
-
-    // Simplified keyword highlighting (most common keywords only)
-    code = code.replace(
-        /\b(function|const|let|var|if|else|return|class|async|await)\b/g,
-        '<span class="keyword">$1</span>'
-    );
-
-    // Simplified string highlighting
-    code = code.replace(
-        /(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g,
-        '<span class="string">$1</span>'
-    );
-
-    // Simplified comment highlighting
-    code = code.replace(
-        /\/\/[^\n]*/g,
-        '<span class="comment">$1</span>'
-    );
-
+    code = code.replace(/\b(function|const|let|var|if|else|return|class|async|await)\b/g, '<span class="keyword">$1</span>');
+    code = code.replace(/(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g, '<span class="string">$1</span>');
+    code = code.replace(/\/\/[^\n]*/g, '<span class="comment">$1</span>');
     return code;
 }
 
-// Helper function to escape HTML
 function escapeHtml(text) {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 export function highlightEditorSyntax(editor, highlighted) {
-    const safeCode = getEditorPlainText(editor)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+    if (!highlighted) return;
 
-    if (!highlighted) {
-        return;
-    }
+    // Source of truth: Canonical Extraction
+    const code = getEditorPlainText(editor);
+    
+    // Safety: Always escape HTML before highlighting to prevent XSS and DOM hijacking
+    const safeCode = escapeHtml(code);
 
-    // Performance check: Show loading indicator for large content
+    const applyToLayer = (html) => {
+        // Trailing space/br ensures the final line is always measurable and visible
+        const finalHTML = html.endsWith('\n') ? html + ' ' : html;
+        highlighted.innerHTML = finalHTML + "<br />";
+    };
+
     if (safeCode.length > PERFORMANCE_MODE_THRESHOLD) {
-        highlighted.innerHTML = '<span class="loading">Highlighting large content...</span>';
-
-        // Use requestAnimationFrame for non-blocking processing
-        requestAnimationFrame(() => {
-            const highlightedHTML = highlightSyntax(safeCode);
-            highlighted.innerHTML = highlightedHTML + "<br />";
-        });
+        highlighted.innerHTML = '<span class="loading">Highlighting...</span>';
+        requestAnimationFrame(() => applyToLayer(highlightSyntax(safeCode)));
     } else {
-        // Standard processing for normal-sized content
-        const highlightedHTML = highlightSyntax(safeCode);
-        highlighted.innerHTML = highlightedHTML + "<br />";
+        applyToLayer(highlightSyntax(safeCode));
     }
 }

@@ -15,6 +15,7 @@ import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 
 export function setupKeyboardHandlers() {
     editor.addEventListener('beforeinput', (e) => {
+        // Intercept Enter to handle custom indentation
         if (e.inputType === 'insertParagraph' && !e.ctrlKey && !e.metaKey) {
             e.preventDefault();
             handleCustomEnter();
@@ -74,16 +75,21 @@ function handleCustomEnter() {
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount) return;
 
-    const currentLine = getCurrentLineText(selection);
-    const indentMatch = currentLine.match(/^\s*/);
+    // Use canonical extraction for consistent indentation detection
+    const range = selection.getRangeAt(0);
+    const preRange = range.cloneRange();
+    preRange.selectNodeContents(editor);
+    preRange.setEnd(range.startContainer, range.startOffset);
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.appendChild(preRange.cloneContents());
+    const textBefore = getEditorPlainText(tempDiv);
+    const lastLine = textBefore.split('\n').pop() || "";
+    
+    const indentMatch = lastLine.match(/^[ \t]*/);
     const indent = indentMatch ? indentMatch[0] : "";
-    const extraIndent = /[{[(]\s*$/.test(currentLine) ? "  " : "";
+    const extraIndent = /[{[(]\s*$/.test(lastLine) ? "    " : "";
+    
+    // insertTextAtSelection handles the 'input' event dispatch to trigger UI sync
     insertTextAtSelection("\n" + indent + extraIndent);
-
-    // Defer sync to allow DOM to normalize (fixes extra line number glitch)
-    setTimeout(() => {
-        syncLineNumbers();
-        scheduleCursorRefresh();
-        scheduleHighlightRefresh({immediate: true});
-    }, 0);
 }

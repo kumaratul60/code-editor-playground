@@ -1,0 +1,194 @@
+/* src/styles/header.css */
+
+/* ===== HEADER SECTION ===== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  background: var(--header-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--header-text);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  margin-right: auto;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #38E8C6 0%, #82A0FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--btn-bg);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--accent-muted);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px) rotate(8deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-icon-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sun-icon, .moon-icon {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 0;
+  left: 0;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+/* Glass effect for all header buttons */
+.controls .btn-icon {
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.light-theme .controls .btn-icon {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.controls .btn-icon:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Colored Button Overrides */
+#run-btn {
+    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(0, 210, 255, 0.4) !important;
+}
+
+#run-btn:hover {
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.5) !important;
+    transform: translateY(-2px) scale(1.1) !important;
+}
+
+#copy-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(56, 239, 125, 0.4) !important;
+}
+
+#copy-btn:hover {
+    box-shadow: 0 0 15px rgba(56, 239, 125, 0.5) !important;
+    transform: translateY(-2px) scale(1.1) !important;
+}
+
+#header-clear-btn {
+    background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 75, 43, 0.4) !important;
+}
+
+#header-clear-btn:hover {
+    box-shadow: 0 0 15px rgba(245, 87, 108, 0.5) !important;
+    transform: translateY(-2px) scale(1.1) !important;
+}
+
+.sun-icon, .moon-icon {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+/* Default state = Dark Mode (No light-theme class) */
+.sun-icon {
+  opacity: 0;
+  transform: scale(0) rotate(90deg);
+}
+
+.moon-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+/* Light Mode state (Body has light-theme class) */
+.light-theme .sun-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.light-theme .moon-icon {
+  opacity: 0;
+  transform: scale(0) rotate(-90deg);
+}
+
+/* Visual separator */
+.btn-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    margin: 0 8px;
+    opacity: 0.5;
+}
+
+.light-theme .btn-separator {
+    background: #cbd5e1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 16px;
+    }
+
+    .controls {
+        justify-content: center;
+        width: 100%;
+    }
+}

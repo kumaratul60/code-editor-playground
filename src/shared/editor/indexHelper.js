@@ -12,7 +12,6 @@ export {
 export {
     optimizeEditor,
     syncLineNumbers,
-    syncScrollPosition,
     scheduleHighlightRefresh,
     updateOutputStatus,
     toggleButtonVisibility,

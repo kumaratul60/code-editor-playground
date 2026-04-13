@@ -55,17 +55,6 @@
     color: white;
 }
 
-/* Hover effects */
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
-    border-color: rgba(255, 255, 255, 0.45);
-}
-
-.btn:hover::before {
-    opacity: 1;
-}
-
 /* Active state */
 .btn:active {
     transform: translateY(0);
@@ -87,21 +76,14 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Button shine effect */
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: transform 0.5s, opacity 0.3s;
-    opacity: 0;
-    transform: translateX(-120%);
-    pointer-events: none;
+/* Hover effects */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
+/* Button styles */
 .btn::after {
     content: '';
     position: absolute;
@@ -115,18 +97,6 @@
 
 .btn:hover::after {
     opacity: 0;
-}
-
-.controls svg {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-    transition: opacity 0.25s ease;
-}
-
-.btn:hover::before {
-    transform: translateX(120%);
-    opacity: 1;
 }
 
 .btn:focus-visible {
@@ -205,102 +175,6 @@
 .btn-icon svg {
     width: 20px;
     height: 20px;
-}
-
-/* Visual separator */
-.btn-separator {
-    width: 1px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.15);
-    margin: 0 4px;
-}
-
-/* Enhanced hover for icon buttons */
-.btn-icon:hover {
-    transform: translateY(-3px) scale(1.08);
-}
-
-/* Pulse for Run button */
-.btn-icon.btn-primary {
-    animation: subtle-pulse 3s ease-in-out infinite;
-}
-
-@keyframes subtle-pulse {
-    0%, 100% { box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
-    50% { box-shadow: 0 4px 16px rgba(102, 126, 234, 0.6); }
-}
-
-/* Theme toggle rotation */
-.btn-icon#theme-toggle {
-    font-size: 20px;
-}
-
-.btn-icon#theme-toggle:hover {
-    transform: translateY(-3px) scale(1.08) rotate(15deg);
-}
-
-/* Run button styling */
-.btn-icon#run-btn {
-    font-size: 16px;
-}
-
-/* Responsive button styles */
-@media (max-width: 768px) {
-    .btn {
-        min-width: 100px;
-        padding: 10px 16px;
-        height: 40px;
-        font-size: 13px;
-    }
-
-    .btn svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .controls {
-        gap: 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .btn {
-        min-width: 80px;
-        padding: 8px 12px;
-        height: 36px;
-        font-size: 12px;
-        gap: 4px;
-    }
-
-    .btn svg {
-        width: 14px;
-        height: 14px;
-    }
-
-    .controls {
-        gap: 6px;
-        flex-wrap: wrap;
-    }
-}
-
-/* Floating emoji animation */
-@keyframes floatUp {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-30px) scale(1.2);
-    }
-}
-
-.floating-emoji {
-    position: absolute;
-    pointer-events: none;
-    font-size: 20px;
-    animation: floatUp 1s ease-out forwards;
-    z-index: 1000;
 }
 
 /* Button loading state */

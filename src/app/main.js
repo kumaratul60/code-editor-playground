@@ -1,14 +1,12 @@
 import { toggleRunButton, updateLineNumbers } from "@shared/commonUtils.js";
 import { highlightEditorSyntax } from "@shared/highlightSyntaxUtils.js";
-import { logOutput, runCode, clearOutput, setConsoleAutoScroll } from "@shared/runtime/index.js";
+import { logOutput,  clearOutput } from "@shared/runtime/index.js";
 import { ensureExecutionTracker } from "@shared/runtime/executionTracker.js";
 import {
     focusEditorAtEnd,
     optimizeEditor,
     scrollToCursor,
     syncLineNumbers,
-    syncScrollPosition,
-    clearEditor,
     toggleButtonVisibility,
     updateCursorMeta,
     updateActiveLineIndicator,
@@ -21,7 +19,7 @@ import UndoRedoManager from "@shared/undoRedoManager.js";
 import { setupSelectionHandlers } from "@editor/selectionHandlers.js";
 import { setupKeyboardHandlers } from "@editor/keyboardHandlers.js";
 import { setupPasteHandler } from "@editor/pasteHandler.js";
-import { copyBtnHandler, themeToggleHandler } from "@editor/actionBtnHandler.js";
+import { initHeader } from "@header/header.js";
 
 import {
     editor,
@@ -63,8 +61,8 @@ function initEditor() {
 }
 
 function initUI() {
-    // Theme toggle
-    themeToggleHandler();
+    // Header functionality
+    initHeader();
 }
 
 // Initialize Undo/Redo Manager
@@ -80,10 +78,6 @@ function initUndoRedoManager() {
 
 // Event Binding
 function bindEvents() {
-    // Scroll sync
-    document.querySelector(".editor-container")
-        .addEventListener("scroll", syncScrollPosition);
-
     // Focus editor on click in the container (empty space)
     document.querySelector(".editor-container")
         .addEventListener("click", (e) => {
@@ -124,51 +118,6 @@ function bindEvents() {
     setupPasteHandler();
     setupSelectionHandlers();
     setupKeyboardHandlers();
-
-    // Buttons
-    runBtn.addEventListener("click", () => {
-        const tracker = ensureExecutionTracker();
-        tracker?.recordUIAction('run-code');
-        runCode(editor, output);
-    });
-    copyBtnHandler();
-    
-    // Header Clear Button: Clear Editor AND Output
-    if (clearBtn) {
-        clearBtn.addEventListener("click", () => {
-            // 1. Clear Output FIRST (Guaranteed clear)
-            const outElement = document.getElementById("output");
-            if (outElement) {
-                outElement.innerHTML = "";
-            }
-            
-            // Update UI for output immediately
-            updateOutputStatus('idle');
-            if (window.updateConsoleClearBtn) window.updateConsoleClearBtn();
-
-            // 2. Clear Editor (Safeguarded)
-            try {
-                if (typeof clearEditor === 'function') {
-                    clearEditor(true);
-                } else {
-                    if (editor) editor.textContent = "";
-                }
-                
-                // Redundant check: if clearEditor didn't wipe text for some reason
-                if (editor && editor.textContent !== "") {
-                    editor.textContent = "";
-                    editor.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            } catch (e) {
-                console.error("Error clearing editor:", e);
-                // Fallback force clear if error occurred
-                if (editor) {
-                    editor.textContent = "";
-                    editor.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            }
-        });
-    }
 
     setupConsoleControls();
 }
