@@ -1,0 +1,154 @@
+/* ===== EDITOR SECTION ===== */
+.editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1; 
+  border: none;
+  background: var(--editor-bg);
+  border-radius: 8px 8px 0 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.editor-container {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow: auto; 
+    position: relative;
+    isolation: isolate;
+    cursor: text;
+}
+
+/* Container for all editor layers sitting next to the gutter */
+.editor-content-layers {
+    flex: 1; 
+    display: grid;
+    grid-template-columns: 100%;
+    position: relative;
+    min-width: 0;
+}
+
+.editor-content-layers > * {
+    grid-area: 1 / 1;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+/* ===== EDITOR LAYERS ===== */
+#code-text,
+#highlighted-code {
+    font-family: inherit;
+    font-size: 14px;
+    padding: var(--editor-padding) 20px;
+    background: transparent;
+    outline: none;
+    white-space: pre-wrap; 
+    word-break: break-word;
+    overflow-wrap: break-word;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: var(--editor-line-height);
+    
+    /* Font rendering */
+    font-variant-ligatures: normal;
+    text-rendering: optimizeLegibility;
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+#highlighted-code {
+    z-index: 1;
+    pointer-events: none;
+    color: var(--text);
+    overflow: hidden;
+}
+
+#selection-overlay {
+    z-index: 2;
+    pointer-events: none;
+    display: none;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+#selection-overlay.is-active {
+    display: block;
+}
+
+#selection-overlay .selection-block,
+#selection-overlay .cursor-block {
+    position: absolute;
+}
+
+#selection-overlay .selection-block {
+    background: var(--selection-bg);
+    border-radius: 3px;
+}
+
+#selection-overlay .cursor-block {
+    width: 2px;
+    min-width: 2px;
+    background: var(--caret, #ffffff);
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba(97, 218, 251, 0.45);
+    animation: caretPulse 1s steps(2, start) infinite;
+}
+
+@keyframes caretPulse {
+    0%, 45% { opacity: 0; }
+    50%, 100% { opacity: 1; }
+}
+
+#code-text {
+    z-index: 3;
+    color: transparent;
+    background: transparent;
+    caret-color: var(--caret, #ffffff);
+    pointer-events: auto;
+    user-select: text;
+    -webkit-user-select: text;
+    
+    resize: none;
+    min-height: 100%;
+    width: 100%;
+    min-width: 100%;
+    overflow: visible;
+    padding-bottom: 0; 
+    height: auto;
+}
+
+#code-text:focus::before {
+    content: none;
+}
+
+#code-text:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-secondary);
+    opacity: 0.4;
+    pointer-events: none;
+    position: absolute;
+    top: var(--editor-padding);
+    left: 20px;
+    font-style: italic;
+}
+
+#active-line-indicator {
+    z-index: 0;
+    position: absolute; 
+    left: 0;
+    right: 0;
+    transform: translateY(0); 
+    will-change: transform;
+    
+    height: calc(var(--editor-line-height) * 1em);
+    background: var(--active-line-bg);
+    border-radius: 4px;
+    pointer-events: none;
+    transition: transform 0.12s ease;
+}

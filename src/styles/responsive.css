@@ -1,0 +1,57 @@
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 900px) {
+  :root {
+    --pane-height: 220px;
+  }
+
+  .playground-wrapper {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 8px 80px 8px;
+  }
+
+  .editor-section,
+  .output-section {
+    min-width: 0;
+  }
+
+  #summary-bar {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  #code-text,
+  #highlighted-code {
+    font-size: 13px;
+    padding: 6px;
+  }
+
+  .panel-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --pane-height: 140px;
+  }
+
+  header,
+  #summary-bar {
+    padding-left: 4px;
+    padding-right: 4px;
+    font-size: 13px;
+  }
+
+  .editor-section,
+  .output-section {
+    padding: 0;
+  }
+
+  #code-text,
+  #highlighted-code {
+    min-height: 140px;
+    font-size: 12px;
+    padding: 4px;
+  }
+}

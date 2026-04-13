@@ -1,0 +1,58 @@
+:root {
+  --editor-line-height: 1.5;
+  --editor-padding: 12px;
+  --active-line-bg: transparent;
+  --selection-bg: rgba(140, 180, 255, 0.25);
+  --panel-header-bg: rgba(255, 255, 255, 0.02);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --panel-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --status-idle-bg: rgba(255, 255, 255, 0.08);
+  --status-idle-text: #b3b3b3;
+  --status-running-bg: rgba(46, 204, 113, 0.12);
+  --status-running-text: #2ecc71;
+  --status-success-bg: rgba(72, 187, 120, 0.18);
+  --status-success-text: #48bb78;
+  --status-error-bg: rgba(229, 62, 62, 0.18);
+  --status-error-text: #fc8181;
+  --pane-height: calc(95vh - 100px);
+  --console-header-height: 56px;
+}
+
+body {
+  font-family: "Fira Mono", "Consolas", monospace;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.playground-wrapper {
+  flex: 1; 
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  padding: 0; 
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent body scroll */
+}
+
+.editor-section,
+.output-section {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent section-level scrolling */
+}
+
+.vertical-divider {
+    width: 1px;
+    background: var(--panel-border);
+    margin: 0;
+}

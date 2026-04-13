@@ -1,0 +1,46 @@
+/* ===== LINE NUMBER STYLES ===== */
+#line-numbers {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: var(--editor-bg); 
+  color: var(--line-number-color);
+  padding: var(--editor-padding) 12px var(--editor-padding) 8px;
+  user-select: none;
+  min-width: 40px;
+  border-right: 1px solid var(--border);
+  font-size: 14px;
+  line-height: var(--editor-line-height);
+  overflow: visible; 
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+#line-numbers span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+#line-numbers span.active-line {
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--accent-muted);
+  border-radius: 4px 0 0 4px;
+}
+
+#line-numbers::-webkit-scrollbar {
+  display: none;
+}
+
+#line-numbers {
+  scrollbar-width: none;
+}

@@ -5,8 +5,6 @@
 export function getEditorPlainText(editor) {
   if (!editor) return "";
 
-  // Strategy: Use a TreeWalker to predictably walk the DOM.
-  // This avoids layout-dependent issues with innerText and lumping issues with textContent.
   const walker = document.createTreeWalker(
       editor,
       NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
@@ -28,8 +26,9 @@ export function getEditorPlainText(editor) {
               text += "\n";
               lastWasBlock = false;
           } else if (tagName === 'DIV' || tagName === 'P') {
-              // Add newline for block elements, but avoid doubles if the previous was also a block
-              if (text.length > 0 && !text.endsWith('\n')) {
+              // Only add newline if we're not at the very start and previous wasn't a block
+              // This prevents double newlines for <div><div>text</div></div>
+              if (text.length > 0 && !lastWasBlock) {
                   text += "\n";
               }
               lastWasBlock = true;
@@ -37,22 +36,11 @@ export function getEditorPlainText(editor) {
       }
   }
 
-  // Final cleanup for consistency
-  let result = text
+  return text
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
       .replace(/\u00A0/g, " ")
       .replace(/\u200B/g, "");
-      
-  // If the last character is a newline, it's often the "phantom" newline from contenteditable
-  // We trim only one trailing newline if it exists to avoid over-counting
-  if (result.endsWith('\n')) {
-      // But we only trim it if there's content before it, 
-      // or if it's the ONLY character (empty editor state)
-      // Actually, standard behavior is to NOT count the very last \n if it's trailing content
-  }
-  
-  return result;
 }
 
 /**
@@ -61,12 +49,9 @@ export function getEditorPlainText(editor) {
 export function updateLineNumbers(editor, lineNumbers) {
   const content = getEditorPlainText(editor);
   
-  // Split by newline and filter out the very last empty entry if it's just a trailing newline
+  // Browsers often show an extra line at the end if the content ends with a newline
+  // We match this behavior for visual sync
   const lines = content.split('\n');
-  if (lines.length > 1 && lines[lines.length - 1] === "") {
-      lines.pop();
-  }
-  
   const lineCount = Math.max(1, lines.length);
 
   // Re-generate spans only if count changed or they are missing
